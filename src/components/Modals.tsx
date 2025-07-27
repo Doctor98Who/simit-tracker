@@ -698,7 +698,13 @@ const Modals = () => {
         </div>
       </div>
       
-      <div id="minimized-workout" className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`} onClick={() => setData(prev => ({ ...prev, activeModal: 'workout-modal' }))}>
+      <div id="minimized-workout" 
+        className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`} 
+        onClick={() => {
+          if (data.currentWorkout) {
+            setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
+          }
+        }}>
         <div>Workout in Progress - Tap to Resume</div>
       </div>
       
