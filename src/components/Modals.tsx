@@ -51,15 +51,8 @@ const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
   const activeModal = data.activeModal;
 
-  const openModal = (id: string) => {
-    console.log('Opening modal:', id, 'Current workout:', data.currentWorkout);
-    setData((prev: DataType) => ({ ...prev, activeModal: id }));
-  };
-  
-  const closeModal = () => {
-    console.log('Closing modal, current workout:', data.currentWorkout);
-    setData((prev: DataType) => ({ ...prev, activeModal: null }));
-  };
+  const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
+  const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
 
   const goBack = () => {
     if (activeModal === 'day-modal') openModal('week-modal');
@@ -208,16 +201,22 @@ const Modals = () => {
   }, [activeModal]);
 
   const selectExercise = (ex: Exercise | ExerciseFromDatabase) => {
-    // Store current workout before any state changes
-    const currentWorkoutCopy = data.currentWorkout;
-    
     // Convert ExerciseFromDatabase to Exercise if needed
     const exercise: Exercise = 'sets' in ex ? ex : {
       ...ex,
       sets: []
     };
     
-    if (data.isWorkoutSelect && currentWorkoutCopy) {
+    // Clear search
+    setSelectSearchQuery('');
+    
+    if (data.isWorkoutSelect) {
+      // We're adding to a workout - make sure we have a current workout
+      if (!data.currentWorkout) {
+        console.error('No current workout found');
+        return;
+      }
+      
       const newExercise = {
         ...exercise,
         sets: Array.from({ length: exercise.numSets || 3 }, () => ({
@@ -228,25 +227,20 @@ const Modals = () => {
         })),
       };
       
-      // Update state with the new exercise added to workout
+      // Update the workout with the new exercise
+      const updatedExercises = [...data.currentWorkout.exercises, newExercise];
+      
       setData((prev: DataType) => ({
         ...prev,
         currentWorkout: {
-          ...currentWorkoutCopy,
-          exercises: [...currentWorkoutCopy.exercises, newExercise]
+          ...prev.currentWorkout!,
+          exercises: updatedExercises
         },
         activeModal: 'workout-modal',
-        isWorkoutSelect: false,
-        returnModal: null
+        isWorkoutSelect: false
       }));
-      
-      // Clear search query
-      setSelectSearchQuery('');
-      return; // Exit early to prevent any other code from running
-    }
-    
-    // Handle program day exercise selection
-    if (!data.isWorkoutSelect) {
+    } else {
+      // Adding to program day
       const newExercises = [
         ...data.currentDayExercises,
         {
@@ -264,7 +258,6 @@ const Modals = () => {
         currentDayExercises: newExercises,
         activeModal: data.returnModal || null,
       }));
-      setSelectSearchQuery('');
     }
   };
 
@@ -693,9 +686,7 @@ const Modals = () => {
       </div>
       
       <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          {data.currentWorkout && <WorkoutModal />}
-        </div>
+        {data.currentWorkout && <WorkoutModal />}
       </div>
       
       <div id="minimized-workout" 
