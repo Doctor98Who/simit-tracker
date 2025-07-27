@@ -47,6 +47,9 @@ const Modals = () => {
   const [exerciseSelectMode, setExerciseSelectMode] = useState<'workout' | 'program' | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [minimizedDragY, setMinimizedDragY] = useState(0);
+  const [isDraggingMinimized, setIsDraggingMinimized] = useState(false);
+  const minimizedStartY = useRef(0);
 
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
   const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
@@ -685,6 +688,39 @@ const Modals = () => {
     }
   };
 
+  // Handle drag for minimized workout
+  const handleMinimizedTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    minimizedStartY.current = clientY;
+    setIsDraggingMinimized(true);
+  };
+
+  const handleMinimizedTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDraggingMinimized) return;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const deltaY = minimizedStartY.current - clientY;
+    
+    // Only allow upward drag
+    if (deltaY > 0) {
+      setMinimizedDragY(-deltaY);
+    }
+  };
+
+  const handleMinimizedTouchEnd = () => {
+    if (!isDraggingMinimized) return;
+    setIsDraggingMinimized(false);
+    
+    const deltaY = -minimizedDragY;
+    
+    // If dragged up more than 50px, maximize
+    if (deltaY > 50) {
+      setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
+    }
+    
+    // Reset transform
+    setMinimizedDragY(0);
+  };
+
   return (
     <>
       <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
@@ -737,8 +773,15 @@ const Modals = () => {
         </div>
       </div>
       
-      <div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`}>
-        <div className="modal-content exercise-select-content">
+      <div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`} style={{ alignItems: 'stretch' }}>
+        <div className="modal-content exercise-select-content" style={{
+          height: '100vh',
+          maxHeight: '100vh',
+          borderRadius: 0,
+          margin: 0,
+          width: '100%',
+          maxWidth: '100%',
+        }}>
           <div className="exercise-select-header">
             <h2>Select Exercise</h2>
           </div>
@@ -752,7 +795,7 @@ const Modals = () => {
               onChange={(e) => setSelectSearchQuery(e.target.value)}
             />
           </div>
-          <div className="exercise-select-list" id="exercise-list-select">
+          <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>
             {renderExerciseSelectList}
           </div>
           <div className="exercise-select-footer">
@@ -785,42 +828,58 @@ const Modals = () => {
       
       <div id="minimized-workout" 
         className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`}
-        onTouchStart={(e) => {
-          const startY = e.touches[0].clientY;
-          const handleTouchMove = (e: TouchEvent) => {
-            const currentY = e.touches[0].clientY;
-            if (startY - currentY > 50) { // Dragged up more than 50px
-              setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
-              document.removeEventListener('touchmove', handleTouchMove);
-              document.removeEventListener('touchend', handleTouchEnd);
-            }
-          };
-          const handleTouchEnd = () => {
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleTouchEnd);
-          };
-          document.addEventListener('touchmove', handleTouchMove);
-          document.addEventListener('touchend', handleTouchEnd);
+        style={{
+          position: 'fixed',
+          bottom: '60px',
+          left: '0',
+          right: '0',
+          width: '100%',
+          maxWidth: '428px',
+          margin: '0 auto',
+          background: 'var(--bg-light)',
+          borderRadius: '16px 16px 0 0',
+          padding: '12px 16px',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+          borderTop: '1px solid var(--border)',
+          cursor: 'grab',
+          transition: isDraggingMinimized ? 'none' : 'transform 0.3s ease',
+          transform: `translateY(${minimizedDragY}px)`,
+          zIndex: 999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '8px',
         }}
-        onMouseDown={(e) => {
-          const startY = e.clientY;
-          const handleMouseMove = (e: MouseEvent) => {
-            const currentY = e.clientY;
-            if (startY - currentY > 50) { // Dragged up more than 50px
-              setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
-              document.removeEventListener('mousemove', handleMouseMove);
-              document.removeEventListener('mouseup', handleMouseUp);
-            }
-          };
-          const handleMouseUp = () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-          };
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
+        onTouchStart={handleMinimizedTouchStart}
+        onTouchMove={handleMinimizedTouchMove}
+        onTouchEnd={handleMinimizedTouchEnd}
+        onMouseDown={handleMinimizedTouchStart}
+        onMouseMove={handleMinimizedTouchMove}
+        onMouseUp={handleMinimizedTouchEnd}
+        onMouseLeave={handleMinimizedTouchEnd}
+      >
+        <div className="drag-indicator" style={{ 
+          margin: '0 auto 4px', 
+          width: '40px', 
+          height: '4px', 
+          background: 'rgba(255,255,255,0.3)', 
+          borderRadius: '2px' 
+        }}></div>
+        <div style={{
+          fontSize: '0.9em',
+          fontWeight: '600',
+          color: 'white',
+          textAlign: 'center',
         }}>
-        <div className="drag-indicator" style={{ margin: '0 auto 8px', width: '40px', height: '4px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}></div>
-        <div>Workout in Progress - Swipe Up to Resume</div>
+          {data.currentWorkout?.name || 'Workout in Progress'}
+        </div>
+        <div style={{
+          fontSize: '0.8em',
+          color: 'var(--text-muted)',
+          textAlign: 'center',
+        }}>
+          Swipe up to resume
+        </div>
       </div>
       
       <div id="exercise-menu-modal" className={`modal ${activeModal === 'exercise-menu-modal' ? 'active' : ''}`}>
