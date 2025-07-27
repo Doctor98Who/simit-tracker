@@ -4,7 +4,7 @@ interface HeaderProps {
   version?: string; // Optional prop for dynamic version
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.0.16' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.0.17' }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {

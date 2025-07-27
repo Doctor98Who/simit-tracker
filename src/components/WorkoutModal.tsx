@@ -36,6 +36,145 @@ interface DragItem {
   type: string;
 }
 
+// Rest Timer Component
+const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [selectedTime, setSelectedTime] = useState<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const restOptions = [
+    { label: '30s', value: 30 },
+    { label: '45s', value: 45 },
+    { label: '1m', value: 60 },
+    { label: '1.5m', value: 90 },
+    { label: '2m', value: 120 },
+  ];
+
+  useEffect(() => {
+    if (timeLeft !== null && timeLeft > 0) {
+      intervalRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev === null || prev <= 1) {
+            // Timer finished
+            if ('vibrate' in navigator) {
+              navigator.vibrate([200, 100, 200]);
+            }
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [timeLeft]);
+
+  const startTimer = (seconds: number) => {
+    setSelectedTime(seconds);
+    setTimeLeft(seconds);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      background: '#1a1a1a',
+      borderRadius: '16px',
+      padding: '20px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+      zIndex: 2000,
+      minWidth: '280px',
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px',
+      }}>
+        <h3 style={{ margin: 0, fontSize: '1.1em' }}>Rest Timer</h3>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--text-muted)',
+            fontSize: '1.2em',
+            cursor: 'pointer',
+            padding: '4px',
+          }}
+        >
+          ×
+        </button>
+      </div>
+      
+      {timeLeft === null ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+          {restOptions.map(option => (
+            <button
+              key={option.value}
+              onClick={() => startTimer(option.value)}
+              style={{
+                padding: '12px 20px',
+                background: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9em',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            fontSize: '3em',
+            fontWeight: '700',
+            color: timeLeft <= 10 ? '#ef4444' : 'var(--accent-primary)',
+            marginBottom: '20px',
+          }}>
+            {formatTime(timeLeft)}
+          </div>
+          <button
+            onClick={() => setTimeLeft(null)}
+            style={{
+              padding: '10px 24px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              color: '#ef4444',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '0.9em',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Stop
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({ 
   ex, 
   idx, 
@@ -133,7 +272,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       if ('vibrate' in navigator) {
         navigator.vibrate(20);
       }
-    }, 600); // 600ms hold time
+    }, 500); // Reduced to 500ms for better UX
   };
 
   const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
@@ -167,28 +306,24 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
 
-  // Count warm-up sets
-  const maxWeight = Math.max(...ex.sets.map(s => parseFloat(s.weight) || 0));
-  const warmupSets = ex.sets.filter(s => (parseFloat(s.weight) || 0) < maxWeight * 0.9).length;
-
   // Collapsed state when any exercise is being dragged
-  const isCollapsed = isGlobalDragging && !isDragging;
+  const isCollapsed = isGlobalDragging;
 
   return (
     <div 
       ref={ref}
       className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCollapsed ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`} 
       style={{ 
-        opacity: isDragging ? 0.5 : 1,
-        transform: isDragging ? 'scale(1.05) rotate(2deg)' : isHolding ? 'scale(0.98)' : 'scale(1)',
-        boxShadow: isDragging ? '0 12px 24px rgba(59, 130, 246, 0.4)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
-        transition: isCollapsed ? 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'all 0.2s ease',
-        height: isCollapsed ? '48px' : 'auto',
+        opacity: isDragging ? 0.3 : 1,
+        transform: isDragging ? 'scale(1.02)' : isHolding ? 'scale(0.98)' : 'scale(1)',
+        boxShadow: isDragging ? '0 8px 20px rgba(59, 130, 246, 0.3)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.2s ease',
+        height: isCollapsed && !isDragging ? '44px' : 'auto',
         overflow: 'hidden',
-        background: isDragging ? 'rgba(59, 130, 246, 0.08)' : isHolding ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.01)',
-        border: isDragging ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.06)',
-        marginBottom: isCollapsed ? '4px' : '8px',
-        borderRadius: '12px',
+        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.02)',
+        border: isDragging ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
+        marginBottom: '8px',
+        borderRadius: '10px',
         cursor: isDragging ? 'grabbing' : 'grab',
       }} 
       data-handler-id={handlerId}
@@ -199,7 +334,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          padding: '12px 14px',
+          padding: '10px 12px',
           touchAction: 'none',
           WebkitTouchCallout: 'none',
           WebkitUserSelect: 'none',
@@ -213,17 +348,17 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
           <div className="exercise-name" style={{ 
-            fontSize: '0.95em', 
+            fontSize: '0.9em', 
             fontWeight: '600',
             color: isDragging ? 'var(--accent-primary)' : 'white',
           }}>
             {ex.name} 
             {ex.subtype && <span style={{ 
               color: isDragging ? 'var(--accent-primary)' : 'var(--accent-blue)', 
-              fontSize: '0.85em', 
-              marginLeft: '6px',
+              fontSize: '0.8em', 
+              marginLeft: '4px',
               opacity: 0.8,
             }}>({ex.subtype})</span>}
           </div>
@@ -233,7 +368,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             e.stopPropagation();
             openExerciseMenu(idx, e.currentTarget);
           }} style={{ 
-            fontSize: '1.1em', 
+            fontSize: '1em', 
             padding: '4px 8px', 
             color: 'var(--text-muted)',
             cursor: 'pointer',
@@ -241,13 +376,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         )}
       </div>
       {!isCollapsed && (
-        <div style={{ padding: '0 14px 14px' }}>
+        <div style={{ padding: '0 12px 10px' }}>
           <div className="set-table-header" style={{ 
             display: 'grid',
-            gridTemplateColumns: '32px 72px 52px 46px 36px 30px',
-            gap: '6px',
-            marginBottom: '8px',
-            fontSize: '0.65em',
+            gridTemplateColumns: '28px 60px 48px 48px 32px 24px',
+            gap: '4px',
+            marginBottom: '6px',
+            fontSize: '0.6em',
             color: 'rgba(255, 255, 255, 0.3)',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
@@ -261,28 +396,28 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             <div></div>
           </div>
           {ex.sets.map((s, sIdx) => {
-            const isWarmup = sIdx < warmupSets;
             return (
               <div key={sIdx} className={`set-row ${s.completed ? 'completed-row' : ''}`} style={{
                 display: 'grid',
-                gridTemplateColumns: '32px 72px 52px 46px 36px 30px',
-                gap: '6px',
-                marginBottom: '6px',
+                gridTemplateColumns: '28px 60px 48px 48px 32px 24px',
+                gap: '4px',
+                marginBottom: '4px',
                 alignItems: 'center',
                 borderRadius: '6px',
                 background: s.completed ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
+                padding: '2px 0',
               }}>
                 <div style={{ 
                   fontWeight: '600',
-                  color: isWarmup ? '#FF9500' : s.completed ? '#22C55E' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.75em',
+                  color: s.completed ? '#22C55E' : 'rgba(255,255,255,0.6)',
+                  fontSize: '0.7em',
                   paddingLeft: '2px',
                 }}>
-                  {isWarmup ? 'W' : sIdx - warmupSets + 1}
+                  {sIdx + 1}
                 </div>
                 <div style={{ 
                   textAlign: 'center',
-                  fontSize: '0.7em', 
+                  fontSize: '0.65em', 
                   color: 'rgba(255, 255, 255, 0.3)',
                 }}>
                   {ex.previousSets?.[sIdx] || '—'}
@@ -294,15 +429,15 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   inputMode="decimal"
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.8em',
+                    fontSize: '0.75em',
                     fontWeight: '500',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '5px 2px',
-                    minHeight: '28px',
+                    padding: '4px 2px',
+                    height: '26px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -314,15 +449,15 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   inputMode="numeric"
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.8em',
+                    fontSize: '0.75em',
                     fontWeight: '500',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '5px 2px',
-                    minHeight: '28px',
+                    padding: '4px 2px',
+                    height: '26px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -335,14 +470,14 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   step="0.5"
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.8em',
+                    fontSize: '0.7em',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '5px 2px',
-                    minHeight: '28px',
+                    padding: '4px 2px',
+                    height: '26px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -351,20 +486,20 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   className={`log-square ${s.completed ? 'completed' : ''}`} 
                   onClick={() => toggleCompleted(sIdx)}
                   style={{
-                    width: '24px',
-                    height: '24px',
+                    width: '20px',
+                    height: '20px',
                     margin: '0 auto',
-                    borderRadius: '6px',
-                    border: s.completed ? 'none' : '1.5px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '4px',
+                    border: s.completed ? 'none' : '1.5px solid rgba(255, 255, 255, 0.2)',
                     background: s.completed ? '#22C55E' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '10px',
                     color: 'white',
                     fontWeight: 'bold',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.15s ease',
                   }}
                 >
                   {s.completed ? '✓' : ''}
@@ -376,18 +511,18 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             className="add-set-btn" 
             onClick={() => addSet(idx)}
             style={{
-              marginTop: '10px',
+              marginTop: '8px',
               background: 'transparent',
               border: '1px dashed rgba(255, 255, 255, 0.15)',
               color: 'rgba(255, 255, 255, 0.4)',
-              padding: '8px',
-              borderRadius: '6px',
-              fontSize: '0.75em',
+              padding: '6px',
+              borderRadius: '4px',
+              fontSize: '0.7em',
               fontWeight: '500',
               width: '100%',
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              minHeight: '32px',
+              transition: 'all 0.15s ease',
+              height: '28px',
             }}
           >
             + Add Set
@@ -412,6 +547,7 @@ const WorkoutModal: React.FC = () => {
   const [modalTransform, setModalTransform] = useState(0);
   const [isGlobalDragging, setIsGlobalDragging] = useState(false);
   const dragCounter = useRef(0);
+  const [showRestTimer, setShowRestTimer] = useState(false);
 
   useEffect(() => {
     if (currentWorkout) {
@@ -628,218 +764,247 @@ const WorkoutModal: React.FC = () => {
   if (!currentWorkout) return null;
 
   return (
-    <div 
-      className="modal-content workout-modal-content" 
-      ref={modalContentRef}
-      style={{ 
-        position: 'relative',
-        transform: `translateY(${modalTransform}px)`,
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-        maxWidth: '100%',
-        width: '100%',
-        height: '100vh',
-        background: '#0A0A0A',
-        padding: '0',
-        borderRadius: '20px 20px 0 0',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <>
       <div 
-        className="drag-handle"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleTouchStart}
-        onMouseMove={handleTouchMove}
-        onMouseUp={handleTouchEnd}
-        onMouseLeave={handleTouchEnd}
-        style={{
-          padding: '10px',
-          cursor: 'grab',
+        className="modal-content workout-modal-content" 
+        ref={modalContentRef}
+        style={{ 
+          position: 'relative',
+          transform: `translateY(${modalTransform}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+          maxWidth: '100%',
+          width: '100%',
+          height: '100vh',
           background: '#0A0A0A',
+          padding: '0',
+          borderRadius: '20px 20px 0 0',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <div className="drag-indicator" style={{
-          width: '32px',
-          height: '4px',
-          background: 'rgba(255,255,255,0.15)',
-          borderRadius: '2px',
-          margin: '0 auto',
-        }}></div>
-      </div>
-      
-      <div style={{ 
-        flex: 1,
-        overflow: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        padding: '0 12px 80px',
-      }}>
-        <div className="workout-header" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '16px',
-          gap: '10px',
+        <div 
+          className="drag-handle"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleTouchStart}
+          onMouseMove={handleTouchMove}
+          onMouseUp={handleTouchEnd}
+          onMouseLeave={handleTouchEnd}
+          style={{
+            padding: '8px',
+            cursor: 'grab',
+            background: '#0A0A0A',
+          }}
+        >
+          <div className="drag-indicator" style={{
+            width: '32px',
+            height: '3px',
+            background: 'rgba(255,255,255,0.15)',
+            borderRadius: '2px',
+            margin: '0 auto',
+          }}></div>
+        </div>
+        
+        <div style={{ 
+          flex: 1,
+          overflow: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          padding: '0 10px 80px',
         }}>
+          <div className="workout-header" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '14px',
+            gap: '8px',
+          }}>
+            <button 
+              className="back-button" 
+              onClick={cancelWorkout}
+              style={{
+                fontSize: '18px',
+                padding: '6px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                border: 'none',
+                color: 'white',
+                minWidth: '32px',
+              }}
+            >
+              ←
+            </button>
+            <input
+              type="text"
+              id="workout-name-input"
+              value={currentWorkout?.name || ''}
+              onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '1em',
+                fontWeight: '600',
+                textAlign: 'center',
+                flex: 1,
+                padding: '0',
+                color: 'white',
+              }}
+            />
+            <button 
+              className="finish" 
+              onClick={finishWorkout}
+              style={{
+                background: '#22C55E',
+                color: 'white',
+                border: 'none',
+                borderRadius: '16px',
+                padding: '6px 16px',
+                fontSize: '0.85em',
+                fontWeight: '600',
+                cursor: 'pointer',
+                minWidth: '65px',
+              }}
+            >
+              Finish
+            </button>
+          </div>
+          
+          <div className="workout-info" style={{
+            display: 'flex',
+            gap: '12px',
+            marginBottom: '16px',
+            fontSize: '0.75em',
+            color: 'rgba(255,255,255,0.4)',
+          }}>
+            <div className="workout-date">📅 {new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</div>
+            <div 
+              className="workout-timer" 
+              onClick={() => setShowRestTimer(true)}
+              style={{ cursor: 'pointer' }}
+            >
+              ⏱ {formattedTime}
+            </div>
+          </div>
+          
+          <div id="workout-exercises">
+            {renderedExercises}
+          </div>
+          
           <button 
-            className="back-button" 
+            className="add-exercise" 
+            onClick={addExerciseToWorkout}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(59, 130, 246, 0.08)',
+              color: '#3B82F6',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '0.85em',
+              fontWeight: '500',
+              cursor: 'pointer',
+              marginTop: '12px',
+              marginBottom: '10px',
+            }}
+          >
+            Add Exercises
+          </button>
+          <button 
+            className="cancel-workout" 
             onClick={cancelWorkout}
             style={{
-              fontSize: '20px',
-              padding: '6px',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.04)',
-              width: '36px',
-              height: '36px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(239, 68, 68, 0.08)',
+              color: '#EF4444',
               border: 'none',
-              color: 'white',
-            }}
-          >
-            ←
-          </button>
-          <input
-            type="text"
-            id="workout-name-input"
-            value={currentWorkout?.name || ''}
-            onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '1.05em',
-              fontWeight: '600',
-              textAlign: 'center',
-              flex: 1,
-              padding: '0',
-              color: 'white',
-            }}
-          />
-          <button 
-            className="finish" 
-            onClick={finishWorkout}
-            style={{
-              background: '#22C55E',
-              color: 'white',
-              border: 'none',
-              borderRadius: '18px',
-              padding: '8px 20px',
-              fontSize: '0.9em',
-              fontWeight: '600',
+              borderRadius: '10px',
+              fontSize: '0.85em',
+              fontWeight: '500',
               cursor: 'pointer',
             }}
           >
-            Finish
+            Cancel Workout
           </button>
         </div>
         
-        <div className="workout-info" style={{
-          display: 'flex',
-          gap: '16px',
-          marginBottom: '20px',
-          fontSize: '0.8em',
-          color: 'rgba(255,255,255,0.4)',
-        }}>
-          <div className="workout-date">📅 {new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</div>
-          <div className="workout-timer">⏱ {formattedTime}</div>
-        </div>
-        
-        <div id="workout-exercises">
-          {renderedExercises}
-        </div>
-        
-        <button 
-          className="add-exercise" 
-          onClick={addExerciseToWorkout}
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'rgba(59, 130, 246, 0.08)',
-            color: '#3B82F6',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '0.9em',
-            fontWeight: '500',
-            cursor: 'pointer',
-            marginTop: '16px',
-            marginBottom: '12px',
-          }}
-        >
-          Add Exercises
-        </button>
-        <button 
-          className="cancel-workout" 
-          onClick={cancelWorkout}
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'rgba(239, 68, 68, 0.08)',
-            color: '#EF4444',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '0.9em',
-            fontWeight: '500',
-            cursor: 'pointer',
-          }}
-        >
-          Cancel Workout
-        </button>
+        {/* Inline Exercise Menu */}
+        {inlineMenuPosition && !isGlobalDragging && (
+          <div 
+            className="inline-exercise-menu" 
+            style={{
+              position: 'absolute',
+              top: `${inlineMenuPosition.top}px`,
+              left: `${inlineMenuPosition.left}px`,
+              background: '#1a1a1a',
+              borderRadius: '8px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+              padding: '4px',
+              zIndex: 1000,
+              minWidth: '140px',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <div 
+              style={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                transition: 'background 0.15s',
+                fontSize: '0.8em',
+                color: 'white',
+              }}
+              onClick={deleteExercise}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              Delete Exercise
+            </div>
+            <div 
+              style={{
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderRadius: '4px',
+                transition: 'background 0.15s',
+                fontSize: '0.8em',
+                color: 'white',
+              }}
+              onClick={deleteLastSet}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              Delete Last Set
+            </div>
+          </div>
+        )}
       </div>
       
-      {/* Inline Exercise Menu */}
-      {inlineMenuPosition && !isGlobalDragging && (
-        <div 
-          className="inline-exercise-menu" 
-          style={{
-            position: 'absolute',
-            top: `${inlineMenuPosition.top}px`,
-            left: `${inlineMenuPosition.left}px`,
-            background: '#1a1a1a',
-            borderRadius: '10px',
-            boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
-            padding: '6px',
-            zIndex: 1000,
-            minWidth: '140px',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
+      {/* Rest Timer Overlay */}
+      {showRestTimer && (
+        <>
           <div 
             style={{
-              padding: '10px 14px',
-              cursor: 'pointer',
-              borderRadius: '6px',
-              transition: 'background 0.2s',
-              fontSize: '0.85em',
-              color: 'white',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1999,
             }}
-            onClick={deleteExercise}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            Delete Exercise
-          </div>
-          <div 
-            style={{
-              padding: '10px 14px',
-              cursor: 'pointer',
-              borderRadius: '6px',
-              transition: 'background 0.2s',
-              fontSize: '0.85em',
-              color: 'white',
-            }}
-            onClick={deleteLastSet}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            Delete Last Set
-          </div>
-        </div>
+            onClick={() => setShowRestTimer(false)}
+          />
+          <RestTimer onClose={() => setShowRestTimer(false)} />
+        </>
       )}
-    </div>
+    </>
   );
 };
 

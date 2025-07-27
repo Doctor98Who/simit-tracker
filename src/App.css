@@ -17,6 +17,38 @@
     --completed-check: #27AE60;
     --subtle-gradient: linear-gradient(135deg, var(--bg-light), var(--bg-lighter));
 }
+
+/* Prevent zoom on input focus for iOS */
+@supports (-webkit-touch-callout: none) {
+  input[type="text"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Prevent zoom on all mobile devices */
+input[type="text"],
+input[type="number"],
+input[type="tel"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Disable double-tap zoom */
+* {
+    touch-action: manipulation;
+}
+
 .header {
     background: var(--accent-gradient);
     padding: 15px;
@@ -42,6 +74,8 @@ body {
     user-select: auto;
     min-height: calc(100% + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 .app-container {
     max-width: 428px;
@@ -54,6 +88,7 @@ body {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 .quick-start {
     background: var(--accent-gradient);
@@ -143,7 +178,9 @@ body {
     border-radius: 10px;
     padding: 10px;
     margin-bottom: 15px;
-    font-size: 1em;
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
 }
 .letter-header {
     font-size: 1.8em;
@@ -410,7 +447,7 @@ body {
     margin: 0;
     background: var(--bg-lighter);
     border: 1px solid var(--border);
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px !important;
 }
 
 .exercise-select-list {
@@ -453,7 +490,7 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,0.8);
-    display: none; /* This must be here */
+    display: none;
     justify-content: center;
     align-items: flex-end;
     z-index: 1000;
@@ -504,6 +541,7 @@ body {
     border-radius: 4px;
     background: var(--bg-lighter);
     color: var(--text);
+    font-size: 16px !important;
 }
 #edit-profile-modal .delete-account {
     color: #FF3B30;
@@ -532,7 +570,7 @@ button {
     padding: 12px 20px;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 16px !important;
     transition: var(--transition);
     font-weight: 600;
     margin-top: 5px;
@@ -589,7 +627,7 @@ input, select {
     border-radius: 12px;
     background: var(--bg-lighter);
     color: var(--text);
-    font-size: 0.9em;
+    font-size: 16px !important;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -615,7 +653,7 @@ input#workout-name-input {
     background: transparent;
     border: none;
     font-weight: 600;
-    font-size: 1.1em;
+    font-size: 16px !important;
     padding: 0;
     color: var(--text);
     text-align: center;
@@ -793,9 +831,9 @@ button.finish {
     transition: none;
 }
 #workout-modal .exercise-item.collapsed {
-    height: 60px;
+    height: 44px;
     overflow: hidden;
-    padding: 16px;
+    padding: 10px 12px;
 }
 #workout-modal .exercise-item.holding {
     transform: scale(0.98);
@@ -950,4 +988,76 @@ body.modal-open {
     position: fixed;
     width: 100%;
     overflow: hidden;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 428px) {
+    .app-container {
+        max-width: 100%;
+    }
+    
+    .content {
+        padding: 15px;
+    }
+    
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 20px 20px 0 0;
+    }
+}
+
+/* Fix for Android Chrome address bar */
+@supports (padding: max(0px)) {
+    body {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Ensure inputs don't zoom on focus */
+@media screen and (max-width: 768px) {
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus {
+        font-size: 16px !important;
+        transform: scale(1) !important;
+        zoom: 1 !important;
+    }
+}
+
+/* Workout modal specific styles for compact layout */
+#workout-modal input[type="number"] {
+    font-size: 16px !important;
+    padding: 4px 2px;
+    height: 26px;
+    min-width: 0;
+}
+
+#workout-modal .set-table-header {
+    font-size: 0.6em !important;
+}
+
+#workout-modal .exercise-name {
+    font-size: 0.9em !important;
+}
+
+/* Prevent iOS zoom on double tap */
+button, 
+.exercise-item, 
+.program-card, 
+.nav-item {
+    touch-action: manipulation;
+}
+
+/* Optimize scrolling performance */
+.exercise-select-list,
+.content,
+#workout-exercises {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: scroll-position;
 }
