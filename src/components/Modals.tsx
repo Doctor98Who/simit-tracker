@@ -51,8 +51,15 @@ const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
   const activeModal = data.activeModal;
 
-  const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
-  const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
+  const openModal = (id: string) => {
+    console.log('Opening modal:', id, 'Current workout:', data.currentWorkout);
+    setData((prev: DataType) => ({ ...prev, activeModal: id }));
+  };
+  
+  const closeModal = () => {
+    console.log('Closing modal, current workout:', data.currentWorkout);
+    setData((prev: DataType) => ({ ...prev, activeModal: null }));
+  };
 
   const goBack = () => {
     if (activeModal === 'day-modal') openModal('week-modal');
