@@ -246,6 +246,9 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     },
   });
 
+  // Remove custom drag preview to fix TypeScript errors
+  // The default drag preview will be used instead
+
   // Enable drag when holding
   useEffect(() => {
     if (isHolding && !localIsDragging) {
@@ -319,19 +322,34 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       ref={ref}
       className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCollapsed ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`} 
       style={{ 
-        opacity: isDragging ? 0.3 : 1,
-        transform: isDragging ? 'scale(1.02)' : isHolding ? 'scale(0.98)' : 'scale(1)',
-        boxShadow: isDragging ? '0 8px 20px rgba(59, 130, 246, 0.3)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+        opacity: isDragging ? 0.5 : 1,
+        transform: isDragging ? 'scale(1.02) translateY(-2px)' : isHolding ? 'scale(0.98)' : isOver ? 'translateY(-2px)' : 'scale(1)',
+        boxShadow: isDragging ? '0 8px 20px rgba(59, 130, 246, 0.3)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
         height: isCollapsed ? '44px' : 'auto',
         overflow: 'hidden',
-        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.02)',
-        border: isDragging ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
-        marginBottom: '8px',
+        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : isOver ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+        border: isDragging ? '1px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+        marginBottom: isOver ? '24px' : '8px',
         borderRadius: '10px',
         cursor: isDragging ? 'grabbing' : 'grab',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        position: 'relative',
       }} 
       data-handler-id={handlerId}
     >
+      {isOver && (
+        <div style={{
+          position: 'absolute',
+          top: '-12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80%',
+          height: '2px',
+          background: 'var(--accent-primary)',
+          borderRadius: '1px',
+          animation: 'pulse 1s infinite',
+        }} />
+      )}
       <div 
         className="exercise-header" 
         style={{ 
@@ -383,10 +401,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         <div style={{ padding: '0 12px 10px' }}>
           <div className="set-table-header" style={{ 
             display: 'grid',
-            gridTemplateColumns: '32px 1fr 60px 60px 40px 28px',
-            gap: '8px',
-            marginBottom: '8px',
-            fontSize: '0.65em',
+            gridTemplateColumns: '30px 1fr 55px 55px 38px 24px',
+            gap: '6px',
+            marginBottom: '6px',
+            fontSize: '0.6em',
             color: 'rgba(255, 255, 255, 0.3)',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
@@ -404,9 +422,9 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             return (
               <div key={sIdx} className={`set-row ${s.completed ? 'completed-row' : ''}`} style={{
                 display: 'grid',
-                gridTemplateColumns: '32px 1fr 60px 60px 40px 28px',
-                gap: '8px',
-                marginBottom: '6px',
+                gridTemplateColumns: '30px 1fr 55px 55px 38px 24px',
+                gap: '6px',
+                marginBottom: '5px',
                 alignItems: 'center',
                 borderRadius: '6px',
                 background: s.completed ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
@@ -415,14 +433,14 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 <div style={{ 
                   fontWeight: '600',
                   color: s.completed ? '#22C55E' : 'rgba(255,255,255,0.6)',
-                  fontSize: '0.75em',
+                  fontSize: '0.7em',
                   paddingLeft: '2px',
                 }}>
                   {sIdx + 1}
                 </div>
                 <div style={{ 
                   textAlign: 'center',
-                  fontSize: '0.7em', 
+                  fontSize: '0.65em', 
                   color: 'rgba(255, 255, 255, 0.3)',
                 }}>
                   {ex.previousSets?.[sIdx] || '—'}
@@ -434,15 +452,15 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   inputMode="decimal"
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.8em',
+                    fontSize: '0.75em',
                     fontWeight: '500',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '6px 4px',
-                    height: '32px',
+                    padding: '5px 2px',
+                    height: '28px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -454,15 +472,15 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   inputMode="numeric"
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.8em',
+                    fontSize: '0.75em',
                     fontWeight: '500',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '6px 4px',
-                    height: '32px',
+                    padding: '5px 2px',
+                    height: '28px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -475,14 +493,14 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   step="0.5"
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.75em',
+                    fontSize: '0.7em',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '6px 2px',
-                    height: '32px',
+                    padding: '5px 2px',
+                    height: '28px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -491,8 +509,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   className={`log-square ${s.completed ? 'completed' : ''}`} 
                   onClick={() => toggleCompleted(sIdx)}
                   style={{
-                    width: '24px',
-                    height: '24px',
+                    width: '20px',
+                    height: '20px',
                     margin: '0 auto',
                     borderRadius: '4px',
                     border: s.completed ? 'none' : '1.5px solid rgba(255, 255, 255, 0.2)',
@@ -501,7 +519,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    fontSize: '12px',
+                    fontSize: '10px',
                     color: 'white',
                     fontWeight: 'bold',
                     transition: 'all 0.15s ease',
@@ -516,18 +534,18 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             className="add-set-btn" 
             onClick={() => addSet(idx)}
             style={{
-              marginTop: '8px',
+              marginTop: '6px',
               background: 'transparent',
               border: '1px dashed rgba(255, 255, 255, 0.15)',
               color: 'rgba(255, 255, 255, 0.4)',
-              padding: '6px',
+              padding: '5px',
               borderRadius: '4px',
-              fontSize: '0.7em',
+              fontSize: '0.65em',
               fontWeight: '500',
               width: '100%',
               cursor: 'pointer',
               transition: 'all 0.15s ease',
-              height: '28px',
+              height: '26px',
             }}
           >
             + Add Set
@@ -1000,6 +1018,14 @@ const WorkoutModal: React.FC = () => {
           <RestTimer onClose={() => setShowRestTimer(false)} />
         </>
       )}
+      
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 0.4; }
+          50% { opacity: 1; }
+          100% { opacity: 0.4; }
+        }
+      `}</style>
     </>
   );
 };
