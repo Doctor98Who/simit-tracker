@@ -274,29 +274,70 @@ const Modals = () => {
     filtered.sort((a, b) => a.name.localeCompare(b.name));
 
     if (filtered.length === 0 && query) {
-      return [<div key="no-results" className="feed-placeholder">No exercises found starting with "{query}"</div>];
+      return [<div key="no-results" className="feed-placeholder" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No exercises found starting with "{query}"</div>];
     }
 
-    return filtered.map(ex => (
-      <div
-        key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
-        className="exercise-item"
-        onClick={() => selectExercise(ex)}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          selectExercise(ex);
-        }}
-        style={{ 
-          cursor: 'pointer',
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'manipulation'
-        }}
-      >
-        <div className="exercise-name" style={{ pointerEvents: 'none' }}>{ex.name}</div>
-        {ex.subtype && <div className="exercise-subtype" style={{ pointerEvents: 'none' }}>{ex.subtype}</div>}
-        <div className="exercise-muscles" style={{ pointerEvents: 'none' }}>{ex.muscles}</div>
-      </div>
-    ));
+    let currentLetter = '';
+    const list: React.ReactNode[] = [];
+    
+    filtered.forEach((ex: Exercise | ExerciseFromDatabase) => {
+      const firstLetter = ex.name[0].toUpperCase();
+      if (firstLetter !== currentLetter) {
+        list.push(<div key={firstLetter} className="letter-header" style={{ 
+          fontSize: '1.2em',
+          color: 'var(--accent-primary)',
+          marginTop: currentLetter ? '20px' : '0',
+          marginBottom: '10px',
+          padding: '10px 16px',
+          background: 'linear-gradient(to right, var(--bg-dark), var(--bg-light))',
+          borderRadius: '8px',
+        }}>{firstLetter}</div>);
+        currentLetter = firstLetter;
+      }
+      
+      list.push(
+        <div
+          key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
+          className="exercise-item"
+          onClick={() => selectExercise(ex)}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            selectExercise(ex);
+          }}
+          style={{ 
+            cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            background: 'var(--bg-dark)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '8px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div className="exercise-name" style={{ 
+            pointerEvents: 'none',
+            fontWeight: '600',
+            fontSize: '1.1em',
+            marginBottom: '4px'
+          }}>{ex.name}</div>
+          {ex.subtype && <div className="exercise-subtype" style={{ 
+            pointerEvents: 'none',
+            color: 'var(--accent-blue)',
+            fontSize: '0.9em',
+            marginBottom: '4px'
+          }}>{ex.subtype}</div>}
+          <div className="exercise-muscles" style={{ 
+            pointerEvents: 'none',
+            color: 'var(--text-muted)',
+            fontSize: '0.85em'
+          }}>{ex.muscles}</div>
+        </div>
+      );
+    });
+
+    return list;
   }, [selectSearchQuery, exerciseDatabase, data.customExercises, exerciseSelectMode, data.currentWorkout]);
 
   const renderProgramWeeks = useMemo(() => {
@@ -657,40 +698,45 @@ const Modals = () => {
         </div>
       </div>
       
-      <div id="exercise-select-modal" className={`modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`}>
-        <div className="modal-content exercise-select-content" style={{ maxHeight: '90vh', overflowY: 'auto', padding: '20px' }}>
-          <h2>Select Exercise</h2>
-          <input
-            type="text"
-            className="search-bar"
-            id="exercise-search-select"
-            placeholder="Search exercises..."
-            value={selectSearchQuery}
-            onChange={(e) => setSelectSearchQuery(e.target.value)}
-            style={{ marginBottom: '15px', fontSize: '16px' }}
-          />
-          <div id="exercise-list-select" style={{ overflowY: 'auto', maxHeight: 'calc(90vh - 160px)' }}>
+      <div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`}>
+        <div className="modal-content exercise-select-content">
+          <div className="exercise-select-header">
+            <h2>Select Exercise</h2>
+          </div>
+          <div className="exercise-select-search">
+            <input
+              type="text"
+              className="search-bar"
+              id="exercise-search-select"
+              placeholder="Search exercises..."
+              value={selectSearchQuery}
+              onChange={(e) => setSelectSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="exercise-select-list" id="exercise-list-select">
             {renderExerciseSelectList}
           </div>
-          <button className="secondary" style={{ marginTop: '10px' }} onClick={() => {
-            setSelectSearchQuery('');
-            setExerciseSelectMode(null);
-            
-            if (exerciseSelectMode === 'workout') {
-              setData((prev: DataType) => ({ 
-                ...prev, 
-                activeModal: 'workout-modal',
-                isWorkoutSelect: false
-              }));
-            } else if (exerciseSelectMode === 'program') {
-              setData((prev: DataType) => ({ 
-                ...prev, 
-                activeModal: 'day-modal'
-              }));
-            } else {
-              closeModal();
-            }
-          }}>Cancel</button>
+          <div className="exercise-select-footer">
+            <button className="secondary" onClick={() => {
+              setSelectSearchQuery('');
+              setExerciseSelectMode(null);
+              
+              if (exerciseSelectMode === 'workout') {
+                setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'workout-modal',
+                  isWorkoutSelect: false
+                }));
+              } else if (exerciseSelectMode === 'program') {
+                setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'day-modal'
+                }));
+              } else {
+                closeModal();
+              }
+            }}>Cancel</button>
+          </div>
         </div>
       </div>
       

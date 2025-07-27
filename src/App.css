@@ -363,6 +363,89 @@ body {
 .modal.active {
     display: flex;
 }
+
+/* Exercise Select Modal - Bottom Sheet Style */
+.exercise-select-modal {
+    align-items: flex-end !important;
+}
+
+.exercise-select-modal .modal-content {
+    width: 100%;
+    max-width: 100%;
+    height: 60vh;
+    max-height: 60vh;
+    border-radius: 20px 20px 0 0;
+    background: var(--bg-dark);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.exercise-select-header {
+    padding: 20px 20px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-dark);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.exercise-select-header h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.exercise-select-search {
+    padding: 0 20px 20px;
+    background: var(--bg-dark);
+    position: sticky;
+    top: 60px;
+    z-index: 10;
+}
+
+.exercise-select-search .search-bar {
+    margin: 0;
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
+    font-size: 16px; /* Prevents zoom on iOS */
+}
+
+.exercise-select-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    overscroll-behavior: contain;
+}
+
+.exercise-select-list .exercise-item {
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.exercise-select-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-dark);
+    position: sticky;
+    bottom: 0;
+}
+
+.exercise-select-footer button {
+    width: 100%;
+}
+
+/* Touch target optimization */
+.exercise-select-list .exercise-item {
+    min-height: 72px;
+    padding: 16px;
+}
+
 #workout-modal {
     position: fixed;
     top: 0;
@@ -852,4 +935,19 @@ button.finish {
         opacity: 1;
         transform: scale(1);
     }
+}
+
+/* Responsive adjustments for smaller screens */
+@media screen and (max-height: 700px) {
+    .exercise-select-modal .modal-content {
+        height: 80vh;
+        max-height: 80vh;
+    }
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
 }
