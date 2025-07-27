@@ -147,7 +147,30 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const coverPhoto = localStorage.getItem('coverPhoto') || '';
       const completedPrograms = JSON.parse(localStorage.getItem('completedPrograms') || '{}');
       const customExercises = JSON.parse(localStorage.getItem('customExercises') || '[]');
-      setData(prev => ({ ...prev, templates, history, progressPics, profilePic, username, firstName, lastName, bio, email, country, state, coverPhoto, completedPrograms, customExercises }));
+      setData(prev => ({ 
+        ...prev, 
+        templates, 
+        history, 
+        progressPics, 
+        profilePic, 
+        username, 
+        firstName, 
+        lastName, 
+        bio, 
+        email, 
+        country, 
+        state, 
+        coverPhoto, 
+        completedPrograms, 
+        customExercises,
+        // Reset these state variables on load
+        currentWorkout: null,
+        isWorkoutSelect: false,
+        currentExerciseIdx: null,
+        activeModal: null,
+        returnModal: null,
+        currentDayExercises: []
+      }));
     }
   }, []);
 

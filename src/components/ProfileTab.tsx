@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useCallback } from 'react';
 import { DataContext } from '../DataContext';
 import type { DataType } from '../DataContext';
 
@@ -64,6 +64,10 @@ const ProfileTab = () => {
     setData((prev: DataType) => ({ ...prev, activeModal: 'edit-profile-modal' }));
   };
 
+  const openHistoryMenu = useCallback((index: number) => {
+    setData((prev: DataType) => ({ ...prev, currentHistoryIdx: index, activeModal: 'history-menu-modal' }));
+  }, [setData]);
+
   const sortedHistory = useMemo(() => [...data.history].sort((a: Workout, b: Workout) => b.startTime - a.startTime), [data.history]);
 
   const renderedHistory = useMemo(() => {
@@ -112,15 +116,11 @@ const ProfileTab = () => {
         </div>
       );
     });
-  }, [sortedHistory, expandedHistoryItems]);
-
-  const openHistoryMenu = (index: number) => {
-    setData((prev: DataType) => ({ ...prev, currentHistoryIdx: index, activeModal: 'history-menu-modal' }));
-  };
+  }, [sortedHistory, expandedHistoryItems, openHistoryMenu]);
 
   return (
     <div>
-      <div className="profile-header" id="profile-cover" style={{ backgroundImage: `url('${data.coverPhoto}')` }}>
+      <div className="profile-header" id="profile-cover" style={{ backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none' }}>
         <div className="profile-pic" style={{ backgroundImage: `url('${data.profilePic}')` }} onClick={editProfilePic}></div>
         <div className="profile-name" id="profile-fullname">{data.firstName} {data.lastName}</div>
         <div className="profile-username">@{data.username}</div>

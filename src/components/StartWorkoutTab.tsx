@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { DataContext } from '../DataContext';
 
 interface Program {
@@ -28,22 +28,43 @@ const StartWorkoutTab = () => {
       ...prev, 
       currentWorkout: newWorkout, 
       activeModal: 'workout-modal',
-      isWorkoutSelect: false 
+      isWorkoutSelect: false,
+      returnModal: null,
+      currentDayExercises: [],
+      currentDayIndex: null,
+      currentWeekIndex: null
     }));
   };
 
   const createProgram = () => {
     const newProgram = { weeks: [] };
-    setData(prev => ({ ...prev, currentProgram: newProgram, activeModal: 'program-modal' }));
+    setData(prev => ({ 
+      ...prev, 
+      currentProgram: newProgram, 
+      activeModal: 'program-modal',
+      isWorkoutSelect: false,
+      returnModal: null,
+      currentDayExercises: []
+    }));
   };
 
-  const showProgramWeeks = (program: Program | SimitProgram) => {
-    setData(prev => ({ ...prev, currentProgram: program, activeModal: 'program-weeks-modal' }));
-  };
+  const showProgramWeeks = useCallback((program: Program | SimitProgram) => {
+    setData(prev => ({ 
+      ...prev, 
+      currentProgram: program, 
+      activeModal: 'program-weeks-modal',
+      isWorkoutSelect: false,
+      returnModal: null
+    }));
+  }, [setData]);
 
-  const openProgramMenu = (index: number, programName: string) => {
-    setData(prev => ({ ...prev, currentProgName: programName, activeModal: 'program-menu-modal' }));
-  };
+  const openProgramMenu = useCallback((index: number, programName: string) => {
+    setData(prev => ({ 
+      ...prev, 
+      currentProgName: programName, 
+      activeModal: 'program-menu-modal' 
+    }));
+  }, [setData]);
 
   const renderedProgramsInProgress = useMemo(() => {
     const completedProgramNames = Object.keys(data.completedPrograms);
@@ -67,7 +88,7 @@ const StartWorkoutTab = () => {
         </div>
       );
     }).filter(Boolean);
-  }, [data.completedPrograms, data.templates, simitPrograms]);
+  }, [data.completedPrograms, data.templates, simitPrograms, showProgramWeeks]);
 
   const renderedTemplates = useMemo(() => {
     if (data.templates.length === 0) {
@@ -86,7 +107,7 @@ const StartWorkoutTab = () => {
         <span className="exercise-menu" onClick={() => openProgramMenu(index, program.name)}>⋯</span>
       </div>
     ));
-  }, [data.templates]);
+  }, [data.templates, showProgramWeeks, openProgramMenu]);
 
   const renderedSimitPrograms = useMemo(() => simitPrograms.map((program: SimitProgram, index: number) => (
     <div key={index} className="program-card" onClick={() => showProgramWeeks(program)}>
@@ -94,7 +115,7 @@ const StartWorkoutTab = () => {
       <div className="program-details">{program.weeks[0].days.length} days</div>
       <div className="program-date">{program.mesocycleLength} weeks</div>
     </div>
-  )), [simitPrograms]);
+  )), [simitPrograms, showProgramWeeks]);
 
   return (
     <div>

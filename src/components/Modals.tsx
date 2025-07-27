@@ -50,6 +50,7 @@ interface ExerciseFromDatabase {
 const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
   const activeModal = data.activeModal;
+  const [exerciseSelectMode, setExerciseSelectMode] = useState<'workout' | 'program' | null>(null);
 
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
   const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
@@ -136,7 +137,7 @@ const Modals = () => {
   };
 
   const addExerciseToDay = () => {
-    setData((prev: DataType) => ({ ...prev, isWorkoutSelect: false, returnModal: 'day-modal' }));
+    setExerciseSelectMode('program');
     openModal('exercise-select-modal');
   };
 
@@ -197,8 +198,16 @@ const Modals = () => {
   useEffect(() => {
     if (activeModal !== 'exercise-select-modal') {
       setSelectSearchQuery('');
+      setExerciseSelectMode(null);
     }
   }, [activeModal]);
+
+  // This is called from WorkoutModal when Add Exercise is clicked
+  useEffect(() => {
+    if (data.isWorkoutSelect && activeModal === 'exercise-select-modal') {
+      setExerciseSelectMode('workout');
+    }
+  }, [data.isWorkoutSelect, activeModal]);
 
   const selectExercise = (ex: Exercise | ExerciseFromDatabase) => {
     // Convert ExerciseFromDatabase to Exercise if needed
@@ -210,54 +219,42 @@ const Modals = () => {
     // Clear search
     setSelectSearchQuery('');
     
-    if (data.isWorkoutSelect) {
-      // We're adding to a workout - make sure we have a current workout
+    // Create the new exercise with sets
+    const newExercise = {
+      ...exercise,
+      sets: Array.from({ length: 3 }, () => ({
+        weight: '',
+        reps: '',
+        rpe: '',
+        completed: false,
+      })),
+    };
+    
+    if (exerciseSelectMode === 'workout') {
+      // Adding to workout
       if (!data.currentWorkout) {
         console.error('No current workout found');
         return;
       }
       
-      const newExercise = {
-        ...exercise,
-        sets: Array.from({ length: exercise.numSets || 3 }, () => ({
-          weight: '',
-          reps: '',
-          rpe: '',
-          completed: false,
-        })),
-      };
-      
-      // Update the workout with the new exercise
-      const updatedExercises = [...data.currentWorkout.exercises, newExercise];
-      
       setData((prev: DataType) => ({
         ...prev,
         currentWorkout: {
           ...prev.currentWorkout!,
-          exercises: updatedExercises
+          exercises: [...prev.currentWorkout!.exercises, newExercise]
         },
         activeModal: 'workout-modal',
         isWorkoutSelect: false
       }));
-    } else {
+      setExerciseSelectMode(null);
+    } else if (exerciseSelectMode === 'program') {
       // Adding to program day
-      const newExercises = [
-        ...data.currentDayExercises,
-        {
-          ...exercise,
-          sets: Array.from({ length: exercise.numSets || 3 }, () => ({
-            weight: '',
-            reps: '',
-            rpe: '',
-            completed: false,
-          })),
-        },
-      ];
       setData((prev: DataType) => ({
         ...prev,
-        currentDayExercises: newExercises,
-        activeModal: data.returnModal || null,
+        currentDayExercises: [...prev.currentDayExercises, newExercise],
+        activeModal: 'day-modal'
       }));
+      setExerciseSelectMode(null);
     }
   };
 
@@ -378,7 +375,8 @@ const Modals = () => {
   const renderDayExercises = useMemo(() => {
     return data.currentDayExercises.map((ex: Exercise, index: number) => (
       <div key={index} className="exercise-item">
-        {ex.name} ({ex.subtype || ''})
+        {ex.name} {ex.subtype ? `(${ex.subtype})` : ''}
+        <div className="exercise-muscles">{ex.muscles}</div>
       </div>
     ));
   }, [data.currentDayExercises]);
@@ -666,20 +664,21 @@ const Modals = () => {
           <div id="exercise-list-select">{renderExerciseSelectList}</div>
           <button className="secondary" onClick={() => {
             setSelectSearchQuery('');
-            if (data.isWorkoutSelect && data.currentWorkout) {
-              // If we're selecting for a workout, go back to workout modal
+            setExerciseSelectMode(null);
+            
+            if (exerciseSelectMode === 'workout') {
               setData((prev: DataType) => ({ 
                 ...prev, 
                 activeModal: 'workout-modal',
-                isWorkoutSelect: false 
+                isWorkoutSelect: false
               }));
-            } else {
-              // Otherwise, go back to return modal or close
+            } else if (exerciseSelectMode === 'program') {
               setData((prev: DataType) => ({ 
                 ...prev, 
-                activeModal: data.returnModal || null,
-                isWorkoutSelect: false 
+                activeModal: 'day-modal'
               }));
+            } else {
+              closeModal();
             }
           }}>Cancel</button>
         </div>

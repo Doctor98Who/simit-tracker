@@ -250,7 +250,8 @@ body {
 .profile-header {
     text-align: center;
     padding: 20px 0;
-    background: url('') no-repeat center cover;
+    background-size: cover;
+    background-position: center;
     background-color: var(--bg-light);
 }
 .profile-pic {

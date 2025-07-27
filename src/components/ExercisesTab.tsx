@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useCallback } from 'react';
 import { DataContext } from '../DataContext';
 
 interface Exercise {
@@ -14,6 +14,19 @@ interface Exercise {
 const ExercisesTab = () => {
   const { data, setData, exerciseDatabase } = useContext(DataContext);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const openCustomExerciseModal = () => {
+    setData(prev => ({ ...prev, activeModal: 'custom-exercise-modal' }));
+  };
+
+  const showExerciseDetail = useCallback((ex: Exercise) => {
+    setData(prev => ({ ...prev, currentExercise: { ...ex, sets: ex.sets || [] }, activeModal: 'exercise-detail-modal' }));
+  }, [setData]);
+
+  const openCustomMenu = useCallback((name: string, subtype: string, idx: number) => {
+    if (idx === -1) return;
+    setData(prev => ({ ...prev, currentCustomName: name, currentCustomSubtype: subtype, currentCustomIdx: idx, activeModal: 'custom-menu-modal' }));
+  }, [setData]);
 
   const renderedExercises = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -68,20 +81,7 @@ const ExercisesTab = () => {
     }
     
     return list;
-  }, [searchQuery, exerciseDatabase, data.customExercises]);
-
-  const openCustomExerciseModal = () => {
-    setData(prev => ({ ...prev, activeModal: 'custom-exercise-modal' }));
-  };
-
-  const showExerciseDetail = (ex: Exercise) => {
-    setData(prev => ({ ...prev, currentExercise: { ...ex, sets: ex.sets || [] }, activeModal: 'exercise-detail-modal' }));
-  };
-
-  const openCustomMenu = (name: string, subtype: string, idx: number) => {
-    if (idx === -1) return;
-    setData(prev => ({ ...prev, currentCustomName: name, currentCustomSubtype: subtype, currentCustomIdx: idx, activeModal: 'custom-menu-modal' }));
-  };
+  }, [searchQuery, exerciseDatabase, data.customExercises, showExerciseDetail, openCustomMenu]);
 
   return (
     <div>

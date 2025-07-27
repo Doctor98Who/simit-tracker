@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
 import { useDrag, useDrop, DragSourceMonitor } from 'react-dnd';
 import { DataContext } from '../DataContext';
 
@@ -17,13 +17,6 @@ interface Exercise {
   muscles?: string;
   sets: Set[];
   previousSets?: string[];
-}
-
-interface Workout {
-  name: string;
-  exercises: Exercise[];
-  startTime: number;
-  duration: number;
 }
 
 interface WorkoutExerciseItemProps {
@@ -226,14 +219,14 @@ const WorkoutModal: React.FC = () => {
 
 
 
-  const moveExercise = (dragIndex: number, hoverIndex: number) => {
+  const moveExercise = useCallback((dragIndex: number, hoverIndex: number) => {
     if (!currentWorkout) return;
     const draggedExercise = currentWorkout.exercises[dragIndex];
     const newExercises = [...currentWorkout.exercises];
     newExercises.splice(dragIndex, 1);
     newExercises.splice(hoverIndex, 0, draggedExercise);
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
-  };
+  }, [currentWorkout, setData]);
 
   const openExerciseMenu = (idx: number, element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
@@ -283,23 +276,23 @@ const WorkoutModal: React.FC = () => {
     }
   };
 
-  const updateSet = (exIdx: number, setIdx: number, field: keyof Set, value: any) => {
+  const updateSet = useCallback((exIdx: number, setIdx: number, field: keyof Set, value: any) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
     const newSets = [...newExercises[exIdx].sets];
     newSets[setIdx] = { ...newSets[setIdx], [field]: value };
     newExercises[exIdx] = { ...newExercises[exIdx], sets: newSets };
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
-  };
+  }, [currentWorkout, setData]);
 
-  const addSet = (exIdx: number) => {
+  const addSet = useCallback((exIdx: number) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
     newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '', completed: false }];
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
-  };
+  }, [currentWorkout, setData]);
 
-  const getPreviousSets = (ex: Exercise): string[] => {
+  const getPreviousSets = useCallback((ex: Exercise): string[] => {
     const previous: string[] = [];
     for (let i = data.history.length - 1; i >= 0; i--) {
       const workout = data.history[i];
@@ -310,7 +303,7 @@ const WorkoutModal: React.FC = () => {
       }
     }
     return Array(ex.sets.length).fill('-');
-  };
+  }, [data.history]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(duration / 60000);
@@ -331,17 +324,24 @@ const WorkoutModal: React.FC = () => {
         addSet={addSet}
       />
     ));
-  }, [currentWorkout, data.history]);
+  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet]);
 
   const cancelWorkout = () => {
     if (window.confirm("Are you sure you want to cancel this workout?")) {
-      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false }));
+      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false, returnModal: null }));
     }
   };
   
   const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
   const minimizeWorkout = () => setData(prev => ({ ...prev, activeModal: null }));
-  const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, returnModal: 'workout-modal', activeModal: 'exercise-select-modal' }));
+  const addExerciseToWorkout = () => {
+    setData(prev => ({ 
+      ...prev, 
+      isWorkoutSelect: true, 
+      returnModal: null,
+      activeModal: 'exercise-select-modal' 
+    }));
+  };
 
   if (!currentWorkout) return null;
 
