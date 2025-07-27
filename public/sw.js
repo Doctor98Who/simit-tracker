@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_VERSION = 'v0.0.13';
+const CACHE_VERSION = 'v0.0.14';
 const CACHE_NAME = 'simit-tracker-cache-' + CACHE_VERSION;
 const urlsToCache = [
     '/',
