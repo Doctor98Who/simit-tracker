@@ -26,6 +26,7 @@ interface WorkoutExerciseItemProps {
   openExerciseMenu: (idx: number, element: HTMLElement) => void;
   updateSet: (exIdx: number, setIdx: number, field: keyof Set, value: any) => void;
   addSet: (exIdx: number) => void;
+  isReordering: boolean;
 }
 
 interface DragItem {
@@ -39,11 +40,31 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   moveExercise, 
   openExerciseMenu, 
   updateSet, 
-  addSet
+  addSet,
+  isReordering
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [placeholderIndex, setPlaceholderIndex] = useState<number | null>(null);
+  const [isLongPress, setIsLongPress] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const { setData } = useContext(DataContext);
   
+  // Long press handling
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setIsLongPress(true);
+      // Trigger reordering mode in parent
+      setData(prev => ({ ...prev, isReordering: true }));
+    }, 500); // 500ms for long press
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+    setIsLongPress(false);
+  };
+
   const [{ handlerId, isOver }, drop] = useDrop<DragItem, void, { handlerId: string | symbol | null; isOver: boolean }>({
     accept: ItemType,
     collect(monitor) {
@@ -68,14 +89,12 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = (clientOffset as any).y - hoverBoundingRect.top;
 
-      // Determine placeholder position
       if (hoverClientY < hoverMiddleY && dragIndex !== hoverIndex - 1) {
         setPlaceholderIndex(hoverIndex);
       } else if (hoverClientY >= hoverMiddleY && dragIndex !== hoverIndex + 1) {
         setPlaceholderIndex(hoverIndex + 1);
       }
 
-      // Only perform the move when the mouse has crossed half of the item's height
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
       }
@@ -100,12 +119,11 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    canDrag: isReordering,
   });
 
-  // Use preview for the drag preview and drag for the drag handle
   preview(drop(ref));
 
-  // Clear placeholder when not hovering
   useEffect(() => {
     if (!isOver) {
       setPlaceholderIndex(null);
@@ -118,10 +136,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
 
   const dragHandleRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (dragHandleRef.current) {
+    if (dragHandleRef.current && isReordering) {
       drag(dragHandleRef.current);
     }
-  }, [drag]);
+  }, [drag, isReordering]);
 
   return (
     <>
@@ -137,20 +155,29 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       )}
       <div 
         ref={ref} 
-        className={`exercise-item ${isDragging ? 'dragging collapsed' : ''}`} 
+        className={`exercise-item ${isDragging ? 'dragging' : ''} ${isReordering ? 'collapsed' : ''} ${isLongPress ? 'long-press' : ''}`} 
         style={{ 
           opacity: isDragging ? 0.5 : 1,
           transition: isDragging ? 'none' : 'all 0.2s ease-out',
-          transform: isDragging ? 'scale(0.95)' : 'scale(1)',
+          transform: isDragging ? 'scale(1.05)' : isLongPress ? 'scale(1.02)' : 'scale(1)',
+          boxShadow: isLongPress ? '0 8px 24px rgba(0,0,0,0.4)' : undefined,
         }} 
         data-handler-id={handlerId}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseUp={handleTouchEnd}
       >
         <div className="exercise-name">
-          <div ref={dragHandleRef} style={{ cursor: isDragging ? 'grabbing' : 'grab', marginRight: '10px', display: 'inline-block' }}>☰</div>
+          {isReordering && (
+            <div ref={dragHandleRef} style={{ cursor: 'grab', marginRight: '10px', display: 'inline-block' }}>☰</div>
+          )}
           {ex.name} {ex.subtype && `(${ex.subtype})`}
-          <span className="exercise-menu" onClick={(e) => openExerciseMenu(idx, e.currentTarget)}>⋯</span>
+          {!isReordering && (
+            <span className="exercise-menu" onClick={(e) => openExerciseMenu(idx, e.currentTarget)}>⋯</span>
+          )}
         </div>
-        {!isDragging && (
+        {!isReordering && (
           <>
             <div className="set-table">
               <header>Set</header>
@@ -164,9 +191,27 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
               <div key={sIdx} className={`set-table ${s.completed ? 'completed-row' : ''}`}>
                 <div>{sIdx + 1}</div>
                 <div className="previous-set">{ex.previousSets?.[sIdx] || '-'}</div>
-                <input value={s.weight} onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)} />
-                <input value={s.reps} onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)} />
-                <input value={s.rpe} onChange={(e) => updateSet(idx, sIdx, 'rpe', e.target.value)} />
+                <input 
+                  value={s.weight} 
+                  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                <input 
+                  value={s.reps} 
+                  onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                <input 
+                  value={s.rpe} 
+                  onChange={(e) => updateSet(idx, sIdx, 'rpe', e.target.value)}
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
                 <div className={`log-square ${s.completed ? 'completed' : ''}`} onClick={() => toggleCompleted(sIdx)}>{s.completed ? '✔' : ''}</div>
               </div>
             ))}
@@ -194,6 +239,12 @@ const WorkoutModal: React.FC = () => {
   const [duration, setDuration] = useState<number>(0);
   const [inlineMenuPosition, setInlineMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [menuExerciseIdx, setMenuExerciseIdx] = useState<number | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [currentY, setCurrentY] = useState(0);
+  const [modalTransform, setModalTransform] = useState(0);
+  const isReordering = data.isReordering || false;
 
   useEffect(() => {
     if (currentWorkout) {
@@ -217,7 +268,45 @@ const WorkoutModal: React.FC = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Handle drag to minimize
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setStartY(clientY);
+    setCurrentY(clientY);
+    setIsDragging(true);
+  };
 
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging) return;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setCurrentY(clientY);
+    const deltaY = clientY - startY;
+    
+    // Only allow downward drag
+    if (deltaY > 0) {
+      setModalTransform(deltaY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    
+    const deltaY = currentY - startY;
+    
+    // If dragged more than 100px, minimize
+    if (deltaY > 100) {
+      setData(prev => ({ ...prev, activeModal: null }));
+    }
+    
+    // Reset transform
+    setModalTransform(0);
+  };
+
+  // Stop reordering when clicking Done
+  const stopReordering = () => {
+    setData(prev => ({ ...prev, isReordering: false }));
+  };
 
   const moveExercise = useCallback((dragIndex: number, hoverIndex: number) => {
     if (!currentWorkout) return;
@@ -236,7 +325,7 @@ const WorkoutModal: React.FC = () => {
     if (modalRect) {
       setInlineMenuPosition({
         top: rect.top - modalRect.top + rect.height,
-        left: rect.left - modalRect.left - 150, // Position to the left of the dots
+        left: rect.left - modalRect.left - 150,
       });
       setMenuExerciseIdx(idx);
     }
@@ -322,31 +411,45 @@ const WorkoutModal: React.FC = () => {
         openExerciseMenu={openExerciseMenu}
         updateSet={updateSet}
         addSet={addSet}
+        isReordering={isReordering}
       />
     ));
-  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet]);
+  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet, isReordering]);
 
   const cancelWorkout = () => {
     if (window.confirm("Are you sure you want to cancel this workout?")) {
-      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false, returnModal: null }));
+      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false, returnModal: null, isReordering: false }));
     }
   };
   
-  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
-  const minimizeWorkout = () => setData(prev => ({ ...prev, activeModal: null }));
-  const addExerciseToWorkout = () => {
-    setData(prev => ({ 
-      ...prev, 
-      isWorkoutSelect: true, 
-      returnModal: null,
-      activeModal: 'exercise-select-modal' 
-    }));
-  };
+  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal', isReordering: false }));
+  const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
 
   if (!currentWorkout) return null;
 
   return (
-    <div className="modal-content" style={{ position: 'relative' }}>
+    <div 
+      className="modal-content workout-modal-content" 
+      ref={modalRef}
+      style={{ 
+        position: 'relative',
+        transform: `translateY(${modalTransform}px)`,
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+      }}
+    >
+      <div 
+        className="drag-handle"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseMove={handleTouchMove}
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
+      >
+        <div className="drag-indicator"></div>
+      </div>
+      
       <div className="workout-header">
         <span className="back-button" onClick={cancelWorkout}>←</span>
         <input
@@ -355,21 +458,31 @@ const WorkoutModal: React.FC = () => {
           value={currentWorkout?.name || ''}
           onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
         />
-        <button className="finish" onClick={finishWorkout}>Finish</button>
-        <span className="minimize-button" onClick={minimizeWorkout}>▼</span>
+        {isReordering ? (
+          <button className="done" onClick={stopReordering}>Done</button>
+        ) : (
+          <button className="finish" onClick={finishWorkout}>Finish</button>
+        )}
       </div>
+      
       <div className="workout-info">
         <div className="workout-date">📅 {new Date().toLocaleDateString()}</div>
         <div className="workout-timer">⏱ {formattedTime}</div>
       </div>
+      
       <div id="workout-exercises" style={{ transition: 'all 0.2s ease-out' }}>
         {renderedExercises}
       </div>
-      <button className="add-exercise" onClick={addExerciseToWorkout}>Add Exercise</button>
-      <button className="cancel-workout" onClick={cancelWorkout}>Cancel Workout</button>
+      
+      {!isReordering && (
+        <>
+          <button className="add-exercise" onClick={addExerciseToWorkout}>Add Exercise</button>
+          <button className="cancel-workout" onClick={cancelWorkout}>Cancel Workout</button>
+        </>
+      )}
       
       {/* Inline Exercise Menu */}
-      {inlineMenuPosition && (
+      {inlineMenuPosition && !isReordering && (
         <div 
           className="inline-exercise-menu" 
           style={{

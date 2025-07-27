@@ -658,20 +658,21 @@ const Modals = () => {
       </div>
       
       <div id="exercise-select-modal" className={`modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        <div className="modal-content exercise-select-content" style={{ maxHeight: '90vh', overflowY: 'auto', padding: '20px' }}>
           <h2>Select Exercise</h2>
           <input
             type="text"
+            className="search-bar"
             id="exercise-search-select"
             placeholder="Search exercises..."
             value={selectSearchQuery}
             onChange={(e) => setSelectSearchQuery(e.target.value)}
-            style={{ marginBottom: '15px' }}
+            style={{ marginBottom: '15px', fontSize: '16px' }}
           />
-          <div id="exercise-list-select" style={{ overflowY: 'auto', maxHeight: 'calc(80vh - 150px)' }}>
+          <div id="exercise-list-select" style={{ overflowY: 'auto', maxHeight: 'calc(90vh - 160px)' }}>
             {renderExerciseSelectList}
           </div>
-          <button className="secondary" onClick={() => {
+          <button className="secondary" style={{ marginTop: '10px' }} onClick={() => {
             setSelectSearchQuery('');
             setExerciseSelectMode(null);
             
@@ -698,13 +699,43 @@ const Modals = () => {
       </div>
       
       <div id="minimized-workout" 
-        className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`} 
-        onClick={() => {
-          if (data.currentWorkout) {
-            setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
-          }
+        className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`}
+        onTouchStart={(e) => {
+          const startY = e.touches[0].clientY;
+          const handleTouchMove = (e: TouchEvent) => {
+            const currentY = e.touches[0].clientY;
+            if (startY - currentY > 50) { // Dragged up more than 50px
+              setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
+              document.removeEventListener('touchmove', handleTouchMove);
+              document.removeEventListener('touchend', handleTouchEnd);
+            }
+          };
+          const handleTouchEnd = () => {
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+          };
+          document.addEventListener('touchmove', handleTouchMove);
+          document.addEventListener('touchend', handleTouchEnd);
+        }}
+        onMouseDown={(e) => {
+          const startY = e.clientY;
+          const handleMouseMove = (e: MouseEvent) => {
+            const currentY = e.clientY;
+            if (startY - currentY > 50) { // Dragged up more than 50px
+              setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+            }
+          };
+          const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+          };
+          document.addEventListener('mousemove', handleMouseMove);
+          document.addEventListener('mouseup', handleMouseUp);
         }}>
-        <div>Workout in Progress - Tap to Resume</div>
+        <div className="drag-indicator" style={{ margin: '0 auto 8px', width: '40px', height: '4px', background: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}></div>
+        <div>Workout in Progress - Swipe Up to Resume</div>
       </div>
       
       <div id="exercise-menu-modal" className={`modal ${activeModal === 'exercise-menu-modal' ? 'active' : ''}`}>
