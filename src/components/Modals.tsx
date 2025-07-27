@@ -201,13 +201,16 @@ const Modals = () => {
   }, [activeModal]);
 
   const selectExercise = (ex: Exercise | ExerciseFromDatabase) => {
+    // Store current workout before any state changes
+    const currentWorkoutCopy = data.currentWorkout;
+    
     // Convert ExerciseFromDatabase to Exercise if needed
     const exercise: Exercise = 'sets' in ex ? ex : {
       ...ex,
       sets: []
     };
     
-    if (data.isWorkoutSelect && data.currentWorkout) {
+    if (data.isWorkoutSelect && currentWorkoutCopy) {
       const newExercise = {
         ...exercise,
         sets: Array.from({ length: exercise.numSets || 3 }, () => ({
@@ -218,15 +221,13 @@ const Modals = () => {
         })),
       };
       
-      const updatedWorkout = {
-        ...data.currentWorkout,
-        exercises: [...data.currentWorkout.exercises, newExercise]
-      };
-      
-      // Update everything in one go
+      // Update state with the new exercise added to workout
       setData((prev: DataType) => ({
         ...prev,
-        currentWorkout: updatedWorkout,
+        currentWorkout: {
+          ...currentWorkoutCopy,
+          exercises: [...currentWorkoutCopy.exercises, newExercise]
+        },
         activeModal: 'workout-modal',
         isWorkoutSelect: false,
         returnModal: null
@@ -234,8 +235,11 @@ const Modals = () => {
       
       // Clear search query
       setSelectSearchQuery('');
-    } else if (!data.isWorkoutSelect) {
-      // Handle program day exercise selection
+      return; // Exit early to prevent any other code from running
+    }
+    
+    // Handle program day exercise selection
+    if (!data.isWorkoutSelect) {
       const newExercises = [
         ...data.currentDayExercises,
         {
@@ -572,6 +576,8 @@ const Modals = () => {
         history: [...prev.history, finishedWorkout],
         currentWorkout: null,
         activeModal: null,
+        isWorkoutSelect: false,
+        returnModal: null
       }));
     }
   };
@@ -660,11 +666,21 @@ const Modals = () => {
           <div id="exercise-list-select">{renderExerciseSelectList}</div>
           <button className="secondary" onClick={() => {
             setSelectSearchQuery('');
-            setData((prev: DataType) => ({ 
-              ...prev, 
-              activeModal: data.isWorkoutSelect ? 'workout-modal' : (data.returnModal || null),
-              isWorkoutSelect: false 
-            }));
+            if (data.isWorkoutSelect && data.currentWorkout) {
+              // If we're selecting for a workout, go back to workout modal
+              setData((prev: DataType) => ({ 
+                ...prev, 
+                activeModal: 'workout-modal',
+                isWorkoutSelect: false 
+              }));
+            } else {
+              // Otherwise, go back to return modal or close
+              setData((prev: DataType) => ({ 
+                ...prev, 
+                activeModal: data.returnModal || null,
+                isWorkoutSelect: false 
+              }));
+            }
           }}>Cancel</button>
         </div>
       </div>
