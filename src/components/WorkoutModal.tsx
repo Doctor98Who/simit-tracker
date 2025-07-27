@@ -379,22 +379,22 @@ const WorkoutModal: React.FC = () => {
 
   // Prevent background scrolling when modal is open
   useEffect(() => {
-    if (data.activeModal === 'workout-modal') {
+    if (data.activeModal === 'workout-modal' && currentWorkout) {
+      const scrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
-      document.body.style.top = `-${window.scrollY}px`;
+      document.body.style.top = `-${scrollY}px`;
       
       return () => {
-        const scrollY = document.body.style.top;
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
         document.body.style.top = '';
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        window.scrollTo(0, scrollY);
       };
     }
-  }, [data.activeModal]);
+  }, [data.activeModal, currentWorkout]);
 
   // Handle drag start/end
   const handleDragStart = useCallback(() => {

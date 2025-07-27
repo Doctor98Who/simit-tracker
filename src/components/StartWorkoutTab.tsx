@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useCallback } from 'react';
+import React, { useContext, useMemo, useCallback, useEffect } from 'react';
 import { DataContext } from '../DataContext';
 
 interface Program {
@@ -16,6 +16,20 @@ interface SimitProgram {
 
 const StartWorkoutTab = () => {
   const { data, setData, simitPrograms } = useContext(DataContext);
+
+  // Clean up any lingering modal states on mount
+  useEffect(() => {
+    // Reset body styles in case they were left from previous session
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.top = '';
+    
+    // Clear any active modal if there's no workout
+    if (!data.currentWorkout && data.activeModal === 'workout-modal') {
+      setData(prev => ({ ...prev, activeModal: null }));
+    }
+  }, []);
 
   const startEmptyWorkout = () => {
     const newWorkout = { 

@@ -370,7 +370,7 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,0.8);
-    display: flex;
+    display: none; /* This must be here */
     justify-content: center;
     align-items: flex-end;
     z-index: 1000;
