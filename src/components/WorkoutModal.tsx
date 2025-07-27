@@ -117,6 +117,7 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             fontSize: '1.2em',
             cursor: 'pointer',
             padding: '4px',
+            minHeight: 'auto',
           }}
         >
           ×
@@ -138,6 +139,7 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 fontSize: '0.9em',
                 fontWeight: '600',
                 cursor: 'pointer',
+                minHeight: '44px',
               }}
             >
               {option.label}
@@ -238,6 +240,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       isDragging: monitor.isDragging(),
     }),
     canDrag: isHolding,
+    end: () => {
+      setIsHolding(false);
+      onDragEnd();
+    },
   });
 
   // Enable drag when holding
@@ -257,9 +263,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     } else if (!isDragging && localIsDragging) {
       setLocalIsDragging(false);
       setIsHolding(false);
-      onDragEnd();
     }
-  }, [isDragging, localIsDragging, onDragStart, onDragEnd]);
+  }, [isDragging, localIsDragging, onDragStart]);
 
   // Handle long press with movement threshold
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
@@ -307,7 +312,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   };
 
   // Collapsed state when any exercise is being dragged
-  const isCollapsed = isGlobalDragging;
+  const isCollapsed = isGlobalDragging && !isDragging;
 
   return (
     <div 
@@ -317,8 +322,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         opacity: isDragging ? 0.3 : 1,
         transform: isDragging ? 'scale(1.02)' : isHolding ? 'scale(0.98)' : 'scale(1)',
         boxShadow: isDragging ? '0 8px 20px rgba(59, 130, 246, 0.3)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
-        transition: 'all 0.2s ease',
-        height: isCollapsed && !isDragging ? '44px' : 'auto',
+        height: isCollapsed ? '44px' : 'auto',
         overflow: 'hidden',
         background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.02)',
         border: isDragging ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
@@ -379,14 +383,15 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         <div style={{ padding: '0 12px 10px' }}>
           <div className="set-table-header" style={{ 
             display: 'grid',
-            gridTemplateColumns: '28px 60px 48px 48px 32px 24px',
-            gap: '4px',
-            marginBottom: '6px',
-            fontSize: '0.6em',
+            gridTemplateColumns: '32px 1fr 60px 60px 40px 28px',
+            gap: '8px',
+            marginBottom: '8px',
+            fontSize: '0.65em',
             color: 'rgba(255, 255, 255, 0.3)',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
             fontWeight: '500',
+            alignItems: 'center',
           }}>
             <div>Set</div>
             <div style={{ textAlign: 'center' }}>Previous</div>
@@ -399,9 +404,9 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             return (
               <div key={sIdx} className={`set-row ${s.completed ? 'completed-row' : ''}`} style={{
                 display: 'grid',
-                gridTemplateColumns: '28px 60px 48px 48px 32px 24px',
-                gap: '4px',
-                marginBottom: '4px',
+                gridTemplateColumns: '32px 1fr 60px 60px 40px 28px',
+                gap: '8px',
+                marginBottom: '6px',
                 alignItems: 'center',
                 borderRadius: '6px',
                 background: s.completed ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
@@ -410,14 +415,14 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 <div style={{ 
                   fontWeight: '600',
                   color: s.completed ? '#22C55E' : 'rgba(255,255,255,0.6)',
-                  fontSize: '0.7em',
+                  fontSize: '0.75em',
                   paddingLeft: '2px',
                 }}>
                   {sIdx + 1}
                 </div>
                 <div style={{ 
                   textAlign: 'center',
-                  fontSize: '0.65em', 
+                  fontSize: '0.7em', 
                   color: 'rgba(255, 255, 255, 0.3)',
                 }}>
                   {ex.previousSets?.[sIdx] || '—'}
@@ -433,11 +438,11 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.75em',
+                    fontSize: '0.8em',
                     fontWeight: '500',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '4px 2px',
-                    height: '26px',
+                    padding: '6px 4px',
+                    height: '32px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -453,11 +458,11 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.75em',
+                    fontSize: '0.8em',
                     fontWeight: '500',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '4px 2px',
-                    height: '26px',
+                    padding: '6px 4px',
+                    height: '32px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -474,10 +479,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '4px',
                     textAlign: 'center',
-                    fontSize: '0.7em',
+                    fontSize: '0.75em',
                     color: s.completed ? '#22C55E' : 'white',
-                    padding: '4px 2px',
-                    height: '26px',
+                    padding: '6px 2px',
+                    height: '32px',
                     WebkitAppearance: 'none',
                     MozAppearance: 'textfield',
                   }}
@@ -486,8 +491,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   className={`log-square ${s.completed ? 'completed' : ''}`} 
                   onClick={() => toggleCompleted(sIdx)}
                   style={{
-                    width: '20px',
-                    height: '20px',
+                    width: '24px',
+                    height: '24px',
                     margin: '0 auto',
                     borderRadius: '4px',
                     border: s.completed ? 'none' : '1.5px solid rgba(255, 255, 255, 0.2)',
@@ -496,7 +501,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    fontSize: '10px',
+                    fontSize: '12px',
                     color: 'white',
                     fontWeight: 'bold',
                     transition: 'all 0.15s ease',
@@ -562,15 +567,11 @@ const WorkoutModal: React.FC = () => {
   useEffect(() => {
     if (data.activeModal === 'workout-modal' && currentWorkout) {
       const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
+      document.body.classList.add('modal-open');
       document.body.style.top = `-${scrollY}px`;
       
       return () => {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.width = '';
+        document.body.classList.remove('modal-open');
         document.body.style.top = '';
         window.scrollTo(0, scrollY);
       };
@@ -588,9 +589,10 @@ const WorkoutModal: React.FC = () => {
   const handleDragEnd = useCallback(() => {
     dragCounter.current -= 1;
     if (dragCounter.current === 0) {
+      // Delay to allow for smooth animation
       setTimeout(() => {
         setIsGlobalDragging(false);
-      }, 100);
+      }, 300);
     }
   }, []);
 
@@ -820,27 +822,27 @@ const WorkoutModal: React.FC = () => {
             marginBottom: '14px',
             gap: '8px',
           }}>
-            <button 
-              className="back-button" 
-              onClick={cancelWorkout}
+            <div 
+              className="timer-button" 
+              onClick={() => setShowRestTimer(true)}
               style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 padding: '6px',
                 borderRadius: '50%',
                 background: 'rgba(255,255,255,0.05)',
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 border: 'none',
                 color: 'white',
-                minWidth: '32px',
+                minWidth: '36px',
               }}
             >
-              ←
-            </button>
+              ⏱
+            </div>
             <input
               type="text"
               id="workout-name-input"
@@ -878,19 +880,13 @@ const WorkoutModal: React.FC = () => {
           
           <div className="workout-info" style={{
             display: 'flex',
-            gap: '12px',
+            gap: '16px',
             marginBottom: '16px',
-            fontSize: '0.75em',
-            color: 'rgba(255,255,255,0.4)',
+            fontSize: '0.9em',
+            color: 'rgba(255,255,255,0.5)',
           }}>
             <div className="workout-date">📅 {new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</div>
-            <div 
-              className="workout-timer" 
-              onClick={() => setShowRestTimer(true)}
-              style={{ cursor: 'pointer' }}
-            >
-              ⏱ {formattedTime}
-            </div>
+            <div className="workout-timer">⏱ {formattedTime}</div>
           </div>
           
           <div id="workout-exercises">

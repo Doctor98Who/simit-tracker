@@ -72,10 +72,12 @@ body {
     line-height: 1.4;
     -webkit-user-select: auto;
     user-select: auto;
-    min-height: calc(100% + env(safe-area-inset-top));
+    min-height: 100vh;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 .app-container {
     max-width: 428px;
@@ -579,6 +581,8 @@ button {
     user-select: none;
     -webkit-user-select: none;
     min-height: 44px;
+    position: relative;
+    z-index: 1;
 }
 
 button:active {
@@ -676,13 +680,13 @@ input#workout-name-input {
 }
 .workout-timer {
     color: var(--text-muted);
-    font-size: 0.8em;
-    margin-bottom: 5px;
+    font-size: 0.85em;
+    cursor: pointer;
+    padding: 5px;
 }
 .workout-date {
     color: var(--text-muted);
-    font-size: 0.8em;
-    margin-bottom: 5px;
+    font-size: 0.85em;
 }
 .workout-info {
     background: transparent;
@@ -706,7 +710,7 @@ input#workout-name-input {
     -webkit-overflow-scrolling: touch;
 }
 
-/* Fix for iOS bounce effect */
+/* Fix for iOS bounce effect - Only when modal is open */
 body.modal-open {
     position: fixed;
     width: 100%;
@@ -821,7 +825,7 @@ button.finish {
     cursor: grab;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: relative;
-    transition: all 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, height 0.3s ease;
 }
 #workout-modal .exercise-item.dragging {
     opacity: 0.3;
@@ -983,13 +987,6 @@ button.finish {
     }
 }
 
-/* Prevent body scroll when modal is open */
-body.modal-open {
-    position: fixed;
-    width: 100%;
-    overflow: hidden;
-}
-
 /* Mobile-specific optimizations */
 @media (max-width: 428px) {
     .app-container {
@@ -1038,11 +1035,24 @@ body.modal-open {
 }
 
 #workout-modal .set-table-header {
-    font-size: 0.6em !important;
+    font-size: 0.65em !important;
 }
 
 #workout-modal .exercise-name {
     font-size: 0.9em !important;
+}
+
+/* Weight prompt modal specific fix for save button */
+#weight-prompt-modal .modal-content {
+    z-index: 1200;
+    position: relative;
+}
+
+#weight-prompt-modal button {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 /* Prevent iOS zoom on double tap */
@@ -1060,4 +1070,13 @@ button,
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     will-change: scroll-position;
+}
+
+/* Smooth reordering animation */
+#workout-exercises {
+    position: relative;
+}
+
+#workout-modal .exercise-item {
+    will-change: transform;
 }

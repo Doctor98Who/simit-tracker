@@ -945,10 +945,21 @@ const Modals = () => {
       </div>
       
       <div id="weight-prompt-modal" className={`modal ${activeModal === 'weight-prompt-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
+        <div className="modal-content" style={{ zIndex: 1200, position: 'relative' }}>
           <h2>Enter Your Weight</h2>
-          <input type="number" id="progress-weight" placeholder="Weight (lbs)" />
-          <button onClick={saveProgressPic}>Save</button>
+          <input type="number" id="progress-weight" placeholder="Weight (lbs)" style={{ fontSize: '16px' }} />
+          <button 
+            onClick={saveProgressPic} 
+            style={{ 
+              position: 'relative', 
+              zIndex: 10, 
+              pointerEvents: 'auto',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
+          >
+            Save
+          </button>
           <button className="secondary" onClick={closeModal}>Cancel</button>
         </div>
       </div>
