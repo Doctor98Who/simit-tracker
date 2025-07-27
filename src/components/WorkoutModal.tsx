@@ -26,7 +26,7 @@ interface WorkoutExerciseItemProps {
   openExerciseMenu: (idx: number, element: HTMLElement) => void;
   updateSet: (exIdx: number, setIdx: number, field: keyof Set, value: any) => void;
   addSet: (exIdx: number) => void;
-  isReordering: boolean;
+  isGlobalDragging: boolean;
 }
 
 interface DragItem {
@@ -41,30 +41,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   openExerciseMenu, 
   updateSet, 
   addSet,
-  isReordering
+  isGlobalDragging
 }) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [placeholderIndex, setPlaceholderIndex] = useState<number | null>(null);
-  const [isLongPress, setIsLongPress] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const { setData } = useContext(DataContext);
+  const [localIsDragging, setLocalIsDragging] = useState(false);
   
-  // Long press handling
-  const handleTouchStart = () => {
-    longPressTimer.current = setTimeout(() => {
-      setIsLongPress(true);
-      // Trigger reordering mode in parent
-      setData(prev => ({ ...prev, isReordering: true }));
-    }, 500); // 500ms for long press
-  };
-
-  const handleTouchEnd = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-    }
-    setIsLongPress(false);
-  };
-
   const [{ handlerId, isOver }, drop] = useDrop<DragItem, void, { handlerId: string | symbol | null; isOver: boolean }>({
     accept: ItemType,
     collect(monitor) {
@@ -89,12 +72,6 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = (clientOffset as any).y - hoverBoundingRect.top;
 
-      if (hoverClientY < hoverMiddleY && dragIndex !== hoverIndex - 1) {
-        setPlaceholderIndex(hoverIndex);
-      } else if (hoverClientY >= hoverMiddleY && dragIndex !== hoverIndex + 1) {
-        setPlaceholderIndex(hoverIndex + 1);
-      }
-
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
       }
@@ -106,97 +83,109 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       moveExercise(dragIndex, hoverIndex);
       item.index = hoverIndex;
     },
-    drop() {
-      setPlaceholderIndex(null);
-    },
   });
 
   const [{ isDragging }, drag, preview] = useDrag({
     type: ItemType,
     item: () => {
+      setLocalIsDragging(true);
       return { index: idx };
     },
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    canDrag: isReordering,
+    end: () => {
+      setLocalIsDragging(false);
+    },
   });
 
   preview(drop(ref));
 
+  // Apply drag to entire element
   useEffect(() => {
-    if (!isOver) {
-      setPlaceholderIndex(null);
+    if (ref.current) {
+      drag(ref.current);
     }
-  }, [isOver]);
+  }, [drag]);
 
   const toggleCompleted = (setIdx: number) => {
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
 
-  const dragHandleRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (dragHandleRef.current && isReordering) {
-      drag(dragHandleRef.current);
-    }
-  }, [drag, isReordering]);
+  // Determine if this item should be minimized
+  const isMinimized = isGlobalDragging || isHolding;
+
+  // Orange "W" indicators for warm-up sets
+  const warmupSets = ex.sets.filter(s => parseFloat(s.weight) < parseFloat(ex.sets.find(set => parseFloat(set.weight) > 0)?.weight || '0') * 0.9).length;
 
   return (
-    <>
-      {placeholderIndex === idx && isDragging && (
-        <div style={{ 
-          height: '60px', 
-          background: 'var(--accent-primary)', 
-          opacity: 0.2,
-          borderRadius: '8px',
-          marginBottom: '8px',
-          transition: 'all 0.2s ease-out'
-        }} />
-      )}
-      <div 
-        ref={ref} 
-        className={`exercise-item ${isDragging ? 'dragging' : ''} ${isReordering ? 'collapsed' : ''} ${isLongPress ? 'long-press' : ''}`} 
-        style={{ 
-          opacity: isDragging ? 0.5 : 1,
-          transition: isDragging ? 'none' : 'all 0.2s ease-out',
-          transform: isDragging ? 'scale(1.05)' : isLongPress ? 'scale(1.02)' : 'scale(1)',
-          boxShadow: isLongPress ? '0 8px 24px rgba(0,0,0,0.4)' : undefined,
-        }} 
-        data-handler-id={handlerId}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleTouchStart}
-        onMouseUp={handleTouchEnd}
-      >
-        <div className="exercise-name">
-          {isReordering && (
-            <div ref={dragHandleRef} style={{ cursor: 'grab', marginRight: '10px', display: 'inline-block' }}>☰</div>
-          )}
-          {ex.name} {ex.subtype && `(${ex.subtype})`}
-          {!isReordering && (
-            <span className="exercise-menu" onClick={(e) => openExerciseMenu(idx, e.currentTarget)}>⋯</span>
-          )}
+    <div 
+      ref={ref} 
+      className={`exercise-item ${isDragging ? 'dragging' : ''} ${isMinimized ? 'collapsed' : ''}`} 
+      style={{ 
+        opacity: isDragging ? 0.5 : 1,
+        transition: 'all 0.15s ease-out',
+        transform: isDragging ? 'scale(1.02)' : 'scale(1)',
+        boxShadow: isDragging ? '0 8px 24px rgba(59, 130, 246, 0.3)' : undefined,
+        cursor: isGlobalDragging ? 'grab' : 'default',
+        height: isMinimized ? '50px' : 'auto',
+        overflow: 'hidden',
+        padding: isMinimized ? '12px 15px' : '12px',
+      }} 
+      data-handler-id={handlerId}
+    >
+      <div className="exercise-name" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        height: isMinimized ? '26px' : 'auto',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {ex.name} {ex.subtype && <span style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>({ex.subtype})</span>}
         </div>
-        {!isReordering && (
-          <>
-            <div className="set-table">
-              <header>Set</header>
-              <header>Previous</header>
-              <header>lbs</header>
-              <header>Reps</header>
-              <header>RPE</header>
-              <header></header>
-            </div>
-            {ex.sets.map((s, sIdx) => (
+        {!isMinimized && (
+          <span className="exercise-menu" onClick={(e) => openExerciseMenu(idx, e.currentTarget)}>⋯</span>
+        )}
+      </div>
+      {!isMinimized && (
+        <>
+          <div className="set-table" style={{ marginTop: '12px' }}>
+            <header>Set</header>
+            <header>Previous</header>
+            <header>lbs</header>
+            <header>Reps</header>
+            <header style={{ fontSize: '0.8em' }}>RPE</header>
+            <header></header>
+          </div>
+          {ex.sets.map((s, sIdx) => {
+            const isWarmup = sIdx < warmupSets;
+            return (
               <div key={sIdx} className={`set-table ${s.completed ? 'completed-row' : ''}`}>
-                <div>{sIdx + 1}</div>
-                <div className="previous-set">{ex.previousSets?.[sIdx] || '-'}</div>
+                <div style={{ 
+                  fontWeight: '600',
+                  color: isWarmup ? '#FF9500' : 'var(--text)',
+                  fontSize: isWarmup ? '1.1em' : '1em',
+                }}>
+                  {isWarmup ? 'W' : sIdx + 1}
+                </div>
+                <div className="previous-set" style={{ fontSize: '0.85em', opacity: 0.7 }}>
+                  {ex.previousSets?.[sIdx] || '—'}
+                </div>
                 <input 
                   value={s.weight} 
                   onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
                   type="number"
                   inputMode="numeric"
                   pattern="[0-9]*"
+                  placeholder="0"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    fontSize: '1em',
+                    fontWeight: '500',
+                  }}
                 />
                 <input 
                   value={s.reps} 
@@ -204,6 +193,15 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   type="number"
                   inputMode="numeric"
                   pattern="[0-9]*"
+                  placeholder="0"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    fontSize: '1em',
+                    fontWeight: '500',
+                  }}
                 />
                 <input 
                   value={s.rpe} 
@@ -211,25 +209,51 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   type="number"
                   inputMode="numeric"
                   pattern="[0-9]*"
+                  placeholder="0"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    fontSize: '0.9em',
+                  }}
                 />
-                <div className={`log-square ${s.completed ? 'completed' : ''}`} onClick={() => toggleCompleted(sIdx)}>{s.completed ? '✔' : ''}</div>
+                <div 
+                  className={`log-square ${s.completed ? 'completed' : ''}`} 
+                  onClick={() => toggleCompleted(sIdx)}
+                  style={{
+                    width: '28px',
+                    height: '28px',
+                    lineHeight: '28px',
+                    fontSize: '1.1em',
+                    border: s.completed ? 'none' : '2px solid rgba(255, 255, 255, 0.2)',
+                  }}
+                >
+                  {s.completed ? '✓' : ''}
+                </div>
               </div>
-            ))}
-            <button className="add" onClick={() => addSet(idx)}>Add Set</button>
-          </>
-        )}
-      </div>
-      {placeholderIndex === idx + 1 && isDragging && idx === (ref.current?.parentElement?.children.length ?? 0) - 1 && (
-        <div style={{ 
-          height: '60px', 
-          background: 'var(--accent-primary)', 
-          opacity: 0.2,
-          borderRadius: '8px',
-          marginTop: '8px',
-          transition: 'all 0.2s ease-out'
-        }} />
+            );
+          })}
+          <button 
+            className="add" 
+            onClick={() => addSet(idx)}
+            style={{
+              marginTop: '12px',
+              background: 'transparent',
+              border: '1px dashed rgba(255, 255, 255, 0.3)',
+              color: 'var(--text-muted)',
+              padding: '8px',
+              borderRadius: '8px',
+              fontSize: '0.9em',
+              fontWeight: '400',
+              width: '100%',
+            }}
+          >
+            + Add Set
+          </button>
+        </>
       )}
-    </>
+    </div>
   );
 };
 
@@ -244,7 +268,7 @@ const WorkoutModal: React.FC = () => {
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const [modalTransform, setModalTransform] = useState(0);
-  const isReordering = data.isReordering || false;
+  const [isGlobalDragging, setIsGlobalDragging] = useState(false);
 
   useEffect(() => {
     if (currentWorkout) {
@@ -254,6 +278,22 @@ const WorkoutModal: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [currentWorkout]);
+
+  // Monitor global drag state
+  useEffect(() => {
+    const handleDragStart = () => setIsGlobalDragging(true);
+    const handleDragEnd = () => setIsGlobalDragging(false);
+    
+    document.addEventListener('dragstart', handleDragStart);
+    document.addEventListener('dragend', handleDragEnd);
+    document.addEventListener('drop', handleDragEnd);
+    
+    return () => {
+      document.removeEventListener('dragstart', handleDragStart);
+      document.removeEventListener('dragend', handleDragEnd);
+      document.removeEventListener('drop', handleDragEnd);
+    };
+  }, []);
 
   // Close inline menu when clicking outside
   useEffect(() => {
@@ -301,11 +341,6 @@ const WorkoutModal: React.FC = () => {
     
     // Reset transform
     setModalTransform(0);
-  };
-
-  // Stop reordering when clicking Done
-  const stopReordering = () => {
-    setData(prev => ({ ...prev, isReordering: false }));
   };
 
   const moveExercise = useCallback((dragIndex: number, hoverIndex: number) => {
@@ -411,18 +446,18 @@ const WorkoutModal: React.FC = () => {
         openExerciseMenu={openExerciseMenu}
         updateSet={updateSet}
         addSet={addSet}
-        isReordering={isReordering}
+        isGlobalDragging={isGlobalDragging}
       />
     ));
-  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet, isReordering]);
+  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet, isGlobalDragging]);
 
   const cancelWorkout = () => {
     if (window.confirm("Are you sure you want to cancel this workout?")) {
-      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false, returnModal: null, isReordering: false }));
+      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false, returnModal: null }));
     }
   };
   
-  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal', isReordering: false }));
+  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
   const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
 
   if (!currentWorkout) return null;
@@ -435,6 +470,10 @@ const WorkoutModal: React.FC = () => {
         position: 'relative',
         transform: `translateY(${modalTransform}px)`,
         transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        maxWidth: '100%',
+        background: '#000',
+        padding: '0',
+        borderRadius: '20px 20px 0 0',
       }}
     >
       <div 
@@ -446,43 +485,134 @@ const WorkoutModal: React.FC = () => {
         onMouseMove={handleTouchMove}
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
+        style={{
+          padding: '12px',
+          cursor: 'grab',
+        }}
       >
-        <div className="drag-indicator"></div>
+        <div className="drag-indicator" style={{
+          width: '40px',
+          height: '4px',
+          background: 'rgba(255,255,255,0.3)',
+          borderRadius: '2px',
+          margin: '0 auto',
+        }}></div>
       </div>
       
-      <div className="workout-header">
-        <span className="back-button" onClick={cancelWorkout}>←</span>
-        <input
-          type="text"
-          id="workout-name-input"
-          value={currentWorkout?.name || ''}
-          onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
-        />
-        {isReordering ? (
-          <button className="done" onClick={stopReordering}>Done</button>
-        ) : (
-          <button className="finish" onClick={finishWorkout}>Finish</button>
-        )}
+      <div style={{ padding: '0 20px 20px' }}>
+        <div className="workout-header" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+          gap: '10px',
+        }}>
+          <span 
+            className="back-button" 
+            onClick={cancelWorkout}
+            style={{
+              fontSize: '1.2em',
+              padding: '8px',
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            ←
+          </span>
+          <input
+            type="text"
+            id="workout-name-input"
+            value={currentWorkout?.name || ''}
+            onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1.3em',
+              fontWeight: '600',
+              textAlign: 'center',
+              flex: 1,
+              padding: '0',
+              color: 'white',
+            }}
+          />
+          <button 
+            className="finish" 
+            onClick={finishWorkout}
+            style={{
+              background: '#22C55E',
+              color: 'white',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '10px 20px',
+              fontSize: '1em',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Finish
+          </button>
+        </div>
+        
+        <div className="workout-info" style={{
+          display: 'flex',
+          gap: '20px',
+          marginBottom: '20px',
+          fontSize: '0.9em',
+          color: 'rgba(255,255,255,0.6)',
+        }}>
+          <div className="workout-date">📅 {new Date().toLocaleDateString()}</div>
+          <div className="workout-timer">⏱ {formattedTime}</div>
+        </div>
+        
+        <div id="workout-exercises" style={{ marginBottom: '20px' }}>
+          {renderedExercises}
+        </div>
+        
+        <button 
+          className="add-exercise" 
+          onClick={addExerciseToWorkout}
+          style={{
+            width: '100%',
+            padding: '15px',
+            background: 'var(--accent-primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '1em',
+            fontWeight: '500',
+            cursor: 'pointer',
+            marginBottom: '10px',
+          }}
+        >
+          Add Exercises
+        </button>
+        <button 
+          className="cancel-workout" 
+          onClick={cancelWorkout}
+          style={{
+            width: '100%',
+            padding: '15px',
+            background: '#DC2626',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '1em',
+            fontWeight: '500',
+            cursor: 'pointer',
+          }}
+        >
+          Cancel Workout
+        </button>
       </div>
-      
-      <div className="workout-info">
-        <div className="workout-date">📅 {new Date().toLocaleDateString()}</div>
-        <div className="workout-timer">⏱ {formattedTime}</div>
-      </div>
-      
-      <div id="workout-exercises" style={{ transition: 'all 0.2s ease-out' }}>
-        {renderedExercises}
-      </div>
-      
-      {!isReordering && (
-        <>
-          <button className="add-exercise" onClick={addExerciseToWorkout}>Add Exercise</button>
-          <button className="cancel-workout" onClick={cancelWorkout}>Cancel Workout</button>
-        </>
-      )}
       
       {/* Inline Exercise Menu */}
-      {inlineMenuPosition && !isReordering && (
+      {inlineMenuPosition && !isGlobalDragging && (
         <div 
           className="inline-exercise-menu" 
           style={{

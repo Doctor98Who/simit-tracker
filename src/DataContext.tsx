@@ -63,7 +63,6 @@ export interface DataType {
   activeModal: string | null;
   currentExercise: Exercise | null;
   returnModal: string | null;
-  isReordering: boolean;
 }
 
 interface DataContextType {
@@ -105,7 +104,6 @@ const initialData: DataType = {
   activeModal: null,
   currentExercise: null,
   returnModal: null,
-  isReordering: false,
 };
 
 export const DataContext = createContext<DataContextType>({
@@ -171,8 +169,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         currentExerciseIdx: null,
         activeModal: null,
         returnModal: null,
-        currentDayExercises: [],
-        isReordering: false
+        currentDayExercises: []
       }));
     }
   }, []);
