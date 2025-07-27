@@ -694,7 +694,7 @@ const Modals = () => {
         </div>
       </div>
       
-      <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' ? 'active' : ''}`}>
+      <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
         {data.currentWorkout && <WorkoutModal />}
       </div>
       
