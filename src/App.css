@@ -363,15 +363,33 @@ body {
 .modal.active {
     display: flex;
 }
+#workout-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 1000;
+}
+#workout-modal.active {
+    display: flex;
+}
 #workout-modal .modal-content {
     width: 100%;
     max-width: 100%;
-    height: auto;
+    height: 100vh;
     max-height: 100vh;
     border-radius: 20px 20px 0 0;
-    background: #000;
-    overflow-y: auto;
+    background: #0A0A0A;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 #exercise-select-modal, #day-modal, #feedback-modal, #exercise-menu-modal {
     z-index: 1100;
@@ -482,13 +500,30 @@ button.edit {
 }
 input, select {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     margin: 5px 0;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--bg-lighter);
     color: var(--text);
     font-size: 0.9em;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+input:focus, select:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.08);
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 input::placeholder {
     color: var(--text-muted);
@@ -540,41 +575,21 @@ input#workout-name-input {
     font-size: 0.9em;
     color: rgba(255, 255, 255, 0.6);
 }
+/* Remove set-table styles that conflict with new layout */
 .set-table {
-    display: grid;
-    grid-template-columns: 50px 1fr 70px 70px 50px 40px;
-    gap: 8px;
-    margin-bottom: 4px;
-    align-items: center;
-    font-size: 0.9em;
+    display: none;
 }
-.set-table header {
-    font-size: 0.75em;
-    color: var(--text-muted);
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+
+/* Ensure smooth scrolling on iOS */
+* {
+    -webkit-overflow-scrolling: touch;
 }
-.set-table input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 4px;
-    color: var(--text);
-    text-align: center;
-    font-size: 1em;
-    font-weight: 500;
-    box-shadow: none;
-    transition: all 0.2s ease;
-}
-.set-table input:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    background: rgba(255, 255, 255, 0.08);
+
+/* Fix for iOS bounce effect */
+body.modal-open {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
 }
 .previous-set {
     color: var(--text-muted);
@@ -677,29 +692,35 @@ button.finish {
     color: var(--text);
 }
 #workout-modal .exercise-item {
-    background: var(--subtle-gradient);
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: grab;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: relative;
-    transition: transform 0.2s ease, height 0.3s ease, margin 0.2s ease;
+    transition: all 0.2s ease;
 }
 #workout-modal .exercise-item.dragging {
-    opacity: 0.5;
-    background: #e0e0e0;
+    opacity: 0.3;
+    background: rgba(255, 255, 255, 0.05);
     transform: scale(0.95);
     z-index: 10;
     transition: none;
 }
 #workout-modal .exercise-item.collapsed {
-    height: 45px;
+    height: 60px;
     overflow: hidden;
+    padding: 16px;
 }
-#workout-modal .exercise-item.collapsed .set-table, 
-#workout-modal .exercise-item.collapsed [id^="workout-sets-"], 
-#workout-modal .exercise-item.collapsed .add {
+#workout-modal .exercise-item.holding {
+    transform: scale(0.98);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+#workout-modal .exercise-item.collapsed .set-table-header,
+#workout-modal .exercise-item.collapsed .set-row,
+#workout-modal .exercise-item.collapsed .add-set-btn {
     display: none;
 }
 #workout-modal .exercise-item .set-table, #workout-modal .exercise-item [id^="workout-sets-"], #workout-modal .exercise-item .add {
