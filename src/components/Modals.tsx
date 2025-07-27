@@ -207,30 +207,36 @@ const Modals = () => {
       sets: []
     };
     
-    let newExercises: Exercise[];
-    if (data.isWorkoutSelect) {
-      if (!data.currentWorkout) return;
-      newExercises = [
-        ...data.currentWorkout.exercises,
-        {
-          ...exercise,
-          sets: Array.from({ length: exercise.numSets || 3 }, () => ({
-            weight: '',
-            reps: '',
-            rpe: '',
-            completed: false,
-          })),
-        },
-      ];
+    if (data.isWorkoutSelect && data.currentWorkout) {
+      const newExercise = {
+        ...exercise,
+        sets: Array.from({ length: exercise.numSets || 3 }, () => ({
+          weight: '',
+          reps: '',
+          rpe: '',
+          completed: false,
+        })),
+      };
+      
+      const updatedWorkout = {
+        ...data.currentWorkout,
+        exercises: [...data.currentWorkout.exercises, newExercise]
+      };
+      
+      // Update everything in one go
       setData((prev: DataType) => ({
         ...prev,
-        currentWorkout: {
-          ...prev.currentWorkout!,
-          exercises: newExercises,
-        },
+        currentWorkout: updatedWorkout,
+        activeModal: 'workout-modal',
+        isWorkoutSelect: false,
+        returnModal: null
       }));
-    } else {
-      newExercises = [
+      
+      // Clear search query
+      setSelectSearchQuery('');
+    } else if (!data.isWorkoutSelect) {
+      // Handle program day exercise selection
+      const newExercises = [
         ...data.currentDayExercises,
         {
           ...exercise,
@@ -245,13 +251,10 @@ const Modals = () => {
       setData((prev: DataType) => ({
         ...prev,
         currentDayExercises: newExercises,
+        activeModal: data.returnModal || null,
       }));
+      setSelectSearchQuery('');
     }
-    
-    // Clear search query when exercise is selected
-    setSelectSearchQuery('');
-    closeModal();
-    if (data.returnModal) openModal(data.returnModal);
   };
 
   const renderExerciseSelectList = useMemo(() => {
@@ -272,18 +275,22 @@ const Modals = () => {
     
     filtered.sort((a, b) => a.name.localeCompare(b.name));
 
+    if (filtered.length === 0 && query) {
+      return [<div key="no-results" className="feed-placeholder">No exercises found starting with "{query}"</div>];
+    }
+
     return filtered.map(ex => (
       <div
-        key={ex.name + (ex.subtype || '')}
+        key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
         className="exercise-item"
         onClick={() => selectExercise(ex)}
       >
         <div className="exercise-name">{ex.name}</div>
-        <div className="exercise-subtype">{ex.subtype}</div>
+        {ex.subtype && <div className="exercise-subtype">{ex.subtype}</div>}
         <div className="exercise-muscles">{ex.muscles}</div>
       </div>
     ));
-  }, [selectSearchQuery, exerciseDatabase, data.customExercises, data.isWorkoutSelect, data.currentWorkout, data.currentDayExercises, data.returnModal]);
+  }, [selectSearchQuery, exerciseDatabase, data.customExercises]);
 
   const renderProgramWeeks = useMemo(() => {
     return data.currentProgram.weeks.map((_: Week, index: number) => (
@@ -653,17 +660,22 @@ const Modals = () => {
           <div id="exercise-list-select">{renderExerciseSelectList}</div>
           <button className="secondary" onClick={() => {
             setSelectSearchQuery('');
-            closeModal();
-            if (data.returnModal) openModal(data.returnModal);
+            setData((prev: DataType) => ({ 
+              ...prev, 
+              activeModal: data.isWorkoutSelect ? 'workout-modal' : (data.returnModal || null),
+              isWorkoutSelect: false 
+            }));
           }}>Cancel</button>
         </div>
       </div>
       
       <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' ? 'active' : ''}`}>
-        {activeModal === 'workout-modal' && <WorkoutModal />}
+        <div className="modal-content">
+          {data.currentWorkout && <WorkoutModal />}
+        </div>
       </div>
       
-      <div id="minimized-workout" className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`} onClick={() => openModal('workout-modal')}>
+      <div id="minimized-workout" className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`} onClick={() => setData(prev => ({ ...prev, activeModal: 'workout-modal' }))}>
         <div>Workout in Progress - Tap to Resume</div>
       </div>
       

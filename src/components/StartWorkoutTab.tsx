@@ -18,8 +18,18 @@ const StartWorkoutTab = () => {
   const { data, setData, simitPrograms } = useContext(DataContext);
 
   const startEmptyWorkout = () => {
-    const newWorkout = { name: 'New Workout', exercises: [], startTime: Date.now(), duration: 0 };
-    setData(prev => ({ ...prev, currentWorkout: newWorkout, activeModal: 'workout-modal' }));
+    const newWorkout = { 
+      name: 'New Workout', 
+      exercises: [], 
+      startTime: Date.now(), 
+      duration: 0 
+    };
+    setData(prev => ({ 
+      ...prev, 
+      currentWorkout: newWorkout, 
+      activeModal: 'workout-modal',
+      isWorkoutSelect: false 
+    }));
   };
 
   const createProgram = () => {

@@ -33,7 +33,6 @@ interface WorkoutExerciseItemProps {
   openExerciseMenu: (idx: number, element: HTMLElement) => void;
   updateSet: (exIdx: number, setIdx: number, field: keyof Set, value: any) => void;
   addSet: (exIdx: number) => void;
-  globalDraggingIndex: number | null;
 }
 
 interface DragItem {
@@ -47,8 +46,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   moveExercise, 
   openExerciseMenu, 
   updateSet, 
-  addSet,
-  globalDraggingIndex 
+  addSet
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [placeholderIndex, setPlaceholderIndex] = useState<number | null>(null);
@@ -132,12 +130,9 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     }
   }, [drag]);
 
-  // Check if this item is being dragged globally
-  const isCurrentlyDragging = globalDraggingIndex === idx;
-
   return (
     <>
-      {placeholderIndex === idx && globalDraggingIndex !== null && (
+      {placeholderIndex === idx && isDragging && (
         <div style={{ 
           height: '60px', 
           background: 'var(--accent-primary)', 
@@ -149,20 +144,20 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       )}
       <div 
         ref={ref} 
-        className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCurrentlyDragging ? 'collapsed' : ''}`} 
+        className={`exercise-item ${isDragging ? 'dragging collapsed' : ''}`} 
         style={{ 
           opacity: isDragging ? 0.5 : 1,
-          transition: 'all 0.2s ease-out',
+          transition: isDragging ? 'none' : 'all 0.2s ease-out',
           transform: isDragging ? 'scale(0.95)' : 'scale(1)',
         }} 
         data-handler-id={handlerId}
       >
         <div className="exercise-name">
-          <div ref={dragHandleRef} style={{ cursor: 'grab', marginRight: '10px', display: 'inline-block' }}>☰</div>
+          <div ref={dragHandleRef} style={{ cursor: isDragging ? 'grabbing' : 'grab', marginRight: '10px', display: 'inline-block' }}>☰</div>
           {ex.name} {ex.subtype && `(${ex.subtype})`}
           <span className="exercise-menu" onClick={(e) => openExerciseMenu(idx, e.currentTarget)}>⋯</span>
         </div>
-        {!isCurrentlyDragging && (
+        {!isDragging && (
           <>
             <div className="set-table">
               <header>Set</header>
@@ -186,7 +181,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
           </>
         )}
       </div>
-      {placeholderIndex === idx + 1 && globalDraggingIndex !== null && idx === (ref.current?.parentElement?.children.length ?? 0) - 1 && (
+      {placeholderIndex === idx + 1 && isDragging && idx === (ref.current?.parentElement?.children.length ?? 0) - 1 && (
         <div style={{ 
           height: '60px', 
           background: 'var(--accent-primary)', 
@@ -206,7 +201,6 @@ const WorkoutModal: React.FC = () => {
   const [duration, setDuration] = useState<number>(0);
   const [inlineMenuPosition, setInlineMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [menuExerciseIdx, setMenuExerciseIdx] = useState<number | null>(null);
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (currentWorkout) {
@@ -230,29 +224,7 @@ const WorkoutModal: React.FC = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // Track global dragging state
-  useEffect(() => {
-    const handleDragStart = (e: DragEvent) => {
-      const exerciseItems = document.querySelectorAll('.exercise-item');
-      exerciseItems.forEach((item, index) => {
-        if (item.contains(e.target as Node)) {
-          setDraggingIndex(index);
-        }
-      });
-    };
 
-    const handleDragEnd = () => {
-      setDraggingIndex(null);
-    };
-
-    document.addEventListener('dragstart', handleDragStart);
-    document.addEventListener('dragend', handleDragEnd);
-
-    return () => {
-      document.removeEventListener('dragstart', handleDragStart);
-      document.removeEventListener('dragend', handleDragEnd);
-    };
-  }, []);
 
   const moveExercise = (dragIndex: number, hoverIndex: number) => {
     if (!currentWorkout) return;
@@ -357,14 +329,13 @@ const WorkoutModal: React.FC = () => {
         openExerciseMenu={openExerciseMenu}
         updateSet={updateSet}
         addSet={addSet}
-        globalDraggingIndex={draggingIndex}
       />
     ));
-  }, [currentWorkout, data.history, draggingIndex]);
+  }, [currentWorkout, data.history]);
 
   const cancelWorkout = () => {
     if (window.confirm("Are you sure you want to cancel this workout?")) {
-      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null }));
+      setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false }));
     }
   };
   
