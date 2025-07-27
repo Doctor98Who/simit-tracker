@@ -51,7 +51,6 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   const [isHolding, setIsHolding] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const [localIsDragging, setLocalIsDragging] = useState(false);
-  const dragRef = useRef<HTMLDivElement>(null);
   
   const [{ handlerId, isOver }, drop] = useDrop<DragItem, void, { handlerId: string | symbol | null; isOver: boolean }>({
     accept: ItemType,
@@ -90,157 +89,159 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     },
   });
 
-  const [{ isDragging }, drag, preview] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: ItemType,
     item: () => {
-      setLocalIsDragging(true);
-      onDragStart();
       return { index: idx };
     },
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: () => {
-      setLocalIsDragging(false);
-      setIsHolding(false);
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-      }
-      onDragEnd();
-    },
   });
 
+  // Enable drag when holding
+  useEffect(() => {
+    if (isHolding) {
+      drag(drop(ref));
+    } else {
+      drop(ref);
+    }
+  }, [isHolding, drag, drop]);
+
+  // Handle drag state changes
+  useEffect(() => {
+    if (isDragging && !localIsDragging) {
+      setLocalIsDragging(true);
+      onDragStart();
+    } else if (!isDragging && localIsDragging) {
+      setLocalIsDragging(false);
+      setIsHolding(false);
+      onDragEnd();
+    }
+  }, [isDragging, localIsDragging, onDragStart, onDragEnd]);
+
   // Handle long press
-  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     longPressTimer.current = setTimeout(() => {
       setIsHolding(true);
-      // Enable dragging after hold
-      if (dragRef.current) {
-        drag(dragRef.current);
+      // Haptic feedback if available
+      if ('vibrate' in navigator) {
+        navigator.vibrate(10);
       }
-    }, 300); // 300ms hold time
+    }, 500); // 500ms hold time
   };
 
-  const handleMouseUp = () => {
+  const handleTouchEnd = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
     }
-    if (!localIsDragging) {
+    if (!isDragging) {
       setIsHolding(false);
     }
   };
-
-  preview(drop(ref));
-
-  // Enable drag on the entire element when holding
-  useEffect(() => {
-    if (isHolding && dragRef.current) {
-      drag(dragRef.current);
-    }
-  }, [isHolding, drag]);
 
   const toggleCompleted = (setIdx: number) => {
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
 
-  // Determine if this item should be minimized
-  const isMinimized = isGlobalDragging;
-
   // Count warm-up sets
   const maxWeight = Math.max(...ex.sets.map(s => parseFloat(s.weight) || 0));
   const warmupSets = ex.sets.filter(s => (parseFloat(s.weight) || 0) < maxWeight * 0.9).length;
 
+  // Collapsed state when any exercise is being dragged
+  const isCollapsed = isGlobalDragging && !isDragging;
+
   return (
     <div 
       ref={ref}
-      className={`exercise-item ${isDragging ? 'dragging' : ''} ${isMinimized ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`} 
+      className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCollapsed ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`} 
       style={{ 
-        opacity: isDragging ? 0.3 : 1,
-        transition: isDragging ? 'none' : 'all 0.2s ease-out',
-        transform: isDragging ? 'scale(0.95)' : isHolding ? 'scale(0.98)' : 'scale(1)',
-        boxShadow: isDragging ? '0 8px 32px rgba(0, 0, 0, 0.3)' : isHolding ? '0 4px 16px rgba(0, 0, 0, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-        cursor: isHolding ? 'grabbing' : 'grab',
-        height: isMinimized ? '60px' : 'auto',
+        opacity: isDragging ? 0.5 : 1,
+        transform: isDragging ? 'scale(1.05)' : isHolding ? 'scale(0.98)' : 'scale(1)',
+        boxShadow: isDragging ? '0 8px 32px rgba(59, 130, 246, 0.5)' : isHolding ? '0 4px 16px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        transition: isCollapsed ? 'all 0.3s ease' : 'all 0.2s ease',
+        height: isCollapsed ? '60px' : 'auto',
         overflow: 'hidden',
-        padding: isMinimized ? '16px' : '16px',
-        background: isDragging ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        marginBottom: '12px',
-        borderRadius: '16px',
+        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.02)',
+        border: isDragging ? '2px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
       }} 
       data-handler-id={handlerId}
     >
       <div 
-        ref={dragRef}
         className="exercise-header" 
         style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          cursor: isHolding ? 'grabbing' : 'pointer',
+          padding: '12px 16px',
           touchAction: 'none',
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
         }}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleMouseDown}
-        onTouchEnd={handleMouseUp}
-        onTouchCancel={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
           <div className="exercise-name" style={{ fontSize: '1.1em', fontWeight: '600' }}>
             {ex.name} 
-            {ex.subtype && <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9em', marginLeft: '8px' }}>({ex.subtype})</span>}
+            {ex.subtype && <span style={{ color: 'var(--accent-blue)', fontSize: '0.9em', marginLeft: '8px' }}>({ex.subtype})</span>}
           </div>
         </div>
-        {!isMinimized && (
+        {!isCollapsed && (
           <span className="exercise-menu" onClick={(e) => {
             e.stopPropagation();
             openExerciseMenu(idx, e.currentTarget);
-          }} style={{ fontSize: '1.2em', padding: '8px' }}>⋯</span>
+          }} style={{ fontSize: '1.2em', padding: '8px', color: 'var(--text-muted)' }}>⋯</span>
         )}
       </div>
-      {!isMinimized && (
-        <div style={{ marginTop: '16px' }}>
+      {!isCollapsed && (
+        <div style={{ padding: '0 16px 16px' }}>
           <div className="set-table-header" style={{ 
             display: 'grid',
-            gridTemplateColumns: '60px 100px 80px 80px 60px',
-            gap: '12px',
+            gridTemplateColumns: '40px 80px 60px 50px 40px 40px',
+            gap: '8px',
             marginBottom: '12px',
-            fontSize: '0.75em',
+            fontSize: '0.7em',
             color: 'rgba(255, 255, 255, 0.4)',
             textTransform: 'uppercase',
-            letterSpacing: '1px',
+            letterSpacing: '0.5px',
             fontWeight: '600',
+            paddingLeft: '4px',
           }}>
-            <div style={{ textAlign: 'center' }}>Set</div>
+            <div>Set</div>
             <div style={{ textAlign: 'center' }}>Previous</div>
             <div style={{ textAlign: 'center' }}>lbs</div>
             <div style={{ textAlign: 'center' }}>Reps</div>
             <div style={{ textAlign: 'center' }}>RPE</div>
+            <div></div>
           </div>
           {ex.sets.map((s, sIdx) => {
             const isWarmup = sIdx < warmupSets;
             return (
-              <div key={sIdx} className="set-row" style={{
+              <div key={sIdx} className={`set-row ${s.completed ? 'completed-row' : ''}`} style={{
                 display: 'grid',
-                gridTemplateColumns: '60px 100px 80px 80px 60px',
-                gap: '12px',
+                gridTemplateColumns: '40px 80px 60px 50px 40px 40px',
+                gap: '8px',
                 marginBottom: '8px',
                 alignItems: 'center',
+                padding: '2px 4px',
+                borderRadius: '8px',
+                background: s.completed ? 'rgba(34, 197, 94, 0.1)' : 'transparent',
               }}>
                 <div style={{ 
-                  textAlign: 'center',
                   fontWeight: '700',
-                  color: isWarmup ? '#FF9500' : 'white',
-                  fontSize: isWarmup ? '1.1em' : '1em',
+                  color: isWarmup ? '#FF9500' : s.completed ? '#22C55E' : 'white',
+                  fontSize: '0.9em',
                 }}>
                   {isWarmup ? 'W' : sIdx - warmupSets + 1}
                 </div>
                 <div style={{ 
                   textAlign: 'center',
-                  fontSize: '0.85em', 
+                  fontSize: '0.75em', 
                   color: 'rgba(255, 255, 255, 0.4)',
                 }}>
                   {ex.previousSets?.[sIdx] || '—'}
@@ -254,12 +255,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     textAlign: 'center',
-                    fontSize: '1em',
+                    fontSize: '0.85em',
                     fontWeight: '500',
                     color: 'white',
-                    padding: '10px 4px',
+                    padding: '6px 2px',
+                    minHeight: '32px',
                   }}
                 />
                 <input 
@@ -271,12 +273,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     textAlign: 'center',
-                    fontSize: '1em',
+                    fontSize: '0.85em',
                     fontWeight: '500',
                     color: 'white',
-                    padding: '10px 4px',
+                    padding: '6px 2px',
+                    minHeight: '32px',
                   }}
                 />
                 <input 
@@ -289,19 +292,20 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
+                    borderRadius: '8px',
                     textAlign: 'center',
-                    fontSize: '0.9em',
+                    fontSize: '0.85em',
                     color: 'white',
-                    padding: '10px 4px',
+                    padding: '6px 2px',
+                    minHeight: '32px',
                   }}
                 />
                 <div 
-                  className={`check-box ${s.completed ? 'completed' : ''}`} 
+                  className={`log-square ${s.completed ? 'completed' : ''}`} 
                   onClick={() => toggleCompleted(sIdx)}
                   style={{
-                    width: '24px',
-                    height: '24px',
+                    width: '28px',
+                    height: '28px',
                     margin: '0 auto',
                     borderRadius: '8px',
                     border: s.completed ? 'none' : '2px solid rgba(255, 255, 255, 0.2)',
@@ -310,9 +314,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    fontSize: '16px',
+                    fontSize: '14px',
                     color: 'white',
                     fontWeight: 'bold',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   {s.completed ? '✓' : ''}
@@ -324,25 +329,18 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             className="add-set-btn" 
             onClick={() => addSet(idx)}
             style={{
-              marginTop: '16px',
+              marginTop: '12px',
               background: 'transparent',
               border: '1px dashed rgba(255, 255, 255, 0.2)',
               color: 'rgba(255, 255, 255, 0.5)',
-              padding: '12px',
-              borderRadius: '12px',
-              fontSize: '0.9em',
+              padding: '10px',
+              borderRadius: '8px',
+              fontSize: '0.85em',
               fontWeight: '500',
               width: '100%',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              minHeight: '36px',
             }}
           >
             + Add Set
@@ -540,7 +538,7 @@ const WorkoutModal: React.FC = () => {
       const workout = data.history[i];
       const matchingEx = workout.exercises.find(e => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
       if (matchingEx && matchingEx.sets) {
-        matchingEx.sets.forEach(s => previous.push(`${s.weight || '0'} lb x ${s.reps || '0'} @ ${s.rpe || '0'}`));
+        matchingEx.sets.forEach(s => previous.push(`${s.weight || '0'}×${s.reps || '0'}`));
         return previous;
       }
     }

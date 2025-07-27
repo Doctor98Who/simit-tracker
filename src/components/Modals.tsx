@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useMemo } from 'react';
+import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { DataContext, DataType, Exercise } from '../DataContext';
 import WorkoutModal from './WorkoutModal';
 
@@ -45,6 +45,8 @@ const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
   const activeModal = data.activeModal;
   const [exerciseSelectMode, setExerciseSelectMode] = useState<'workout' | 'program' | null>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
   const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
@@ -203,7 +205,34 @@ const Modals = () => {
     }
   }, [data.isWorkoutSelect, activeModal]);
 
+  // Handle scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolling(true);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+      scrollTimeout.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 150);
+    };
+
+    const listElement = document.getElementById('exercise-list-select');
+    if (listElement) {
+      listElement.addEventListener('scroll', handleScroll);
+      return () => {
+        listElement.removeEventListener('scroll', handleScroll);
+        if (scrollTimeout.current) {
+          clearTimeout(scrollTimeout.current);
+        }
+      };
+    }
+  }, [activeModal]);
+
   const selectExercise = (ex: Exercise | ExerciseFromDatabase) => {
+    // Prevent selection while scrolling
+    if (isScrolling) return;
+    
     // Prevent double-tap issues on mobile
     if (!ex) return;
     
@@ -299,10 +328,18 @@ const Modals = () => {
         <div
           key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
           className="exercise-item"
-          onClick={() => selectExercise(ex)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isScrolling) {
+              selectExercise(ex);
+            }
+          }}
           onTouchEnd={(e) => {
             e.preventDefault();
-            selectExercise(ex);
+            if (!isScrolling) {
+              setTimeout(() => selectExercise(ex), 50);
+            }
           }}
           style={{ 
             cursor: 'pointer',
@@ -314,6 +351,8 @@ const Modals = () => {
             marginBottom: '8px',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             transition: 'all 0.2s ease',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
         >
           <div className="exercise-name" style={{ 
@@ -338,7 +377,7 @@ const Modals = () => {
     });
 
     return list;
-  }, [selectSearchQuery, exerciseDatabase, data.customExercises, exerciseSelectMode, data.currentWorkout]);
+  }, [selectSearchQuery, exerciseDatabase, data.customExercises, exerciseSelectMode, data.currentWorkout, isScrolling]);
 
   const renderProgramWeeks = useMemo(() => {
     return data.currentProgram.weeks.map((_: Week, index: number) => (
