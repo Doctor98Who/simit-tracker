@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
-import { DataContext, DataType, Exercise, Set } from '../DataContext';
+import { DataContext, DataType, Exercise } from '../DataContext';
 import WorkoutModal from './WorkoutModal';
 
 interface Day {
@@ -9,12 +9,6 @@ interface Day {
 
 interface Week {
   days: Day[];
-}
-
-interface Program {
-  name?: string;
-  mesocycleLength?: number;
-  weeks: Week[];
 }
 
 interface SimitProgram {
@@ -210,6 +204,9 @@ const Modals = () => {
   }, [data.isWorkoutSelect, activeModal]);
 
   const selectExercise = (ex: Exercise | ExerciseFromDatabase) => {
+    // Prevent double-tap issues on mobile
+    if (!ex) return;
+    
     // Convert ExerciseFromDatabase to Exercise if needed
     const exercise: Exercise = 'sets' in ex ? ex : {
       ...ex,
@@ -285,13 +282,22 @@ const Modals = () => {
         key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
         className="exercise-item"
         onClick={() => selectExercise(ex)}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          selectExercise(ex);
+        }}
+        style={{ 
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation'
+        }}
       >
-        <div className="exercise-name">{ex.name}</div>
-        {ex.subtype && <div className="exercise-subtype">{ex.subtype}</div>}
-        <div className="exercise-muscles">{ex.muscles}</div>
+        <div className="exercise-name" style={{ pointerEvents: 'none' }}>{ex.name}</div>
+        {ex.subtype && <div className="exercise-subtype" style={{ pointerEvents: 'none' }}>{ex.subtype}</div>}
+        <div className="exercise-muscles" style={{ pointerEvents: 'none' }}>{ex.muscles}</div>
       </div>
     ));
-  }, [selectSearchQuery, exerciseDatabase, data.customExercises]);
+  }, [selectSearchQuery, exerciseDatabase, data.customExercises, exerciseSelectMode, data.currentWorkout]);
 
   const renderProgramWeeks = useMemo(() => {
     return data.currentProgram.weeks.map((_: Week, index: number) => (
@@ -652,7 +658,7 @@ const Modals = () => {
       </div>
       
       <div id="exercise-select-modal" className={`modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
+        <div className="modal-content" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
           <h2>Select Exercise</h2>
           <input
             type="text"
@@ -660,8 +666,11 @@ const Modals = () => {
             placeholder="Search exercises..."
             value={selectSearchQuery}
             onChange={(e) => setSelectSearchQuery(e.target.value)}
+            style={{ marginBottom: '15px' }}
           />
-          <div id="exercise-list-select">{renderExerciseSelectList}</div>
+          <div id="exercise-list-select" style={{ overflowY: 'auto', maxHeight: 'calc(80vh - 150px)' }}>
+            {renderExerciseSelectList}
+          </div>
           <button className="secondary" onClick={() => {
             setSelectSearchQuery('');
             setExerciseSelectMode(null);

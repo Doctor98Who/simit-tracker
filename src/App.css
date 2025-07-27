@@ -157,9 +157,29 @@ body {
 .exercise-item {
     background: var(--bg-dark);
     border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 0;
+    padding: 12px;
+    margin-bottom: 8px;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.exercise-item:active {
+    background: var(--bg-lighter);
+    transform: scale(0.98);
+}
+
+#exercise-select-modal .exercise-item {
+    background: var(--bg-lighter);
+    margin-bottom: 10px;
+}
+
+#exercise-select-modal .exercise-item:active {
+    background: var(--accent-primary);
+    color: white;
 }
 .exercise-name {
     font-weight: 600;
@@ -321,13 +341,14 @@ body {
 }
 .modal-content {
     background: var(--bg-dark);
-    padding: 10px;
+    padding: 20px;
     border-radius: 16px;
     width: 90%;
     max-width: 400px;
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: var(--shadow);
+    -webkit-overflow-scrolling: touch;
 }
 .modal.active {
     display: flex;
@@ -394,13 +415,23 @@ button {
     background: var(--accent-gradient);
     color: var(--text);
     border: none;
-    padding: 8px 12px;
+    padding: 12px 20px;
     border-radius: 10px;
     cursor: pointer;
     font-size: 0.9em;
     transition: var(--transition);
     font-weight: 600;
     margin-top: 5px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    min-height: 44px;
+}
+
+button:active {
+    transform: scale(0.95);
+    opacity: 0.8;
 }
 button:hover {
     opacity: 0.9;
