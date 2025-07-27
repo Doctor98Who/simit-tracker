@@ -1,0 +1,8 @@
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+/simit.html
+  Cache-Control: no-cache, no-store, must-revalidate
+/manifest.json
+  Cache-Control: no-cache, no-store, must-revalidate
+/icon.png
+  Cache-Control: no-cache, no-store, must-revalidate

@@ -1,0 +1,768 @@
+:root {
+    --bg-dark: #000000;
+    --bg-light: #1C1C1E;
+    --bg-lighter: #2C2C2E;
+    --text: #FFFFFF;
+    --text-muted: #8E8E93;
+    --accent-blue: #0A84FF;
+    --accent-primary: #3b82f6;
+    --accent-hover: #1e40af;
+    --accent-gradient: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    --soft-gradient: linear-gradient(135deg, #3b82f6, #1e40af);
+    --border: #3A3A3C;
+    --shadow: 0 2px 10px rgba(0,0,0,0.5);
+    --transition: all 0.3s ease;
+    --font-modern: 'Inter', sans-serif;
+    --completed-green: #1C4E31;
+    --completed-check: #27AE60;
+    --subtle-gradient: linear-gradient(135deg, var(--bg-light), var(--bg-lighter));
+}
+.header {
+    background: var(--accent-gradient);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.8em;
+    font-weight: 700;
+    position: relative;
+}
+.header img {
+    height: 40px;
+    border-radius: 50%;
+}
+body {
+    font-family: var(--font-modern);
+    background-color: var(--bg-dark);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
+    -webkit-user-select: auto;
+    user-select: auto;
+    min-height: calc(100% + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.app-container {
+    max-width: 428px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+.quick-start {
+    background: var(--accent-gradient);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+.programs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.programs-header h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+}
+.add-program {
+    color: var(--accent-primary);
+    font-size: 1em;
+    cursor: pointer;
+}
+.program-card {
+    background: var(--subtle-gradient);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    position: relative;
+}
+.program-card:hover {
+    transform: translateY(-2px);
+}
+.program-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.program-details {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+.program-date {
+    color: var(--text-muted);
+    font-size: 0.8em;
+}
+.bottom-nav {
+    background: var(--bg-light);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8em;
+    filter: grayscale(100%) brightness(2);
+}
+.nav-item.active {
+    color: var(--accent-primary);
+}
+.nav-icon {
+    font-size: 1.5em;
+    margin-bottom: 2px;
+}
+.hidden {
+    display: none;
+}
+.search-bar {
+    background: var(--bg-lighter);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 1em;
+}
+.letter-header {
+    font-size: 1.8em;
+    color: var(--accent-primary);
+    margin-top: 20px;
+    padding: 10px;
+    background: linear-gradient(to right, var(--bg-dark), var(--bg-light));
+    border-radius: 8px;
+    text-align: center;
+}
+.exercise-item {
+    background: var(--bg-dark);
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+.exercise-name {
+    font-weight: 600;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.exercise-menu {
+    cursor: pointer;
+    font-size: 1em;
+    color: var(--text-muted);
+}
+.exercise-subtype {
+    color: var(--accent-blue);
+    font-size: 0.8em;
+}
+.exercise-muscles {
+    color: var(--text-muted);
+    font-size: 0.8em;
+}
+.history-item {
+    background: var(--subtle-gradient);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    position: relative;
+    cursor: pointer;
+}
+.history-summary {
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.history-details {
+    display: none;
+}
+.history-item.expanded .history-details {
+    display: block;
+}
+.history-details table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.history-details th, .history-details td {
+    border: 1px solid var(--border);
+    padding: 8px;
+    text-align: left;
+}
+.history-details th {
+    background: var(--accent-gradient);
+    color: white;
+}
+.progress-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.progress-pic {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    position: relative;
+}
+.progress-pic img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+}
+.progress-pic .timestamp {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+.progress-pic .trash {
+    cursor: pointer;
+    font-size: 1em;
+    color: #FF3B30;
+}
+.profile-header {
+    text-align: center;
+    padding: 20px 0;
+    background: url('') no-repeat center cover;
+    background-color: var(--bg-light);
+}
+.profile-pic {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--bg-lighter);
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    margin: 0 auto;
+}
+.profile-name {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-top: 10px;
+}
+.profile-username {
+    color: var(--text-muted);
+    font-size: 1em;
+}
+.profile-location {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+.stat-box {
+    text-align: center;
+}
+.stat-number {
+    font-size: 2em;
+    font-weight: 700;
+}
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+.profile-actions {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+.profile-action-btn {
+    background: var(--bg-lighter);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto;
+}
+.modal-content {
+    background: var(--bg-dark);
+    padding: 10px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+}
+.modal.active {
+    display: flex;
+}
+#workout-modal .modal-content {
+    width: 90%;
+    max-width: 428px;
+    height: auto;
+    max-height: 80vh;
+    border-radius: 16px;
+}
+#exercise-select-modal, #day-modal, #feedback-modal, #exercise-menu-modal {
+    z-index: 1100;
+}
+#exercise-menu-modal .modal-content,
+#history-menu-modal .modal-content,
+#program-menu-modal .modal-content,
+#custom-exercise-modal .modal-content,
+#custom-menu-modal .modal-content,
+#update-modal .modal-content {
+    max-width: 300px;
+}
+#edit-profile-modal .modal-content {
+    background: var(--bg-dark);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 350px;
+}
+#edit-profile-modal label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+}
+#edit-profile-modal input, #edit-profile-modal textarea, #edit-profile-modal select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 4px;
+    background: var(--bg-lighter);
+    color: var(--text);
+}
+#edit-profile-modal .delete-account {
+    color: #FF3B30;
+    text-align: center;
+    cursor: pointer;
+}
+#cover-photo-upload {
+    display: none;
+}
+#cover-photo-label {
+    text-align: center;
+    cursor: pointer;
+    background: var(--bg-lighter);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+#edit-bio {
+    height: 100px;
+    resize: none;
+}
+button {
+    background: var(--accent-gradient);
+    color: var(--text);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: var(--transition);
+    font-weight: 600;
+    margin-top: 5px;
+}
+button:hover {
+    opacity: 0.9;
+}
+button.secondary {
+    background: #FF3B30;
+}
+button.add {
+    background: var(--bg-lighter);
+    color: var(--text);
+    padding: 6px 10px;
+    font-size: 0.8em;
+    width: auto;
+    margin: 5px auto;
+    display: block;
+}
+button.delete {
+    background: #FF3B30;
+    width: auto;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    margin-left: 10px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+button.edit {
+    background: var(--accent-blue);
+    width: auto;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    position: absolute;
+    top: 5px;
+    right: 60px;
+}
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: none;
+    border-radius: 10px;
+    background: var(--bg-lighter);
+    color: var(--text);
+    font-size: 0.9em;
+}
+input::placeholder {
+    color: var(--text-muted);
+}
+input#workout-name-input {
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    font-size: 1.1em;
+    padding: 0;
+    color: var(--text);
+    text-align: center;
+    flex: 1;
+}
+.exercise-detail {
+    margin-top: 10px;
+    color: var(--text-muted);
+}
+.workout-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: var(--soft-gradient);
+    border-radius: 12px;
+    margin-bottom: 5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.workout-timer {
+    color: var(--text-muted);
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}
+.workout-date {
+    color: var(--text-muted);
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}
+.workout-info {
+    background: var(--subtle-gradient);
+    padding: 5px 10px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.set-table {
+    display: grid;
+    grid-template-columns: 40px 1fr 60px 60px 60px 40px;
+    gap: 8px;
+    margin-bottom: 4px;
+    align-items: center;
+    font-size: 0.8em;
+}
+.set-table header {
+    font-size: 0.7em;
+    color: var(--text-muted);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.set-table input {
+    background: var(--bg-lighter);
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    color: var(--text);
+    text-align: center;
+    font-size: 1em;
+    box-shadow: none;
+}
+.previous-set {
+    color: var(--text-muted);
+    font-size: 0.7em;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.log-square {
+    cursor: pointer;
+    text-align: center;
+    font-size: 1.2em;
+    border: none;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    background: var(--bg-lighter);
+    border-radius: 50%;
+    font-weight: bold;
+}
+.log-square.completed {
+    background-color: var(--completed-check);
+    color: #FFFFFF;
+}
+.set-table.completed-row {
+    background-color: var(--completed-green);
+    border-radius: 4px;
+}
+.feedback-select {
+    margin-bottom: 10px;
+}
+.program-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.program-day-card {
+    background: var(--subtle-gradient);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    flex: 1 0 45%;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+.minimized-workout {
+    background: var(--bg-light);
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    position: fixed;
+    bottom: 60px;
+    z-index: 999;
+    width: 100%;
+    max-width: 428px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.program-day-card.completed {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+button.finish {
+    background: #27AE60;
+    width: auto;
+    padding: 8px 16px;
+    font-size: 1em;
+    border-radius: 20px;
+}
+.back-button {
+    cursor: pointer;
+    font-size: 1.2em;
+    color: var(--text);
+}
+.add-exercise {
+    background: var(--bg-lighter);
+    color: var(--text);
+    border-radius: 20px;
+    padding: 10px;
+    margin: 10px 0;
+}
+.cancel-workout {
+    background: #FF3B30;
+    color: var(--text);
+    border-radius: 20px;
+    padding: 10px;
+    margin: 10px 0;
+}
+.minimize-button {
+    cursor: pointer;
+    font-size: 1.2em;
+    color: var(--text);
+}
+#workout-modal .exercise-item {
+    background: var(--subtle-gradient);
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    position: relative;
+    transition: transform 0.2s ease, height 0.3s ease, margin 0.2s ease;
+}
+#workout-modal .exercise-item.dragging {
+    opacity: 0.5;
+    background: #e0e0e0;
+    transform: scale(0.95);
+    z-index: 10;
+    transition: none;
+}
+#workout-modal .exercise-item.collapsed {
+    height: 45px;
+    overflow: hidden;
+}
+#workout-modal .exercise-item.collapsed .set-table, 
+#workout-modal .exercise-item.collapsed [id^="workout-sets-"], 
+#workout-modal .exercise-item.collapsed .add {
+    display: none;
+}
+#workout-modal .exercise-item .set-table, #workout-modal .exercise-item [id^="workout-sets-"], #workout-modal .exercise-item .add {
+    transition: max-height 0.2s ease-in;
+    max-height: 1000px;
+}
+.workout-date, .workout-timer {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    display: inline;
+}
+.set-table div, .set-table input, .set-table header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.history-details .exercise-row {
+    margin-bottom: 10px;
+}
+.history-details .exercise-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.history-details .set-table {
+    display: grid;
+    grid-template-columns: 40px 60px 60px 60px;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.8em;
+    margin-bottom: 4px;
+}
+.history-details .set-row {
+    display: grid;
+    grid-template-columns: 40px 60px 60px 60px;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.8em;
+    margin-bottom: 4px;
+}
+.history-details .set-row div {
+    text-align: center;
+}
+.program-card .exercise-menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    color: var(--text-muted);
+}
+#update-modal .modal-content {
+    background: var(--bg-dark);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+#update-modal h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: var(--text);
+}
+#update-modal p {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+.update-button {
+    background: var(--accent-gradient);
+    color: var(--text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: var(--transition);
+}
+.update-button:hover {
+    opacity: 0.9;
+}
+#app-version {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 0.6em;
+    color: #FFFFFF;
+    z-index: 1;
+}
+.community-sub-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+.community-tab {
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 10px;
+}
+.community-tab.active {
+    color: var(--text);
+    border-bottom: 2px solid var(--accent-primary);
+}
+.feed-placeholder, .popular-placeholder, .groups-placeholder {
+    text-align: center;
+    color: var(--text-muted);
+}
+.add-custom-exercise {
+    background: var(--accent-gradient);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.inline-exercise-menu {
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

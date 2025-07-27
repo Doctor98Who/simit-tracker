@@ -1,0 +1,22 @@
+{
+  "short_name": "Simit Tracker",
+  "name": "Simit Tracker",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#121212",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary"
+}
