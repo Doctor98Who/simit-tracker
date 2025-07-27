@@ -826,61 +826,66 @@ const Modals = () => {
         {data.currentWorkout && <WorkoutModal />}
       </div>
       
-      <div id="minimized-workout" 
-        className={`minimized-workout ${data.currentWorkout && activeModal !== 'workout-modal' ? '' : 'hidden'}`}
-        style={{
-          position: 'fixed',
-          bottom: '60px',
-          left: '0',
-          right: '0',
-          width: '100%',
-          maxWidth: '428px',
-          margin: '0 auto',
-          background: 'var(--bg-light)',
-          borderRadius: '16px 16px 0 0',
-          padding: '12px 16px',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
-          borderTop: '1px solid var(--border)',
-          cursor: 'grab',
-          transition: isDraggingMinimized ? 'none' : 'transform 0.3s ease',
-          transform: `translateY(${minimizedDragY}px)`,
-          zIndex: 999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-        onTouchStart={handleMinimizedTouchStart}
-        onTouchMove={handleMinimizedTouchMove}
-        onTouchEnd={handleMinimizedTouchEnd}
-        onMouseDown={handleMinimizedTouchStart}
-        onMouseMove={handleMinimizedTouchMove}
-        onMouseUp={handleMinimizedTouchEnd}
-        onMouseLeave={handleMinimizedTouchEnd}
-      >
-        <div className="drag-indicator" style={{ 
-          margin: '0 auto 4px', 
-          width: '40px', 
-          height: '4px', 
-          background: 'rgba(255,255,255,0.3)', 
-          borderRadius: '2px' 
-        }}></div>
-        <div style={{
-          fontSize: '0.9em',
-          fontWeight: '600',
-          color: 'white',
-          textAlign: 'center',
-        }}>
-          {data.currentWorkout?.name || 'Workout in Progress'}
+      {data.currentWorkout && activeModal !== 'workout-modal' && (
+        <div id="minimized-workout" 
+          className="minimized-workout"
+          style={{
+            position: 'fixed',
+            bottom: '0',
+            left: '0',
+            right: '0',
+            width: '100%',
+            maxWidth: '428px',
+            margin: '0 auto',
+            background: 'linear-gradient(to top, var(--bg-light), rgba(28, 28, 30, 0.98))',
+            borderRadius: '0',
+            padding: '10px 16px 70px',
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            cursor: 'grab',
+            transition: isDraggingMinimized ? 'none' : 'transform 0.3s ease',
+            transform: `translateY(${minimizedDragY}px)`,
+            zIndex: 999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            backdropFilter: 'blur(10px)',
+          }}
+          onTouchStart={handleMinimizedTouchStart}
+          onTouchMove={handleMinimizedTouchMove}
+          onTouchEnd={handleMinimizedTouchEnd}
+          onMouseDown={handleMinimizedTouchStart}
+          onMouseMove={handleMinimizedTouchMove}
+          onMouseUp={handleMinimizedTouchEnd}
+          onMouseLeave={handleMinimizedTouchEnd}
+        >
+          <div className="drag-indicator" style={{ 
+            margin: '4px auto 6px', 
+            width: '36px', 
+            height: '4px', 
+            background: 'rgba(255,255,255,0.4)', 
+            borderRadius: '2px' 
+          }}></div>
+          <div style={{
+            fontSize: '0.95em',
+            fontWeight: '700',
+            color: 'white',
+            textAlign: 'center',
+            letterSpacing: '0.3px',
+          }}>
+            {data.currentWorkout?.name || 'Workout in Progress'}
+          </div>
+          <div style={{
+            fontSize: '0.75em',
+            color: 'rgba(255, 255, 255, 0.6)',
+            textAlign: 'center',
+            fontWeight: '500',
+          }}>
+            Swipe up to resume
+          </div>
         </div>
-        <div style={{
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          textAlign: 'center',
-        }}>
-          Swipe up to resume
-        </div>
-      </div>
+      )}
       
       <div id="exercise-menu-modal" className={`modal ${activeModal === 'exercise-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content">
