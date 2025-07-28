@@ -795,7 +795,7 @@ const Modals = () => {
 
   // Calculate the preview style based on drag distance
   const getMinimizedStyle = () => {
-    const baseHeight = 80; // Reduced base height
+    const baseHeight = 50; // Reduced to half the height
     const maxPreviewHeight = window.innerHeight * 0.8; // Max 80% of viewport
     
     if (isDraggingMinimized && minimizedDragY < 0) {
@@ -990,8 +990,8 @@ const Modals = () => {
             width: '100%',
             maxWidth: '428px',
             margin: '0 auto',
-            background: 'linear-gradient(to top, var(--bg-light), rgba(28, 28, 30, 0.98))',
-            padding: '10px 16px 70px',
+            background: 'var(--bg-dark)',
+            padding: '8px 16px 70px',
             boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'grab',
@@ -999,7 +999,7 @@ const Modals = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '4px',
+            gap: '2px',
             backdropFilter: 'blur(10px)',
             overflow: 'hidden',
             ...getMinimizedStyle(),
@@ -1013,7 +1013,7 @@ const Modals = () => {
           onMouseLeave={handleMinimizedTouchEnd}
         >
           <div className="drag-indicator" style={{ 
-            margin: '4px auto 6px', 
+            margin: '2px auto 4px', 
             width: '36px', 
             height: '4px', 
             background: 'rgba(255,255,255,0.4)', 
@@ -1022,23 +1022,15 @@ const Modals = () => {
           <div style={{
             fontSize: '0.95em',
             fontWeight: '700',
-            color: 'white',
+            color: 'var(--text)',
             textAlign: 'center',
             letterSpacing: '0.3px',
           }}>
             {data.currentWorkout?.name || 'Workout in Progress'}
           </div>
-          <div style={{
-            fontSize: '0.75em',
-            color: 'rgba(255, 255, 255, 0.6)',
-            textAlign: 'center',
-            fontWeight: '500',
-          }}>
-            Swipe up to resume
-          </div>
           
           {/* Preview content that expands when dragging */}
-          {isDraggingMinimized && minimizedDragY < -30 && (
+          {isDraggingMinimized && minimizedDragY < -20 && (
             <div style={{
               marginTop: '10px',
               width: '100%',
@@ -1046,33 +1038,49 @@ const Modals = () => {
               transition: 'opacity 0.2s ease',
             }}>
               <div style={{
-                fontSize: '0.7em',
-                color: 'rgba(255, 255, 255, 0.5)',
-                textAlign: 'center',
-                marginBottom: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                padding: '0 20px',
               }}>
-                {data.currentWorkout?.exercises.length || 0} exercises
+                {data.currentWorkout?.exercises.map((ex, idx) => (
+                  <div key={idx} style={{
+                    background: 'var(--bg-lighter)',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    border: '1px solid var(--border)',
+                  }}>
+                    <div style={{
+                      fontSize: '0.85em',
+                      fontWeight: '600',
+                      color: 'var(--text)',
+                      marginBottom: '8px',
+                    }}>
+                      {ex.name} {ex.subtype && `(${ex.subtype})`}
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 1fr 1fr 1fr',
+                      gap: '4px',
+                      fontSize: '0.7em',
+                      color: 'var(--text-muted)',
+                    }}>
+                      <div style={{ fontWeight: '600' }}>Set</div>
+                      <div style={{ textAlign: 'center', fontWeight: '600' }}>Weight</div>
+                      <div style={{ textAlign: 'center', fontWeight: '600' }}>Reps</div>
+                      <div style={{ textAlign: 'center', fontWeight: '600' }}>{data.intensityMetric.toUpperCase()}</div>
+                      {ex.sets.map((set, sIdx) => (
+                        <React.Fragment key={sIdx}>
+                          <div>{sIdx + 1}</div>
+                          <div style={{ textAlign: 'center' }}>{set.weight || '-'}</div>
+                          <div style={{ textAlign: 'center' }}>{set.reps || '-'}</div>
+                          <div style={{ textAlign: 'center' }}>{set[data.intensityMetric] || '-'}</div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-              {data.currentWorkout?.exercises.slice(0, 3).map((ex, idx) => (
-                <div key={idx} style={{
-                  fontSize: '0.75em',
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  padding: '4px 8px',
-                  marginBottom: '2px',
-                }}>
-                  {ex.name} {ex.subtype && `(${ex.subtype})`}
-                </div>
-              ))}
-              {(data.currentWorkout?.exercises.length || 0) > 3 && (
-                <div style={{
-                  fontSize: '0.7em',
-                  color: 'rgba(255, 255, 255, 0.4)',
-                  textAlign: 'center',
-                  marginTop: '4px',
-                }}>
-                  +{(data.currentWorkout?.exercises.length || 0) - 3} more
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -1693,15 +1701,18 @@ const Modals = () => {
               color: '#ef4444',
             }}
             onClick={() => {
+              const selectedPhotoData = data.tempBase64;
               const pics = data.progressPics;
-              const index = pics.findIndex(p => p.timestamp === data.tempTimestamp);
+              const index = pics.findIndex(p => p.base64 === selectedPhotoData);
               if (index !== -1 && window.confirm("Are you sure you want to delete this photo?")) {
                 const newPics = [...pics];
                 newPics.splice(index, 1);
                 setData((prev: DataType) => ({
                   ...prev,
                   progressPics: newPics,
-                  activeModal: null,
+                  activeModal: 'progress-photo-modal',
+                  tempBase64: null,
+                  tempTimestamp: null,
                 }));
               }
             }}

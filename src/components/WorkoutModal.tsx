@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
 import { useDrag, useDrop, DragSourceMonitor } from 'react-dnd';
-import { DataContext, Set } from '../DataContext';
+import { DataContext, type Set } from '../DataContext';
 
 const ItemType = 'EXERCISE';
 
@@ -88,12 +88,13 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      background: '#1a1a1a',
+      background: 'var(--bg-dark)',
       borderRadius: '16px',
       padding: '20px',
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       zIndex: 2000,
       minWidth: '280px',
+      border: '1px solid var(--border)',
     }}>
       <div style={{
         display: 'flex',
@@ -101,7 +102,7 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         alignItems: 'center',
         marginBottom: '20px',
       }}>
-        <h3 style={{ margin: 0, fontSize: '1.1em' }}>Rest Timer</h3>
+        <h3 style={{ margin: 0, fontSize: '1.1em', color: 'var(--text)' }}>Rest Timer</h3>
         <button
           onClick={onClose}
           style={{
@@ -357,8 +358,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         boxShadow: isDragging ? '0 16px 32px rgba(59, 130, 246, 0.5)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
         height: isCollapsed ? '36px' : 'auto',
         overflow: 'hidden',
-        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : isOver ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-        border: isDragging ? '2px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)',
+        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'var(--bg-lighter)' : isOver ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-lighter)',
+        border: isDragging ? '2px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid var(--border)',
         marginBottom: isOver ? '16px' : '6px',
         borderRadius: '10px',
         cursor: isDragging ? 'grabbing' : 'grab',
@@ -410,7 +411,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
           }}>
             {ex.name} 
             {ex.subtype && <span style={{ 
-              color: isDragging ? 'var(--accent-primary)' : 'rgba(255, 255, 255, 0.5)', 
+              color: isDragging ? 'var(--accent-primary)' : 'var(--text-muted)', 
               fontSize: '0.85em', 
               marginLeft: '4px',
               fontWeight: '400',
@@ -424,7 +425,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
           }} style={{ 
             fontSize: '1em', 
             padding: '2px 4px', 
-            color: 'rgba(255, 255, 255, 0.4)',
+            color: 'var(--text-muted)',
             cursor: 'pointer',
           }}>⋯</span>
         )}
@@ -437,7 +438,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             gap: '6px',
             marginBottom: '8px',
             fontSize: '0.6em',
-            color: 'rgba(255, 255, 255, 0.3)',
+            color: 'var(--text-muted)',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
             fontWeight: '600',
@@ -469,7 +470,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 <div 
                   style={{ 
                     fontWeight: '600',
-                    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'rgba(255,255,255,0.5)',
+                    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text-muted)',
                     fontSize: '0.7em',
                     paddingLeft: '4px',
                     textAlign: 'center',
@@ -482,7 +483,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   }}
                   onClick={() => toggleSetType(sIdx)}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.background = 'var(--bg-lighter)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'transparent';
@@ -493,7 +494,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 <div style={{ 
                   textAlign: 'center',
                   fontSize: '0.65em', 
-                  color: 'rgba(255, 255, 255, 0.3)',
+                  color: 'var(--text-muted)',
                   fontWeight: '500',
                 }}>
                   {ex.previousSets?.[sIdx]?.weight && ex.previousSets?.[sIdx]?.reps 
@@ -507,13 +508,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   inputMode="decimal"
                   placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'var(--bg-dark)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     textAlign: 'center',
                     fontSize: '0.75em',
                     fontWeight: '600',
-                    color: s.completed ? '#22C55E' : 'white',
+                    color: s.completed ? '#22C55E' : 'var(--text)',
                     padding: '5px 2px',
                     height: '28px',
                     width: '100%',
@@ -531,8 +532,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    e.target.style.background = 'rgba(255, 255, 255, 0.04)';
+                    e.target.style.borderColor = 'var(--border)';
+                    e.target.style.background = 'var(--bg-dark)';
                   }}
                 />
                 <div style={{ position: 'relative' }}>
@@ -543,13 +544,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     inputMode="numeric"
                     placeholder={ex.previousSets?.[sIdx]?.reps || "0"}
                     style={{
-                      background: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      background: 'var(--bg-dark)',
+                      border: '1px solid var(--border)',
                       borderRadius: '6px',
                       textAlign: 'center',
                       fontSize: '0.75em',
                       fontWeight: '600',
-                      color: s.completed ? '#22C55E' : 'white',
+                      color: s.completed ? '#22C55E' : 'var(--text)',
                       padding: '5px 2px',
                       height: '28px',
                       width: '100%',
@@ -563,8 +564,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                       e.target.style.background = 'rgba(59, 130, 246, 0.08)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                      e.target.style.background = 'rgba(255, 255, 255, 0.04)';
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.background = 'var(--bg-dark)';
                     }}
                   />
                   {!s.reps && ex.previousSets?.[sIdx]?.reps && (
@@ -574,7 +575,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                       left: '50%',
                       transform: 'translate(-50%, -50%)',
                       fontSize: '0.65em',
-                      color: 'rgba(255, 255, 255, 0.3)',
+                      color: 'var(--text-muted)',
                       pointerEvents: 'none',
                     }}>
                       {ex.previousSets[sIdx].reps}
@@ -591,12 +592,12 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   max={intensityMetric === 'rir' ? "10" : "10"}
                   placeholder="0"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'var(--bg-dark)',
+                    border: '1px solid var(--border)',
                     borderRadius: '6px',
                     textAlign: 'center',
                     fontSize: '0.7em',
-                    color: s.completed ? '#22C55E' : 'white',
+                    color: s.completed ? '#22C55E' : 'var(--text)',
                     padding: '5px 2px',
                     height: '28px',
                     width: '100%',
@@ -610,8 +611,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     e.target.style.background = 'rgba(59, 130, 246, 0.08)';
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    e.target.style.background = 'rgba(255, 255, 255, 0.04)';
+                    e.target.style.borderColor = 'var(--border)';
+                    e.target.style.background = 'var(--bg-dark)';
                   }}
                 />
                 <div 
@@ -622,10 +623,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                     height: '22px',
                     margin: '0 auto',
                     borderRadius: '5px',
-                    border: s.completed ? 'none' : '1.5px solid rgba(255, 255, 255, 0.2)',
+                    border: s.completed ? 'none' : '1.5px solid var(--border)',
                     background: s.completed 
                       ? '#22C55E' 
-                      : 'rgba(255, 255, 255, 0.03)',
+                      : 'var(--bg-dark)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -641,14 +642,14 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
               </div>
             );
           })}
-          <button 
+            <button 
             className="add-set-btn" 
             onClick={() => addSet(idx)}
             style={{
               marginTop: '8px',
               background: 'transparent',
-              border: '1px dashed rgba(255, 255, 255, 0.15)',
-              color: 'rgba(255, 255, 255, 0.4)',
+              border: '1px dashed var(--border)',
+              color: 'var(--text-muted)',
               padding: '6px',
               borderRadius: '6px',
               fontSize: '0.7em',
@@ -660,14 +661,14 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
               letterSpacing: '-0.2px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)';
+              e.currentTarget.style.background = 'var(--bg-dark)';
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.color = 'var(--text)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)';
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
             + Add Set
@@ -677,7 +678,6 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     </div>
   );
 };
-
 const WorkoutModal: React.FC = () => {
   const { data, setData } = useContext(DataContext);
   const currentWorkout = data.currentWorkout;
@@ -958,7 +958,7 @@ const WorkoutModal: React.FC = () => {
           <div className="drag-indicator" style={{
             width: '32px',
             height: '3px',
-            background: 'rgba(255,255,255,0.15)',
+            background: 'var(--border)',
             borderRadius: '2px',
             margin: '0 auto',
           }}></div>
@@ -995,7 +995,7 @@ const WorkoutModal: React.FC = () => {
                 fontSize: '18px',
                 padding: '6px',
                 borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
+                background: 'var(--bg-lighter)',
                 width: '34px',
                 height: '34px',
                 display: 'flex',
@@ -1003,7 +1003,7 @@ const WorkoutModal: React.FC = () => {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 border: 'none',
-                color: 'white',
+                color: 'var(--text)',
                 minWidth: '34px',
               }}
             >
@@ -1017,13 +1017,14 @@ const WorkoutModal: React.FC = () => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                fontSize: '0.95em',
-                fontWeight: '600',
+                fontSize: '1.1em',
+                fontWeight: '700',
                 textAlign: 'center',
                 flex: 1,
                 padding: '0',
-                color: 'white',
-                letterSpacing: '-0.2px',
+                color: 'var(--text)',
+                letterSpacing: '-0.3px',
+                marginTop: '2px',
               }}
             />
             <button 
@@ -1051,7 +1052,7 @@ const WorkoutModal: React.FC = () => {
             gap: '14px',
             marginBottom: '16px',
             fontSize: '0.8em',
-            color: 'rgba(255,255,255,0.4)',
+            color: 'var(--text-muted)',
             paddingLeft: '4px',
           }}>
             <div className="workout-date">📅 {new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</div>
@@ -1069,8 +1070,8 @@ const WorkoutModal: React.FC = () => {
               width: '100%',
               padding: '10px',
               background: 'transparent',
-              color: 'rgba(255, 255, 255, 0.5)',
-              border: '1px dashed rgba(255, 255, 255, 0.2)',
+              color: 'var(--text-muted)',
+              border: '1px dashed var(--border)',
               borderRadius: '8px',
               fontSize: '0.8em',
               fontWeight: '600',
@@ -1081,14 +1082,14 @@ const WorkoutModal: React.FC = () => {
               letterSpacing: '-0.3px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+              e.currentTarget.style.background = 'var(--bg-lighter)';
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.color = 'var(--text)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
             + Add Exercise
@@ -1100,8 +1101,8 @@ const WorkoutModal: React.FC = () => {
               width: '100%',
               padding: '10px',
               background: 'transparent',
-              color: 'rgba(239, 68, 68, 0.6)',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: 'rgba(239, 68, 68, 0.8)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
               borderRadius: '8px',
               fontSize: '0.8em',
               fontWeight: '600',
@@ -1110,14 +1111,14 @@ const WorkoutModal: React.FC = () => {
               letterSpacing: '-0.3px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)';
-              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-              e.currentTarget.style.color = 'rgba(239, 68, 68, 0.8)';
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+              e.currentTarget.style.color = '#ef4444';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
-              e.currentTarget.style.color = 'rgba(239, 68, 68, 0.6)';
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+              e.currentTarget.style.color = 'rgba(239, 68, 68, 0.8)';
             }}
           >
             Cancel Workout
@@ -1132,13 +1133,13 @@ const WorkoutModal: React.FC = () => {
               position: 'absolute',
               top: `${inlineMenuPosition.top}px`,
               left: `${inlineMenuPosition.left}px`,
-              background: '#1a1a1a',
+              background: 'var(--bg-dark)',
               borderRadius: '8px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
               padding: '4px',
               zIndex: 1000,
               minWidth: '140px',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid var(--border)',
             }}
           >
             <div 
@@ -1148,10 +1149,10 @@ const WorkoutModal: React.FC = () => {
                 borderRadius: '4px',
                 transition: 'background 0.15s',
                 fontSize: '0.8em',
-                color: 'white',
+                color: 'var(--text)',
               }}
               onClick={deleteExercise}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               Delete Exercise
@@ -1163,10 +1164,10 @@ const WorkoutModal: React.FC = () => {
                 borderRadius: '4px',
                 transition: 'background 0.15s',
                 fontSize: '0.8em',
-                color: 'white',
+                color: 'var(--text)',
               }}
               onClick={deleteLastSet}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               Delete Last Set

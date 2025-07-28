@@ -7,7 +7,7 @@ export interface Set {
   weight: string;
   reps: string;
   rpe: string;
-  rir?: string;
+  rir?: string; // Added rir property for RIR metric support
   completed: boolean;
   type?: 'W' | 'D' | 'S';
 }

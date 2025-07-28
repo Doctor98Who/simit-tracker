@@ -22,7 +22,12 @@ const ProgressTab = () => {
   const openPhotoModal = (pic: ProgressPic, index: number) => {
     setSelectedPhoto(pic);
     setSelectedPhotoIndex(index);
-    setData(prev => ({ ...prev, activeModal: 'progress-photo-modal' }));
+    setData(prev => ({ 
+      ...prev, 
+      activeModal: 'progress-photo-modal',
+      tempBase64: pic.base64,
+      tempTimestamp: pic.timestamp
+    }));
   };
 
   const navigatePhoto = (direction: 'prev' | 'next') => {
@@ -33,26 +38,27 @@ const ProgressTab = () => {
       newIndex = selectedPhotoIndex + 1;
     }
     setSelectedPhotoIndex(newIndex);
-    setSelectedPhoto(sortedProgressPics[newIndex]);
+    const newPhoto = sortedProgressPics[newIndex];
+    setSelectedPhoto(newPhoto);
+    setData(prev => ({ 
+      ...prev, 
+      tempBase64: newPhoto.base64,
+      tempTimestamp: newPhoto.timestamp
+    }));
   };
 
   const closePhotoModal = () => {
     setSelectedPhoto(null);
-    setData(prev => ({ ...prev, activeModal: null }));
+    setData(prev => ({ 
+      ...prev, 
+      activeModal: null,
+      tempBase64: null,
+      tempTimestamp: null
+    }));
   };
 
   const uploadProgressPic = () => {
     setData(prev => ({ ...prev, activeModal: 'progress-upload-modal' }));
-  };
-
-  const deleteProgressPic = (index: number) => {
-    if (window.confirm("Are you sure you want to delete this progress pic?")) {
-      const newPics = [...data.progressPics];
-      const actualIndex = data.progressPics.indexOf(sortedProgressPics[index]);
-      newPics.splice(actualIndex, 1);
-      setData(prev => ({ ...prev, progressPics: newPics }));
-      closePhotoModal();
-    }
   };
 
   const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: ProgressPic, index: number) => (
