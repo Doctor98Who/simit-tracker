@@ -54,14 +54,13 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         alignItems: 'center',
         justifyContent: 'flex-start',
         position: 'relative',
-        backgroundColor: data.theme === 'dark' ? '#1a1a1a' : '#ffffff', // Match theme background
       }}>
        <img 
         src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'} 
         alt="Pump Inc Logo" 
         className="logo" 
         style={{
-        height: '80px',
+        height: '100px',
         width: 'auto',
         objectFit: 'contain',
         backgroundColor: 'transparent', // Ensure no background on img
