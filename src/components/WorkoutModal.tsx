@@ -408,7 +408,6 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             fontWeight: '600',
             color: isDragging ? 'var(--accent-primary)' : 'var(--accent-blue)',
             letterSpacing: '-0.3px',
-            marginTop: '20px',
             
           }}>
             {ex.name} 
