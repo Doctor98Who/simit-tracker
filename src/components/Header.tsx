@@ -1,37 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { DataContext } from '../DataContext'; // ✅ Fixed import path
+import type { DataContextType } from '../DataContext'; // ✅ Also import the type
+import logoDark from './public/logo-dark.png';
+import logoLight from './public/logo-light.png';
 
 interface HeaderProps {
-  version?: string; // Optional prop for dynamic version
+  version?: string;
 }
+
 const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
+  const { data } = useContext(DataContext) as DataContextType; // ✅ Type assertion fixes 'unknown' error
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
-    // Check if service worker is supported
     if ('serviceWorker' in navigator) {
-      // Listen for messages from service worker
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data.type === 'NEW_VERSION_AVAILABLE') {
-          console.log('New version available:', event.data.version);
           setUpdateAvailable(true);
         }
       });
 
-      // Check for updates when the page loads
       navigator.serviceWorker.ready.then((registration) => {
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
-          
+
           newWorker?.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New update available
-              console.log('New service worker installed');
               setUpdateAvailable(true);
             }
           });
         });
 
-        // Check for updates periodically (every 30 minutes)
         setInterval(() => {
           registration.update();
         }, 30 * 60 * 1000);
@@ -40,12 +39,8 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
   }, []);
 
   const handleUpdate = () => {
-    if (updateAvailable) {
-      // Send message to service worker to skip waiting
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
-      }
-      // Reload the page to get the new version
+    if (updateAvailable && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
       window.location.reload();
     }
   };
@@ -60,9 +55,10 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         justifyContent: 'flex-start',
         position: 'relative',
       }}>
-        <img 
-          src="/icon.png" 
-          alt="Pump Inc. Logo" 
+        <img
+          src={data.theme === 'light' ? logoLight : logoDark}
+          alt="Pump Inc Logo"
+          className="logo"
           style={{
             height: '80px',
             width: 'auto',
@@ -76,9 +72,11 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
           transform: 'translateY(-50%)',
           fontSize: '0.6em',
           color: 'var(--text-muted)',
-        }}>{version}</span>
+        }}>
+          {version}
+        </span>
       </div>
-      
+
       {updateAvailable && (
         <div style={{
           background: 'var(--accent-gradient)',

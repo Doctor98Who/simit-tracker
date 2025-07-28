@@ -230,3 +230,4 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     </DataContext.Provider>
   );
 };
+export type { DataContextType };
