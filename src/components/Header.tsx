@@ -60,13 +60,13 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         alt="Pump Inc Logo" 
         className="logo" 
         style={{
-        height: '100px',
+        height: '110px',
         width: 'auto',
         objectFit: 'contain',
-        backgroundColor: data.theme === 'dark' ? '#000000' : '#ffffff', // Match header background        border: 'none', // Remove any default border
-        boxShadow: 'none', // Remove any shadow
-        outline: 'none', // Remove any outline
-  }}
+        backgroundColor: 'transparent', // Rely on parent background
+        border: 'none',
+        boxShadow: 'none',
+        outline: 'none',  }}
 />
         <span id="app-version" style={{
           position: 'absolute',
