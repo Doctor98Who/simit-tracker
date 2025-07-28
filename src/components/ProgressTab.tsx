@@ -15,12 +15,25 @@ interface ProgressPic {
 const ProgressTab = () => {
   const { data, setData } = useContext(DataContext);
   const [selectedPhoto, setSelectedPhoto] = useState<ProgressPic | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
 
   const sortedProgressPics = useMemo(() => [...data.progressPics].sort((a: ProgressPic, b: ProgressPic) => b.timestamp - a.timestamp), [data.progressPics]);
 
-  const openPhotoModal = (pic: ProgressPic) => {
+  const openPhotoModal = (pic: ProgressPic, index: number) => {
     setSelectedPhoto(pic);
+    setSelectedPhotoIndex(index);
     setData(prev => ({ ...prev, activeModal: 'progress-photo-modal' }));
+  };
+
+  const navigatePhoto = (direction: 'prev' | 'next') => {
+    let newIndex = selectedPhotoIndex;
+    if (direction === 'prev' && selectedPhotoIndex > 0) {
+      newIndex = selectedPhotoIndex - 1;
+    } else if (direction === 'next' && selectedPhotoIndex < sortedProgressPics.length - 1) {
+      newIndex = selectedPhotoIndex + 1;
+    }
+    setSelectedPhotoIndex(newIndex);
+    setSelectedPhoto(sortedProgressPics[newIndex]);
   };
 
   const closePhotoModal = () => {
@@ -46,7 +59,7 @@ const ProgressTab = () => {
     <div 
       key={index} 
       className="progress-pic"
-      onClick={() => openPhotoModal(pic)}
+      onClick={() => openPhotoModal(pic, index)}
       style={{
         position: 'relative',
         cursor: 'pointer',
@@ -147,24 +160,21 @@ const ProgressTab = () => {
               </button>
               <span style={{ fontSize: '1.1em', fontWeight: '600' }}>Progress Photo</span>
               <button
-                onClick={() => {
-                  const index = sortedProgressPics.indexOf(selectedPhoto);
-                  if (index !== -1) deleteProgressPic(index);
-                }}
+                onClick={() => setData(prev => ({ ...prev, activeModal: 'photo-menu-modal' }))}
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#ef4444',
+                  color: 'var(--text)',
                   fontSize: '1em',
                   cursor: 'pointer',
                   padding: '4px',
                 }}
               >
-                🗑️
+                ⋯
               </button>
             </div>
 
-            {/* Image */}
+            {/* Image with navigation */}
             <div style={{
               flex: 1,
               display: 'flex',
@@ -172,7 +182,34 @@ const ProgressTab = () => {
               justifyContent: 'center',
               background: 'black',
               overflow: 'hidden',
+              position: 'relative',
             }}>
+              {selectedPhotoIndex > 0 && (
+                <button
+                  onClick={() => navigatePhoto('prev')}
+                  style={{
+                    position: 'absolute',
+                    left: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '1.2em',
+                    color: 'white',
+                    zIndex: 10,
+                  }}
+                >
+                  ‹
+                </button>
+              )}
+              
               <img 
                 src={selectedPhoto.base64} 
                 alt="Progress"
@@ -182,6 +219,32 @@ const ProgressTab = () => {
                   objectFit: 'contain',
                 }}
               />
+              
+              {selectedPhotoIndex < sortedProgressPics.length - 1 && (
+                <button
+                  onClick={() => navigatePhoto('next')}
+                  style={{
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '1.2em',
+                    color: 'white',
+                    zIndex: 10,
+                  }}
+                >
+                  ›
+                </button>
+              )}
             </div>
 
             {/* Details */}

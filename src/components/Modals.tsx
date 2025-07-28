@@ -622,12 +622,41 @@ const Modals = () => {
         equipment: equipment || '',
         sets: []
       };
-      setData((prev: DataType) => ({
-        ...prev,
-        customExercises: [...prev.customExercises, newExercise],
-        activeModal: prev.returnModal || null,
-        returnModal: null,
-      }));
+      
+      // Add to custom exercises database
+      const updatedCustomExercises = [...data.customExercises, newExercise];
+      
+      // If we came from exercise select modal during workout, add to workout too
+      if (data.returnModal === 'exercise-select-modal' && data.isWorkoutSelect && data.currentWorkout) {
+        const workoutExercise = {
+          ...newExercise,
+          sets: Array.from({ length: 3 }, () => ({
+            weight: '',
+            reps: '',
+            rpe: '',
+            completed: false,
+          })),
+        };
+        
+        setData((prev: DataType) => ({
+          ...prev,
+          customExercises: updatedCustomExercises,
+          currentWorkout: {
+            ...prev.currentWorkout!,
+            exercises: [...prev.currentWorkout!.exercises, workoutExercise]
+          },
+          activeModal: 'workout-modal',
+          returnModal: null,
+          isWorkoutSelect: false,
+        }));
+      } else {
+        setData((prev: DataType) => ({
+          ...prev,
+          customExercises: updatedCustomExercises,
+          activeModal: prev.returnModal || null,
+          returnModal: null,
+        }));
+      }
     }
   };
 
@@ -646,7 +675,7 @@ const Modals = () => {
 
   // Feedback modal handlers
   const finishWorkout = () => {
-    const pump = (document.getElementById('pump-select') as HTMLSelectElement)?.value || '';
+    const pump = (document.getElementById('pump-select') as HTMLInputElement)?.value || '';
     const soreness = (document.getElementById('soreness-select') as HTMLSelectElement)?.value || '';
     const workload = (document.getElementById('workload-select') as HTMLSelectElement)?.value || '';
     const suggestion = (document.getElementById('suggestion-select') as HTMLSelectElement)?.value || '';
@@ -764,18 +793,19 @@ const Modals = () => {
     setMinimizedDragY(0);
   };
 
-  // Calculate the preview height based on drag distance
+  // Calculate the preview style based on drag distance
   const getMinimizedStyle = () => {
-    const baseHeight = 90; // Base height of minimized view
-    const maxPreviewHeight = window.innerHeight * 0.7; // Max 70% of viewport
+    const baseHeight = 80; // Reduced base height
+    const maxPreviewHeight = window.innerHeight * 0.8; // Max 80% of viewport
     
     if (isDraggingMinimized && minimizedDragY < 0) {
       // Calculate expansion based on drag distance
-      const expansion = Math.min(Math.abs(minimizedDragY) * 2, maxPreviewHeight - baseHeight);
+      const expansion = Math.min(Math.abs(minimizedDragY) * 2.5, maxPreviewHeight - baseHeight);
       return {
         height: `${baseHeight + expansion}px`,
         transform: 'none',
         transition: 'none',
+        borderRadius: Math.abs(minimizedDragY) > 50 ? '20px 20px 0 0' : '0',
       };
     }
     
@@ -783,6 +813,7 @@ const Modals = () => {
       height: `${baseHeight}px`,
       transform: 'none',
       transition: 'all 0.3s ease',
+      borderRadius: '0',
     };
   };
 
@@ -845,7 +876,27 @@ const Modals = () => {
         <div className="modal-content">
           <span className="back-button" onClick={goBack}>←</span>
           <h2>Edit Day</h2>
-          <input type="text" id="day-name" placeholder="Day Name (e.g., Push Day)" />
+          <input 
+            type="text" 
+            id="day-name" 
+            placeholder="Day Name (e.g., Push Day)" 
+            onBlur={(e) => {
+              // Save day name on blur to prevent losing it
+              if (data.currentWeekIndex !== null && data.currentDayIndex !== null) {
+                const newDays = [...data.currentProgram.weeks[data.currentWeekIndex].days];
+                newDays[data.currentDayIndex] = {
+                  ...newDays[data.currentDayIndex],
+                  name: e.target.value
+                };
+                const newWeeks = [...data.currentProgram.weeks];
+                newWeeks[data.currentWeekIndex] = { days: newDays };
+                setData((prev: DataType) => ({
+                  ...prev,
+                  currentProgram: { ...prev.currentProgram, weeks: newWeeks }
+                }));
+              }
+            }}
+          />
           <button onClick={addExerciseToDay}>Add Exercise</button>
           <div id="day-exercises">{renderDayExercises}</div>
           <button onClick={saveDayToWeek}>Save Day</button>
@@ -940,7 +991,6 @@ const Modals = () => {
             maxWidth: '428px',
             margin: '0 auto',
             background: 'linear-gradient(to top, var(--bg-light), rgba(28, 28, 30, 0.98))',
-            borderRadius: isDraggingMinimized && minimizedDragY < 0 ? '20px 20px 0 0' : '0',
             padding: '10px 16px 70px',
             boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
@@ -1605,6 +1655,126 @@ const Modals = () => {
           </div>
           
           <button onClick={closeModal} style={{ width: '100%' }}>Done</button>
+        </div>
+      </div>
+      
+      <div id="photo-menu-modal" className={`modal ${activeModal === 'photo-menu-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'white',
+            }}
+            onClick={() => {
+              // TODO: Implement edit functionality
+              alert('Edit functionality coming soon!');
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Edit
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={() => {
+              const pics = data.progressPics;
+              const index = pics.findIndex(p => p.timestamp === data.tempTimestamp);
+              if (index !== -1 && window.confirm("Are you sure you want to delete this photo?")) {
+                const newPics = [...pics];
+                newPics.splice(index, 1);
+                setData((prev: DataType) => ({
+                  ...prev,
+                  progressPics: newPics,
+                  activeModal: null,
+                }));
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Delete
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={() => setData(prev => ({ ...prev, activeModal: 'progress-photo-modal' }))}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
+        </div>
+      </div>
+
+      <div id="progress-menu-modal" className={`modal ${activeModal === 'progress-menu-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={() => {
+              if (data.currentProgName && window.confirm("Are you sure you want to remove this program from progress?")) {
+                const newCompletedPrograms = { ...data.completedPrograms };
+                delete newCompletedPrograms[data.currentProgName];
+                setData((prev: DataType) => ({
+                  ...prev,
+                  completedPrograms: newCompletedPrograms,
+                  activeModal: null,
+                }));
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Remove from Progress
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={closeModal}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
         </div>
       </div>
       

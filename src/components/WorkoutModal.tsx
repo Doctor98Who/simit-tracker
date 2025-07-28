@@ -22,6 +22,7 @@ interface WorkoutExerciseItemProps {
   isGlobalDragging: boolean;
   onDragStart: () => void;
   onDragEnd: () => void;
+  intensityMetric: 'rpe' | 'rir';
 }
 
 interface DragItem {
@@ -179,8 +180,10 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   addSet,
   isGlobalDragging,
   onDragStart,
-  onDragEnd
+  onDragEnd,
+  intensityMetric
 }) => {
+  const { data } = useContext(DataContext);
   const ref = useRef<HTMLDivElement>(null);
   const [isHolding, setIsHolding] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -445,7 +448,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             <div style={{ textAlign: 'center' }}>Previous</div>
             <div style={{ textAlign: 'center' }}>Weight</div>
             <div style={{ textAlign: 'center' }}>Reps</div>
-            <div style={{ textAlign: 'center' }}>RPE</div>
+            <div style={{ textAlign: 'center' }}>{intensityMetric.toUpperCase()}</div>
             <div></div>
           </div>
           {ex.sets.map((s, sIdx) => {
@@ -579,11 +582,13 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   )}
                 </div>
                 <input 
-                  value={s.rpe} 
-                  onChange={(e) => updateSet(idx, sIdx, 'rpe', e.target.value)}
+                  value={s[intensityMetric] || ''} 
+                  onChange={(e) => updateSet(idx, sIdx, intensityMetric, e.target.value)}
                   type="number"
                   inputMode="decimal"
                   step="0.5"
+                  min={intensityMetric === 'rir' ? "0" : "1"}
+                  max={intensityMetric === 'rir' ? "10" : "10"}
                   placeholder="0"
                   style={{
                     background: 'rgba(255, 255, 255, 0.04)',
@@ -844,58 +849,6 @@ const WorkoutModal: React.FC = () => {
     }
   };
 
-  const toggleSetType = (exIdx: number, setIdx: number) => {
-    if (!currentWorkout) return;
-    const newExercises = [...currentWorkout.exercises];
-    const currentSet = newExercises[exIdx].sets[setIdx];
-    
-    // Cycle through: S (undefined) -> W -> D -> S
-    let newType: 'W' | 'D' | 'S' | undefined;
-    if (!currentSet.type || currentSet.type === 'S') {
-      newType = 'W';
-    } else if (currentSet.type === 'W') {
-      newType = 'D';
-    } else {
-      newType = 'S';
-    }
-    
-    const newSets = [...newExercises[exIdx].sets];
-    newSets[setIdx] = { ...newSets[setIdx], type: newType };
-    
-    // Renumber sets based on type
-    let setNumber = 1;
-    let warmupNumber = 1;
-    let dropsetNumber = 1;
-    
-    newSets.forEach((set, idx) => {
-      if (set.type === 'W') {
-        // Warmup sets don't affect regular set numbering
-      } else if (set.type === 'D') {
-        // Dropsets don't affect regular set numbering
-      } else {
-        // Regular sets
-        setNumber++;
-      }
-    });
-    
-    newExercises[exIdx] = { ...newExercises[exIdx], sets: newSets };
-    setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
-  };
-
-  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
-    if (set.type === 'W') return 'W';
-    if (set.type === 'D') return 'D';
-    
-    // Count only regular sets before this one
-    let regularSetNumber = 1;
-    for (let i = 0; i < setIdx; i++) {
-      if (!allSets[i].type || allSets[i].type === 'S') {
-        regularSetNumber++;
-      }
-    }
-    return regularSetNumber.toString();
-  };
-
   const updateSet = useCallback((exIdx: number, setIdx: number, field: keyof Set, value: any) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
@@ -904,7 +857,7 @@ const WorkoutModal: React.FC = () => {
     newExercises[exIdx] = { ...newExercises[exIdx], sets: newSets };
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
-  
+
   const addSet = useCallback((exIdx: number) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
@@ -948,9 +901,10 @@ const WorkoutModal: React.FC = () => {
         isGlobalDragging={isGlobalDragging}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        intensityMetric={data.intensityMetric}
       />
     ));
-  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet, isGlobalDragging, handleDragStart, handleDragEnd]);
+  }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet, isGlobalDragging, handleDragStart, handleDragEnd, data.intensityMetric]);
 
   const cancelWorkout = () => {
     if (window.confirm("Are you sure you want to cancel this workout?")) {
@@ -975,7 +929,7 @@ const WorkoutModal: React.FC = () => {
           maxWidth: '100%',
           width: '100%',
           height: '100vh',
-          background: '#0A0A0A',
+          background: 'var(--bg-dark)',
           padding: '0',
           borderRadius: '20px 20px 0 0',
           overflow: 'hidden',
@@ -995,7 +949,7 @@ const WorkoutModal: React.FC = () => {
           style={{
             padding: '6px',
             cursor: 'grab',
-            background: '#0A0A0A',
+            background: 'var(--bg-dark)',
             position: 'sticky',
             top: 0,
             zIndex: 10,
@@ -1029,7 +983,7 @@ const WorkoutModal: React.FC = () => {
             padding: '0 4px',
             position: 'sticky',
             top: 0,
-            background: '#0A0A0A',
+            background: 'var(--bg-dark)',
             zIndex: 5,
             paddingTop: '10px',
             paddingBottom: '10px',

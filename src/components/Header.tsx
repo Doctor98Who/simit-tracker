@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 interface HeaderProps {
   version?: string; // Optional prop for dynamic version
 }
-const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.0.23' }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -52,9 +52,31 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
 
   return (
     <>
-      <div className="header">
-        <img src="/icon.png" alt="Pump Inc. Logo" />
-        <span id="app-version">{version}</span>
+      <div className="header" style={{
+        background: 'transparent',
+        padding: '10px 15px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        position: 'relative',
+      }}>
+        <img 
+          src="/icon.png" 
+          alt="Pump Inc. Logo" 
+          style={{
+            height: '80px',
+            width: 'auto',
+            objectFit: 'contain',
+          }}
+        />
+        <span id="app-version" style={{
+          position: 'absolute',
+          right: '15px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          fontSize: '0.6em',
+          color: 'var(--text-muted)',
+        }}>{version}</span>
       </div>
       
       {updateAvailable && (

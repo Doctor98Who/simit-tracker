@@ -7,6 +7,7 @@ export interface Set {
   weight: string;
   reps: string;
   rpe: string;
+  rir?: string;
   completed: boolean;
   type?: 'W' | 'D' | 'S';
 }

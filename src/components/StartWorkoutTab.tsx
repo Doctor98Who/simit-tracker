@@ -80,6 +80,15 @@ const StartWorkoutTab = () => {
     }));
   }, [setData]);
 
+  const openProgressMenu = useCallback((programName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setData(prev => ({ 
+      ...prev, 
+      currentProgName: programName, 
+      activeModal: 'progress-menu-modal' 
+    }));
+  }, [setData]);
+
   const renderedProgramsInProgress = useMemo(() => {
     const completedProgramNames = Object.keys(data.completedPrograms);
     if (completedProgramNames.length === 0) {
@@ -99,10 +108,11 @@ const StartWorkoutTab = () => {
         <div key={programName} className="program-card" onClick={() => showProgramWeeks(program)}>
           <div className="program-name">{programName}</div>
           <div className="program-details">Progress: {completedDays}/{totalDays} days</div>
+          <span className="exercise-menu" onClick={(e) => openProgressMenu(programName, e)}>⋯</span>
         </div>
       );
     }).filter(Boolean);
-  }, [data.completedPrograms, data.templates, simitPrograms, showProgramWeeks]);
+  }, [data.completedPrograms, data.templates, simitPrograms, showProgramWeeks, openProgressMenu]);
 
   const renderedTemplates = useMemo(() => {
     if (data.templates.length === 0) {
