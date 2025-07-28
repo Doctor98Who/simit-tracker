@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 interface HeaderProps {
   version?: string; // Optional prop for dynamic version
 }
-const Header: React.FC<HeaderProps> = ({ version = 'v0.0.23' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -53,8 +53,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.23' }) => {
   return (
     <>
       <div className="header">
-        <img src="/icon.png" alt="Simit Tracker Logo" />
-        Simit Tracker
+        <img src="/icon.png" alt="Pump Inc. Logo" />
         <span id="app-version">{version}</span>
       </div>
       

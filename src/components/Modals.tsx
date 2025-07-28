@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { DataContext, DataType, Exercise } from '../DataContext';
 import WorkoutModal from './WorkoutModal';
+import EXIF from 'exif-js';
 
 interface Day {
   name: string;
@@ -298,15 +299,15 @@ const Modals = () => {
         const name = ex.name.toLowerCase();
         const subtype = (ex.subtype || '').toLowerCase();
         
-        // Check if either name or subtype starts with the query
-        return name.startsWith(query) || subtype.startsWith(query);
+        // Check if query appears anywhere in name or subtype
+        return name.includes(query) || subtype.includes(query);
       });
     }
     
     filtered.sort((a, b) => a.name.localeCompare(b.name));
 
     if (filtered.length === 0 && query) {
-      return [<div key="no-results" className="feed-placeholder" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No exercises found starting with "{query}"</div>];
+      return [<div key="no-results" className="feed-placeholder" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No exercises found containing "{query}"</div>];
     }
 
     let currentLetter = '';
@@ -624,7 +625,8 @@ const Modals = () => {
       setData((prev: DataType) => ({
         ...prev,
         customExercises: [...prev.customExercises, newExercise],
-        activeModal: null,
+        activeModal: prev.returnModal || null,
+        returnModal: null,
       }));
     }
   };
@@ -862,6 +864,28 @@ const Modals = () => {
         }}>
           <div className="exercise-select-header">
             <h2>Select Exercise</h2>
+            <button
+              onClick={() => {
+                setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'custom-exercise-modal',
+                  returnModal: 'exercise-select-modal'
+                }));
+              }}
+              style={{
+                background: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '0.85em',
+                fontWeight: '600',
+                cursor: 'pointer',
+                marginTop: '10px',
+              }}
+            >
+              + Create Custom Exercise
+            </button>
           </div>
           <div className="exercise-select-search">
             <input
@@ -1090,37 +1114,125 @@ const Modals = () => {
       <div id="feedback-modal" className={`modal ${activeModal === 'feedback-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>How was your workout?</h2>
-          <select id="pump-select" className="feedback-select">
-            <option value="">Pump?</option>
-            <option value="1">1 - None</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5 - Insane</option>
-          </select>
-          <select id="soreness-select" className="feedback-select">
-            <option value="">Soreness?</option>
-            <option value="1">1 - None</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5 - Very Sore</option>
-          </select>
-          <select id="workload-select" className="feedback-select">
-            <option value="">Workload?</option>
-            <option value="1">1 - Very Easy</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5 - Very Hard</option>
-          </select>
-          <select id="suggestion-select" className="feedback-select">
-            <option value="">Next Time?</option>
-            <option value="increase">Increase Weight/Reps</option>
-            <option value="maintain">Keep Same</option>
-            <option value="decrease">Decrease Weight/Reps</option>
-          </select>
-          <button onClick={finishWorkout}>Finish</button>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+              Pump Quality (1-100)
+            </label>
+            <input 
+              type="range" 
+              id="pump-select"
+              min="1"
+              max="100"
+              defaultValue="50"
+              style={{
+                width: '100%',
+                marginBottom: '8px',
+              }}
+              onChange={(e) => {
+                const value = e.target.value;
+                const label = document.getElementById('pump-feedback-value');
+                if (label) label.textContent = value;
+              }}
+            />
+            <div style={{ textAlign: 'center', fontSize: '1.1em', fontWeight: '600' }}>
+              <span id="pump-feedback-value">50</span>/100
+            </div>
+          </div>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+              Recovery Status
+            </label>
+            <select id="soreness-select" className="feedback-select" style={{ width: '100%' }}>
+              <option value="">How recovered do you feel?</option>
+              <option value="fully-recovered">Fully Recovered - No soreness</option>
+              <option value="mostly-recovered">Mostly Recovered - Minor soreness</option>
+              <option value="somewhat-recovered">Somewhat Recovered - Moderate soreness</option>
+              <option value="not-recovered">Not Recovered - Very sore</option>
+            </select>
+          </div>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+              Workout Difficulty
+            </label>
+            <select id="workload-select" className="feedback-select" style={{ width: '100%' }}>
+              <option value="">How hard was this workout?</option>
+              <option value="too-easy">Too Easy - Could do much more</option>
+              <option value="easy">Easy - Could do more</option>
+              <option value="just-right">Just Right - Challenging but doable</option>
+              <option value="hard">Hard - Almost at limit</option>
+              <option value="too-hard">Too Hard - Couldn't complete properly</option>
+            </select>
+          </div>
+          
+          <button onClick={() => {
+            const pump = (document.getElementById('pump-select') as HTMLInputElement)?.value || '50';
+            const soreness = (document.getElementById('soreness-select') as HTMLSelectElement)?.value || '';
+            const workload = (document.getElementById('workload-select') as HTMLSelectElement)?.value || '';
+            
+            // Calculate suggestion based on feedback
+            let suggestion = 'maintain';
+            const pumpValue = parseInt(pump);
+            
+            if (workload === 'too-easy' && pumpValue < 70) {
+              suggestion = 'increase';
+            } else if (workload === 'easy' && soreness === 'fully-recovered') {
+              suggestion = 'increase';
+            } else if (workload === 'too-hard' || soreness === 'not-recovered') {
+              suggestion = 'decrease';
+            } else if (pumpValue > 80 && workload === 'just-right') {
+              suggestion = 'maintain';
+            }
+            
+            if (data.currentWorkout) {
+              const finishedWorkout = {
+                ...data.currentWorkout,
+                duration: Date.now() - data.currentWorkout.startTime,
+                pump,
+                soreness,
+                workload,
+                suggestion,
+              };
+              
+              // Track program progress if this workout is from a program
+              let updatedCompletedPrograms = { ...data.completedPrograms };
+              
+              // Check if this workout is from a program by checking the workout name
+              const workoutName = data.currentWorkout.name;
+              
+              // Find matching program
+              const allPrograms = [...data.templates, ...simitPrograms];
+              for (const program of allPrograms) {
+                for (let weekIdx = 0; weekIdx < program.weeks.length; weekIdx++) {
+                  const week = program.weeks[weekIdx];
+                  for (let dayIdx = 0; dayIdx < week.days.length; dayIdx++) {
+                    const day = week.days[dayIdx];
+                    if (day.name === workoutName) {
+                      // Found matching program day
+                      if (!updatedCompletedPrograms[program.name]) {
+                        updatedCompletedPrograms[program.name] = {};
+                      }
+                      updatedCompletedPrograms[program.name][`${weekIdx}-${dayIdx}`] = true;
+                    }
+                  }
+                }
+              }
+              
+              setData((prev: DataType) => ({
+                ...prev,
+                history: [...prev.history, finishedWorkout],
+                completedPrograms: updatedCompletedPrograms,
+                currentWorkout: null,
+                activeModal: null,
+                isWorkoutSelect: false,
+                returnModal: null
+              }));
+            }
+          }}>
+            Finish
+          </button>
           <button className="secondary" onClick={() => openModal('workout-modal')}>Cancel</button>
         </div>
       </div>
@@ -1221,10 +1333,285 @@ const Modals = () => {
         </div>
       </div>
       
+      <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{ maxWidth: '400px' }}>
+          <h2>New Progress Photo</h2>
+          
+          {data.tempBase64 ? (
+            <>
+              <div style={{
+                width: '100%',
+                height: '300px',
+                marginBottom: '16px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                background: 'var(--bg-lighter)',
+              }}>
+                <img 
+                  src={data.tempBase64} 
+                  alt="Preview"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              </div>
+              
+              <textarea
+                id="progress-caption"
+                placeholder="Write a caption..."
+                style={{
+                  width: '100%',
+                  minHeight: '80px',
+                  padding: '12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  resize: 'vertical',
+                  marginBottom: '16px',
+                }}
+              />
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                  Weight (optional)
+                </label>
+                <input 
+                  type="number" 
+                  id="progress-weight" 
+                  placeholder="Enter weight in lbs"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                  Pump Rating
+                </label>
+                <input 
+                  type="range" 
+                  id="progress-pump"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  style={{
+                    width: '100%',
+                    marginBottom: '8px',
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const label = document.getElementById('pump-value');
+                    if (label) label.textContent = value;
+                  }}
+                />
+                <div style={{ textAlign: 'center', fontSize: '1.2em', fontWeight: '600' }}>
+                  <span id="pump-value">50</span>/100
+                </div>
+              </div>
+              
+              <button onClick={() => {
+                const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+                
+                if (data.tempBase64 && data.tempTimestamp) {
+                  const newPic = {
+                    base64: data.tempBase64,
+                    timestamp: data.tempTimestamp,
+                    caption,
+                    weight,
+                    pump,
+                    likes: 0,
+                    comments: [],
+                  };
+                  setData((prev: DataType) => ({
+                    ...prev,
+                    progressPics: [...prev.progressPics, newPic],
+                    tempBase64: null,
+                    tempTimestamp: null,
+                    activeModal: null,
+                  }));
+                }
+              }}>
+                Share
+              </button>
+              <button 
+                className="secondary" 
+                onClick={() => setData(prev => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
+              >
+                Choose Different Photo
+              </button>
+            </>
+          ) : (
+            <>
+              <div 
+                style={{
+                  border: '2px dashed var(--border)',
+                  borderRadius: '12px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e: Event) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.files && target.files[0]) {
+                      const file = target.files[0];
+                      const reader = new FileReader();
+                      reader.onload = (event: ProgressEvent<FileReader>) => {
+                        const base64 = event.target?.result as string;
+                        const img = new Image();
+                        img.src = base64;
+                        img.onload = () => {
+                          EXIF.getData(img as any, function() {
+                            let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
+                            let timestamp = Date.now();
+                            if (exifDate) {
+                              const parts = exifDate.split(' ');
+                              const datePart = parts[0].replace(/:/g, '-');
+                              const timePart = parts[1];
+                              const dt = new Date(`${datePart}T${timePart}`);
+                              if (!isNaN(dt.getTime())) {
+                                timestamp = dt.getTime();
+                              }
+                            }
+                            setData(prev => ({ 
+                              ...prev, 
+                              tempBase64: base64, 
+                              tempTimestamp: timestamp 
+                            }));
+                          });
+                        };
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  };
+                  input.click();
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <div style={{ fontSize: '3em', marginBottom: '16px' }}>📸</div>
+                <div style={{ fontSize: '1.1em', fontWeight: '600', marginBottom: '8px' }}>
+                  Choose a photo
+                </div>
+                <div style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                  Tap to select from your gallery
+                </div>
+              </div>
+              <button className="secondary" onClick={closeModal}>Cancel</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '350px',
+          background: 'var(--bg-dark)',
+          borderRadius: '16px',
+          padding: '20px',
+        }}>
+          <h2>Settings</h2>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9em' }}>
+              Intensity Metric
+            </label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rpe' }))}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  background: data.intensityMetric === 'rpe' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.9em',
+                  cursor: 'pointer',
+                }}
+              >
+                RPE
+              </button>
+              <button
+                onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rir' }))}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  background: data.intensityMetric === 'rir' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.9em',
+                  cursor: 'pointer',
+                }}
+              >
+                RIR
+              </button>
+            </div>
+          </div>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9em' }}>
+              Theme
+            </label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => setData(prev => ({ ...prev, theme: 'dark' }))}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  background: data.theme === 'dark' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.9em',
+                  cursor: 'pointer',
+                }}
+              >
+                🌙 Dark
+              </button>
+              <button
+                onClick={() => setData(prev => ({ ...prev, theme: 'light' }))}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  background: data.theme === 'light' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '0.9em',
+                  cursor: 'pointer',
+                }}
+              >
+                ☀️ Light
+              </button>
+            </div>
+          </div>
+          
+          <button onClick={closeModal} style={{ width: '100%' }}>Done</button>
+        </div>
+      </div>
+      
       <div id="update-modal" className={`modal ${activeModal === 'update-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>Update Available</h2>
-          <p>A new version of Simit Tracker is available!</p>
+          <p>A new version of Pump Inc. is available!</p>
           <button className="update-button" onClick={() => window.location.reload()}>Update Now</button>
           <button className="secondary" onClick={closeModal}>Later</button>
         </div>

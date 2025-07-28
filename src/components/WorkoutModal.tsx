@@ -1,22 +1,15 @@
 import React, { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
 import { useDrag, useDrop, DragSourceMonitor } from 'react-dnd';
-import { DataContext } from '../DataContext';
+import { DataContext, Set } from '../DataContext';
 
 const ItemType = 'EXERCISE';
-
-interface Set {
-  weight: string;
-  reps: string;
-  rpe: string;
-  completed: boolean;
-}
 
 interface Exercise {
   name: string;
   subtype?: string;
   muscles?: string;
   sets: Set[];
-  previousSets?: string[];
+  previousSets?: { weight: string; reps: string }[];
 }
 
 interface WorkoutExerciseItemProps {
@@ -318,6 +311,36 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
 
+  const toggleSetType = (setIdx: number) => {
+    const currentSet = ex.sets[setIdx];
+    
+    // Cycle through: S (undefined) -> W -> D -> S
+    let newType: 'W' | 'D' | 'S' | undefined;
+    if (!currentSet.type || currentSet.type === 'S') {
+      newType = 'W';
+    } else if (currentSet.type === 'W') {
+      newType = 'D';
+    } else {
+      newType = 'S';
+    }
+    
+    updateSet(idx, setIdx, 'type', newType);
+  };
+
+  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
+    if (set.type === 'W') return 'W';
+    if (set.type === 'D') return 'D';
+    
+    // Count only regular sets before this one
+    let regularSetNumber = 1;
+    for (let i = 0; i < setIdx; i++) {
+      if (!allSets[i].type || allSets[i].type === 'S') {
+        regularSetNumber++;
+      }
+    }
+    return regularSetNumber.toString();
+  };
+
   // Collapsed state when any exercise is being dragged
   const isCollapsed = isGlobalDragging && !isDragging;
 
@@ -440,14 +463,29 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 padding: '4px 2px',
                 transition: 'all 0.2s ease',
               }}>
-                <div style={{ 
-                  fontWeight: '600',
-                  color: s.completed ? '#22C55E' : 'rgba(255,255,255,0.5)',
-                  fontSize: '0.7em',
-                  paddingLeft: '4px',
-                  textAlign: 'center',
-                }}>
-                  {sIdx + 1}
+                <div 
+                  style={{ 
+                    fontWeight: '600',
+                    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'rgba(255,255,255,0.5)',
+                    fontSize: '0.7em',
+                    paddingLeft: '4px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onClick={() => toggleSetType(sIdx)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  {getSetLabel(s, sIdx, ex.sets)}
                 </div>
                 <div style={{ 
                   textAlign: 'center',
@@ -455,14 +493,16 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   color: 'rgba(255, 255, 255, 0.3)',
                   fontWeight: '500',
                 }}>
-                  {ex.previousSets?.[sIdx] || '—'}
+                  {ex.previousSets?.[sIdx]?.weight && ex.previousSets?.[sIdx]?.reps 
+                    ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}` 
+                    : '—'}
                 </div>
                 <input 
-                  value={s.weight} 
+                  value={s.weight || ex.previousSets?.[sIdx]?.weight || ''} 
                   onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
                   type="number"
                   inputMode="decimal"
-                  placeholder="0"
+                  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
                   style={{
                     background: 'rgba(255, 255, 255, 0.04)',
                     border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -482,43 +522,62 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                   onFocus={(e) => {
                     e.target.style.borderColor = 'var(--accent-primary)';
                     e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+                    // Auto-populate weight from previous if empty
+                    if (!s.weight && ex.previousSets?.[sIdx]?.weight) {
+                      updateSet(idx, sIdx, 'weight', ex.previousSets[sIdx].weight);
+                    }
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
                     e.target.style.background = 'rgba(255, 255, 255, 0.04)';
                   }}
                 />
-                <input 
-                  value={s.reps} 
-                  onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="0"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '6px',
-                    textAlign: 'center',
-                    fontSize: '0.75em',
-                    fontWeight: '600',
-                    color: s.completed ? '#22C55E' : 'white',
-                    padding: '5px 2px',
-                    height: '28px',
-                    width: '100%',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'textfield',
-                    transition: 'all 0.2s ease',
-                    outline: 'none',
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = 'var(--accent-primary)';
-                    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                    e.target.style.background = 'rgba(255, 255, 255, 0.04)';
-                  }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    value={s.reps} 
+                    onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
+                    type="number"
+                    inputMode="numeric"
+                    placeholder={ex.previousSets?.[sIdx]?.reps || "0"}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '6px',
+                      textAlign: 'center',
+                      fontSize: '0.75em',
+                      fontWeight: '600',
+                      color: s.completed ? '#22C55E' : 'white',
+                      padding: '5px 2px',
+                      height: '28px',
+                      width: '100%',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'textfield',
+                      transition: 'all 0.2s ease',
+                      outline: 'none',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--accent-primary)';
+                      e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                      e.target.style.background = 'rgba(255, 255, 255, 0.04)';
+                    }}
+                  />
+                  {!s.reps && ex.previousSets?.[sIdx]?.reps && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      fontSize: '0.65em',
+                      color: 'rgba(255, 255, 255, 0.3)',
+                      pointerEvents: 'none',
+                    }}>
+                      {ex.previousSets[sIdx].reps}
+                    </div>
+                  )}
+                </div>
                 <input 
                   value={s.rpe} 
                   onChange={(e) => updateSet(idx, sIdx, 'rpe', e.target.value)}
@@ -785,6 +844,58 @@ const WorkoutModal: React.FC = () => {
     }
   };
 
+  const toggleSetType = (exIdx: number, setIdx: number) => {
+    if (!currentWorkout) return;
+    const newExercises = [...currentWorkout.exercises];
+    const currentSet = newExercises[exIdx].sets[setIdx];
+    
+    // Cycle through: S (undefined) -> W -> D -> S
+    let newType: 'W' | 'D' | 'S' | undefined;
+    if (!currentSet.type || currentSet.type === 'S') {
+      newType = 'W';
+    } else if (currentSet.type === 'W') {
+      newType = 'D';
+    } else {
+      newType = 'S';
+    }
+    
+    const newSets = [...newExercises[exIdx].sets];
+    newSets[setIdx] = { ...newSets[setIdx], type: newType };
+    
+    // Renumber sets based on type
+    let setNumber = 1;
+    let warmupNumber = 1;
+    let dropsetNumber = 1;
+    
+    newSets.forEach((set, idx) => {
+      if (set.type === 'W') {
+        // Warmup sets don't affect regular set numbering
+      } else if (set.type === 'D') {
+        // Dropsets don't affect regular set numbering
+      } else {
+        // Regular sets
+        setNumber++;
+      }
+    });
+    
+    newExercises[exIdx] = { ...newExercises[exIdx], sets: newSets };
+    setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
+  };
+
+  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
+    if (set.type === 'W') return 'W';
+    if (set.type === 'D') return 'D';
+    
+    // Count only regular sets before this one
+    let regularSetNumber = 1;
+    for (let i = 0; i < setIdx; i++) {
+      if (!allSets[i].type || allSets[i].type === 'S') {
+        regularSetNumber++;
+      }
+    }
+    return regularSetNumber.toString();
+  };
+
   const updateSet = useCallback((exIdx: number, setIdx: number, field: keyof Set, value: any) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
@@ -793,25 +904,28 @@ const WorkoutModal: React.FC = () => {
     newExercises[exIdx] = { ...newExercises[exIdx], sets: newSets };
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
-
+  
   const addSet = useCallback((exIdx: number) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
-    newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '', completed: false }];
+    newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '', completed: false, type: undefined }];
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
 
-  const getPreviousSets = useCallback((ex: Exercise): string[] => {
-    const previous: string[] = [];
+  const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string }[] => {
+    const previous: { weight: string; reps: string }[] = [];
     for (let i = data.history.length - 1; i >= 0; i--) {
       const workout = data.history[i];
       const matchingEx = workout.exercises.find(e => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
       if (matchingEx && matchingEx.sets) {
-        matchingEx.sets.forEach(s => previous.push(`${s.weight || '0'}×${s.reps || '0'}`));
+        matchingEx.sets.forEach(s => previous.push({ 
+          weight: s.weight || '0', 
+          reps: s.reps || '0' 
+        }));
         return previous;
       }
     }
-    return Array(ex.sets.length).fill('—');
+    return Array(ex.sets.length).fill({ weight: '', reps: '' });
   }, [data.history]);
 
   const formattedTime = useMemo(() => {

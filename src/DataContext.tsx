@@ -1,4 +1,4 @@
-// Fully fixed version of DataContext.tsx
+// Fully fixed version of DataContext.tsx with theme and settings support
 import { createContext, useState, useEffect } from 'react';
 import { exerciseDatabase } from './data/ExerciseDatabase';
 import { simitPrograms } from './data/SimitPrograms';
@@ -8,6 +8,7 @@ export interface Set {
   reps: string;
   rpe: string;
   completed: boolean;
+  type?: 'W' | 'D' | 'S';
 }
 
 export interface Exercise {
@@ -63,6 +64,8 @@ export interface DataType {
   activeModal: string | null;
   currentExercise: Exercise | null;
   returnModal: string | null;
+  theme: 'dark' | 'light';
+  intensityMetric: 'rpe' | 'rir';
 }
 
 interface DataContextType {
@@ -104,6 +107,8 @@ const initialData: DataType = {
   activeModal: null,
   currentExercise: null,
   returnModal: null,
+  theme: 'dark',
+  intensityMetric: 'rpe',
 };
 
 export const DataContext = createContext<DataContextType>({
@@ -129,6 +134,11 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', data.theme);
+  }, [data.theme]);
+
   useEffect(() => {
     const available = checkLocalStorage();
     setStorageAvailable(available);
@@ -147,6 +157,13 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const coverPhoto = localStorage.getItem('coverPhoto') || '';
       const completedPrograms = JSON.parse(localStorage.getItem('completedPrograms') || '{}');
       const customExercises = JSON.parse(localStorage.getItem('customExercises') || '[]');
+      const theme = (localStorage.getItem('theme') || 'dark') as 'dark' | 'light';
+      const intensityMetric = (localStorage.getItem('intensityMetric') || 'rpe') as 'rpe' | 'rir';
+      
+      // Check for saved workout in sessionStorage
+      const savedWorkout = sessionStorage.getItem('currentWorkout');
+      const currentWorkout = savedWorkout ? JSON.parse(savedWorkout) : null;
+      
       setData(prev => ({ 
         ...prev, 
         templates, 
@@ -163,16 +180,27 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         coverPhoto, 
         completedPrograms, 
         customExercises,
-        // Reset these state variables on load
-        currentWorkout: null,
+        theme,
+        intensityMetric,
+        currentWorkout,
+        // Reset these state variables on load unless there's a saved workout
         isWorkoutSelect: false,
         currentExerciseIdx: null,
-        activeModal: null,
+        activeModal: currentWorkout ? 'workout-modal' : null,
         returnModal: null,
         currentDayExercises: []
       }));
     }
   }, []);
+
+  // Save current workout to sessionStorage
+  useEffect(() => {
+    if (data.currentWorkout) {
+      sessionStorage.setItem('currentWorkout', JSON.stringify(data.currentWorkout));
+    } else {
+      sessionStorage.removeItem('currentWorkout');
+    }
+  }, [data.currentWorkout]);
 
   useEffect(() => {
     if (storageAvailable) {
@@ -190,6 +218,8 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem('coverPhoto', data.coverPhoto);
       localStorage.setItem('completedPrograms', JSON.stringify(data.completedPrograms));
       localStorage.setItem('customExercises', JSON.stringify(data.customExercises));
+      localStorage.setItem('theme', data.theme);
+      localStorage.setItem('intensityMetric', data.intensityMetric);
     }
   }, [data, storageAvailable]);
 

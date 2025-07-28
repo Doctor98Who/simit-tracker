@@ -138,9 +138,43 @@ const ProfileTab = () => {
     });
   }, [sortedHistory, expandedHistoryItems, openHistoryMenu]);
 
+  const openSettingsModal = () => {
+    setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }));
+  };
+
   return (
     <div>
-      <div className="profile-header" id="profile-cover" style={{ backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none' }}>
+      <div className="profile-header" id="profile-cover" style={{ backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none', position: 'relative' }}>
+        <div 
+          className="settings-icon"
+          onClick={openSettingsModal}
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            fontSize: '18px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          ⚙️
+        </div>
         <div className="profile-pic" style={{ backgroundImage: `url('${data.profilePic}')` }} onClick={editProfilePic}></div>
         <div className="profile-name" id="profile-fullname">{data.firstName} {data.lastName}</div>
         <div className="profile-username">@{data.username}</div>

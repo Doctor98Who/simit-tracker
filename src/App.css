@@ -18,6 +18,25 @@
     --subtle-gradient: linear-gradient(135deg, var(--bg-light), var(--bg-lighter));
 }
 
+/* Light theme */
+[data-theme="light"] {
+    --bg-dark: #FFFFFF;
+    --bg-light: #F2F2F7;
+    --bg-lighter: #E5E5EA;
+    --text: #000000;
+    --text-muted: #3C3C43;
+    --accent-blue: #007AFF;
+    --accent-primary: #007AFF;
+    --accent-hover: #0051D5;
+    --accent-gradient: linear-gradient(135deg, #0051D5, #007AFF);
+    --soft-gradient: linear-gradient(135deg, #007AFF, #0051D5);
+    --border: #C6C6C8;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+    --completed-green: #D1F2E3;
+    --completed-check: #34C759;
+    --subtle-gradient: linear-gradient(135deg, var(--bg-light), var(--bg-lighter));
+}
+
 /* Prevent zoom on input focus for iOS */
 @supports (-webkit-touch-callout: none) {
   input[type="text"],
@@ -50,7 +69,7 @@ textarea {
 }
 
 .header {
-    background: var(--accent-gradient);
+    background: transparent;
     padding: 15px;
     display: flex;
     align-items: center;
@@ -60,8 +79,8 @@ textarea {
     position: relative;
 }
 .header img {
-    height: 40px;
-    border-radius: 50%;
+    height: 50px;
+    border-radius: 12px;
 }
 body {
     font-family: var(--font-modern);
@@ -94,7 +113,7 @@ body {
 }
 .quick-start {
     background: var(--accent-gradient);
-    color: var(--text);
+    color: white;
     border-radius: 10px;
     padding: 15px;
     text-align: center;
@@ -152,7 +171,7 @@ body {
     position: sticky;
     bottom: 0;
     z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
@@ -183,6 +202,8 @@ body {
     font-size: 16px !important;
     -webkit-appearance: none;
     appearance: none;
+    color: var(--text);
+    border: 1px solid var(--border);
 }
 .letter-header {
     font-size: 1.8em;
@@ -194,7 +215,7 @@ body {
     text-align: center;
 }
 .exercise-item {
-    background: var(--bg-dark);
+    background: var(--bg-light);
     border-radius: 12px;
     padding: 12px;
     margin-bottom: 8px;
@@ -204,7 +225,7 @@ body {
     transition: all 0.2s ease;
     user-select: none;
     -webkit-user-select: none;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
 }
 
 .exercise-item:active {
@@ -223,8 +244,8 @@ body {
 }
 
 #workout-modal .exercise-item {
-    background: #1a1a1a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
 }
 
 #workout-modal .exercise-item.collapsed {
@@ -288,33 +309,33 @@ body {
 }
 .progress-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
 }
 .progress-pic {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
     position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    cursor: pointer;
 }
 .progress-pic img {
     width: 100%;
-    height: 150px;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
 }
 .progress-pic .timestamp {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.8em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    color: white;
+    padding: 4px;
+    font-size: 0.7em;
+    display: none;
 }
-.progress-pic .trash {
-    cursor: pointer;
-    font-size: 1em;
-    color: #FF3B30;
+.progress-pic:hover .timestamp {
+    display: block;
 }
 .profile-header {
     text-align: center;
@@ -506,7 +527,7 @@ body {
     height: 100vh;
     max-height: 100vh;
     border-radius: 20px 20px 0 0;
-    background: #0A0A0A;
+    background: var(--bg-dark);
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
     position: relative;
@@ -567,7 +588,7 @@ body {
 }
 button {
     background: var(--accent-gradient);
-    color: var(--text);
+    color: white;
     border: none;
     padding: 12px 20px;
     border-radius: 10px;
@@ -638,7 +659,8 @@ input, select {
 }
 input:focus, select:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bg-lighter);
+    border: 1px solid var(--accent-primary);
 }
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
@@ -680,7 +702,7 @@ input#workout-name-input {
     gap: 20px;
     align-items: center;
     font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-muted);
 }
 /* Remove set-table styles that conflict with new layout */
 .set-table {
@@ -710,7 +732,7 @@ body.modal-open {
     cursor: pointer;
     text-align: center;
     font-size: 1.1em;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--border);
     width: 28px;
     height: 28px;
     line-height: 26px;
@@ -788,7 +810,7 @@ button.finish {
 }
 .cancel-workout {
     background: #FF3B30;
-    color: var(--text);
+    color: white;
     border-radius: 20px;
     padding: 10px;
     margin: 10px 0;
@@ -799,8 +821,8 @@ button.finish {
     color: var(--text);
 }
 #workout-modal .exercise-item {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 16px;
     margin-bottom: 12px;
@@ -811,7 +833,7 @@ button.finish {
 }
 #workout-modal .exercise-item.dragging {
     opacity: 0.5;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-lighter);
     transform: scale(0.95);
     z-index: 10;
     transition: none;
@@ -898,7 +920,7 @@ button.finish {
 }
 .update-button {
     background: var(--accent-gradient);
-    color: var(--text);
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 10px;
@@ -915,7 +937,7 @@ button.finish {
     right: 15px;
     top: 10px;
     font-size: 0.6em;
-    color: #FFFFFF;
+    color: var(--text-muted);
     z-index: 1;
 }
 .community-sub-tabs {
@@ -938,7 +960,7 @@ button.finish {
 }
 .add-custom-exercise {
     background: var(--accent-gradient);
-    color: var(--text);
+    color: white;
     border-radius: 10px;
     padding: 10px;
     text-align: center;
@@ -959,6 +981,21 @@ button.finish {
         opacity: 1;
         transform: scale(1);
     }
+}
+
+/* Progress Photo Modal */
+.progress-photo-modal {
+    background: var(--bg-dark);
+}
+
+.progress-photo-modal .modal-content {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Responsive adjustments for smaller screens */
@@ -1077,15 +1114,8 @@ button,
 /* Hide default drag preview */
 .react-dnd-dragging {
     opacity: 0 !important;
-
-    border: none;
-    font-weight: 600;
-    font-size: 16px !important;
-    padding: 0;
-    color: var(--text);
-    text-align: center;
-    flex: 1;
 }
+
 .exercise-detail {
     margin-top: 10px;
     color: var(--text-muted);

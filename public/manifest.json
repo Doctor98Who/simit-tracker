@@ -1,6 +1,6 @@
 {
-  "short_name": "Simit Tracker",
-  "name": "Simit Tracker",
+  "short_name": "Pump Inc.",
+  "name": "Pump Inc.",
   "icons": [
     {
       "src": "icon.png",
@@ -14,10 +14,10 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#121212",
+  "background_color": "#000000",
   "display": "standalone",
   "scope": "/",
-  "theme_color": "#3b82f6",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "categories": ["health", "fitness", "sports"],
   "description": "Track your workouts with ease"
