@@ -55,16 +55,16 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         justifyContent: 'flex-start',
         position: 'relative',
       }}>
-        <img
-          src={data.theme === 'light' ? logoLight : logoDark}
-          alt="Pump Inc Logo"
-          className="logo"
-          style={{
-            height: '80px',
-            width: 'auto',
-            objectFit: 'contain',
-          }}
-        />
+       <img 
+        src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'} 
+        alt="Pump Inc Logo" 
+        className="logo" 
+        style={{
+        height: '80px',
+        width: 'auto',
+        objectFit: 'contain',
+  }}
+/>
         <span id="app-version" style={{
           position: 'absolute',
           right: '15px',
