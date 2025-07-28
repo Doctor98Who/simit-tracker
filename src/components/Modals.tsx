@@ -658,9 +658,35 @@ const Modals = () => {
         workload,
         suggestion,
       };
+      
+      // Track program progress if this workout is from a program
+      let updatedCompletedPrograms = { ...data.completedPrograms };
+      
+      // Check if this workout is from a program by checking the workout name
+      const workoutName = data.currentWorkout.name;
+      
+      // Find matching program
+      const allPrograms = [...data.templates, ...simitPrograms];
+      for (const program of allPrograms) {
+        for (let weekIdx = 0; weekIdx < program.weeks.length; weekIdx++) {
+          const week = program.weeks[weekIdx];
+          for (let dayIdx = 0; dayIdx < week.days.length; dayIdx++) {
+            const day = week.days[dayIdx];
+            if (day.name === workoutName) {
+              // Found matching program day
+              if (!updatedCompletedPrograms[program.name]) {
+                updatedCompletedPrograms[program.name] = {};
+              }
+              updatedCompletedPrograms[program.name][`${weekIdx}-${dayIdx}`] = true;
+            }
+          }
+        }
+      }
+      
       setData((prev: DataType) => ({
         ...prev,
         history: [...prev.history, finishedWorkout],
+        completedPrograms: updatedCompletedPrograms,
         currentWorkout: null,
         activeModal: null,
         isWorkoutSelect: false,
@@ -706,11 +732,11 @@ const Modals = () => {
     e.stopPropagation();
     if (!isDraggingMinimized) return;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    const deltaY = minimizedStartY.current - clientY;
+    const deltaY = clientY - minimizedStartY.current;
     
-    // Only allow upward drag
-    if (deltaY > 0) {
-      setMinimizedDragY(-deltaY);
+    // Only allow upward drag (negative deltaY)
+    if (deltaY < 0) {
+      setMinimizedDragY(deltaY);
     }
   };
 
@@ -725,10 +751,10 @@ const Modals = () => {
     document.body.style.position = '';
     document.body.style.width = '';
     
-    const deltaY = -minimizedDragY;
+    const deltaY = minimizedDragY;
     
     // If dragged up more than 50px, maximize
-    if (deltaY > 50) {
+    if (deltaY < -50) {
       setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
     }
     
@@ -736,23 +762,60 @@ const Modals = () => {
     setMinimizedDragY(0);
   };
 
+  // Calculate the preview height based on drag distance
+  const getMinimizedStyle = () => {
+    const baseHeight = 90; // Base height of minimized view
+    const maxPreviewHeight = window.innerHeight * 0.7; // Max 70% of viewport
+    
+    if (isDraggingMinimized && minimizedDragY < 0) {
+      // Calculate expansion based on drag distance
+      const expansion = Math.min(Math.abs(minimizedDragY) * 2, maxPreviewHeight - baseHeight);
+      return {
+        height: `${baseHeight + expansion}px`,
+        transform: 'none',
+        transition: 'none',
+      };
+    }
+    
+    return {
+      height: `${baseHeight}px`,
+      transform: 'none',
+      transition: 'all 0.3s ease',
+    };
+  };
+
   return (
     <>
       <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
+        <div className="modal-content" style={{ maxHeight: '80vh', overflow: 'auto' }}>
           <h2>Create Program</h2>
-          <input type="text" id="program-name" placeholder="Program Name (e.g., PUSH PULL LEGS)" />
-          <input
-            type="number"
-            id="mesocycle-length"
-            placeholder="Mesocycle Length (weeks)"
-            min="4"
-            max="12"
-            onInput={generateWeeks}
+          <input 
+            type="text" 
+            id="program-name" 
+            placeholder="Program Name (e.g., PUSH PULL LEGS)" 
+            style={{ marginBottom: '20px' }}
           />
-          <button onClick={addWeek}>Add Week</button>
-          <div id="program-weeks">{renderProgramWeeks}</div>
-          <button onClick={saveProgram}>Save</button>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ color: 'var(--text-muted)', fontSize: '0.9em', marginBottom: '8px', display: 'block' }}>
+              Number of Weeks
+            </label>
+            <input
+              type="number"
+              id="mesocycle-length"
+              placeholder="Mesocycle Length"
+              min="1"
+              max="52"
+              defaultValue="8"
+              onInput={generateWeeks}
+              style={{ marginBottom: '10px' }}
+            />
+          </div>
+          <div id="program-weeks" style={{ marginBottom: '20px' }}>
+            {renderProgramWeeks}
+          </div>
+          <button onClick={saveProgram} style={{ background: 'var(--accent-primary)' }}>
+            Save Program
+          </button>
           <button className="secondary" onClick={closeModal}>Cancel</button>
         </div>
       </div>
@@ -853,19 +916,19 @@ const Modals = () => {
             maxWidth: '428px',
             margin: '0 auto',
             background: 'linear-gradient(to top, var(--bg-light), rgba(28, 28, 30, 0.98))',
-            borderRadius: '0',
+            borderRadius: isDraggingMinimized && minimizedDragY < 0 ? '20px 20px 0 0' : '0',
             padding: '10px 16px 70px',
             boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'grab',
-            transition: isDraggingMinimized ? 'none' : 'transform 0.3s ease',
-            transform: `translateY(${minimizedDragY}px)`,
             zIndex: 999,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '4px',
             backdropFilter: 'blur(10px)',
+            overflow: 'hidden',
+            ...getMinimizedStyle(),
           }}
           onTouchStart={handleMinimizedTouchStart}
           onTouchMove={handleMinimizedTouchMove}
@@ -899,6 +962,45 @@ const Modals = () => {
           }}>
             Swipe up to resume
           </div>
+          
+          {/* Preview content that expands when dragging */}
+          {isDraggingMinimized && minimizedDragY < -30 && (
+            <div style={{
+              marginTop: '10px',
+              width: '100%',
+              opacity: Math.min(Math.abs(minimizedDragY) / 100, 1),
+              transition: 'opacity 0.2s ease',
+            }}>
+              <div style={{
+                fontSize: '0.7em',
+                color: 'rgba(255, 255, 255, 0.5)',
+                textAlign: 'center',
+                marginBottom: '8px',
+              }}>
+                {data.currentWorkout?.exercises.length || 0} exercises
+              </div>
+              {data.currentWorkout?.exercises.slice(0, 3).map((ex, idx) => (
+                <div key={idx} style={{
+                  fontSize: '0.75em',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  padding: '4px 8px',
+                  marginBottom: '2px',
+                }}>
+                  {ex.name} {ex.subtype && `(${ex.subtype})`}
+                </div>
+              ))}
+              {(data.currentWorkout?.exercises.length || 0) > 3 && (
+                <div style={{
+                  fontSize: '0.7em',
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  textAlign: 'center',
+                  marginTop: '4px',
+                }}>
+                  +{(data.currentWorkout?.exercises.length || 0) - 3} more
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
       
@@ -1044,19 +1146,78 @@ const Modals = () => {
       </div>
       
       <div id="program-menu-modal" className={`modal ${activeModal === 'program-menu-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>Program Options</h2>
-          <button className="secondary" onClick={() => {
-            if (data.currentProgName && window.confirm("Are you sure you want to delete this program?")) {
-              const newTemplates = data.templates.filter((t: Template) => t.name !== data.currentProgName);
-              setData((prev: DataType) => ({
-                ...prev,
-                templates: newTemplates,
-                activeModal: null,
-              }));
-            }
-          }}>Delete Program</button>
-          <button onClick={closeModal}>Cancel</button>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'white',
+            }}
+            onClick={() => {
+              // Edit program
+              if (data.currentProgName) {
+                const program = data.templates.find((t: Template) => t.name === data.currentProgName);
+                if (program) {
+                  setData((prev: DataType) => ({
+                    ...prev,
+                    currentProgram: program,
+                    activeModal: 'program-modal',
+                  }));
+                }
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Edit Program
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={() => {
+              if (data.currentProgName && window.confirm("Are you sure you want to delete this program?")) {
+                const newTemplates = data.templates.filter((t: Template) => t.name !== data.currentProgName);
+                setData((prev: DataType) => ({
+                  ...prev,
+                  templates: newTemplates,
+                  activeModal: null,
+                }));
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Delete Program
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={closeModal}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
         </div>
       </div>
       

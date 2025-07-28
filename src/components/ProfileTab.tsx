@@ -26,6 +26,7 @@ const ProfileTab = () => {
   const { data, setData } = useContext(DataContext);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryItems, setExpandedHistoryItems] = useState<number[]>([]);
+  const [showTotalVolume, setShowTotalVolume] = useState(false);
 
   const toggleHistorySection = () => {
     setShowHistory(!showHistory);
@@ -68,6 +69,21 @@ const ProfileTab = () => {
     setData((prev: DataType) => ({ ...prev, currentHistoryIdx: index, activeModal: 'history-menu-modal' }));
   }, [setData]);
 
+  // Calculate total volume lifted
+  const totalVolume = useMemo(() => {
+    let total = 0;
+    data.history.forEach((workout: Workout) => {
+      workout.exercises.forEach(ex => {
+        ex.sets?.forEach(set => {
+          if (set.completed && set.weight && set.reps) {
+            total += parseFloat(set.weight) * parseFloat(set.reps);
+          }
+        });
+      });
+    });
+    return total;
+  }, [data.history]);
+
   const sortedHistory = useMemo(() => [...data.history].sort((a: Workout, b: Workout) => b.startTime - a.startTime), [data.history]);
 
   const renderedHistory = useMemo(() => {
@@ -77,7 +93,11 @@ const ProfileTab = () => {
     return sortedHistory.map((entry: Workout, index: number) => {
       let volume = 0;
       entry.exercises.forEach(ex => {
-        ex.sets?.forEach((s: { weight?: string; reps?: string }) => volume += parseFloat(s.weight || '0') * parseFloat(s.reps || '0'));
+        ex.sets?.forEach((s: { weight?: string; reps?: string; completed?: boolean }) => {
+          if (s.completed && s.weight && s.reps) {
+            volume += parseFloat(s.weight || '0') * parseFloat(s.reps || '0');
+          }
+        });
       });
       const isExpanded = expandedHistoryItems.includes(index);
       
@@ -138,7 +158,9 @@ const ProfileTab = () => {
       </div>
       <div className="profile-actions">
         <div className="profile-action-btn" onClick={openEditProfileModal}>Edit</div>
-        <div className="profile-action-btn" id="total-volume-btn">Total lbs Lifted</div>
+        <div className="profile-action-btn" id="total-volume-btn" onClick={() => setShowTotalVolume(!showTotalVolume)}>
+          {showTotalVolume ? `${totalVolume.toLocaleString()} lbs` : 'Total lbs Lifted'}
+        </div>
         <div className="profile-action-btn" onClick={toggleHistorySection}>History</div>
       </div>
       <div id="profile-history-section" className={showHistory ? '' : 'hidden'}>

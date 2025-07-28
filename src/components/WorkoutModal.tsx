@@ -246,9 +246,11 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     },
   });
 
-  // Set up custom drag preview
+  // Set up custom drag preview - use empty image to hide default preview
   useEffect(() => {
-    preview(ref.current);
+    const img = new Image();
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+    preview(img, { captureDraggingState: false });
   }, [preview]);
 
   // Enable drag when holding
@@ -324,17 +326,17 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       ref={ref}
       className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCollapsed ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`} 
       style={{ 
-        opacity: isDragging ? 0.9 : 1,
-        transform: isDragging ? 'scale(1.05)' : isHolding ? 'scale(0.98)' : isOver ? 'translateY(-2px)' : 'scale(1)',
-        boxShadow: isDragging ? '0 12px 24px rgba(59, 130, 246, 0.4)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+        opacity: isDragging ? 0.5 : 1,
+        transform: isDragging ? 'scale(1.02) rotate(2deg)' : isHolding ? 'scale(0.98)' : isOver ? 'translateY(-2px)' : 'scale(1)',
+        boxShadow: isDragging ? '0 16px 32px rgba(59, 130, 246, 0.5)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
         height: isCollapsed ? '36px' : 'auto',
         overflow: 'hidden',
-        background: isDragging ? 'rgba(59, 130, 246, 0.15)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : isOver ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-        border: isDragging ? '1px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)',
+        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'rgba(255, 255, 255, 0.03)' : isOver ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+        border: isDragging ? '2px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)',
         marginBottom: isOver ? '16px' : '6px',
         borderRadius: '10px',
         cursor: isDragging ? 'grabbing' : 'grab',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         zIndex: isDragging ? 1000 : 'auto',
       }} 
@@ -620,6 +622,7 @@ const WorkoutModal: React.FC = () => {
   const [menuExerciseIdx, setMenuExerciseIdx] = useState<number | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
@@ -652,6 +655,13 @@ const WorkoutModal: React.FC = () => {
     }
   }, [data.activeModal, currentWorkout]);
 
+  // Scroll to top when modal opens
+  useEffect(() => {
+    if (data.activeModal === 'workout-modal' && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [data.activeModal]);
+
   // Handle drag start/end
   const handleDragStart = useCallback(() => {
     dragCounter.current += 1;
@@ -663,10 +673,8 @@ const WorkoutModal: React.FC = () => {
   const handleDragEnd = useCallback(() => {
     dragCounter.current -= 1;
     if (dragCounter.current === 0) {
-      // Delay to allow for smooth animation
-      setTimeout(() => {
-        setIsGlobalDragging(false);
-      }, 300);
+      // Immediately reset to show all exercises expanded
+      setIsGlobalDragging(false);
     }
   }, []);
 
@@ -874,6 +882,9 @@ const WorkoutModal: React.FC = () => {
             padding: '6px',
             cursor: 'grab',
             background: '#0A0A0A',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
           }}
         >
           <div className="drag-indicator" style={{
@@ -885,12 +896,16 @@ const WorkoutModal: React.FC = () => {
           }}></div>
         </div>
         
-        <div style={{ 
-          flex: 1,
-          overflow: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          padding: '0 10px 80px',
-        }}>
+        <div 
+          ref={scrollContainerRef}
+          style={{ 
+            flex: 1,
+            overflow: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            padding: '0 10px 80px',
+            overscrollBehavior: 'contain',
+          }}
+        >
           <div className="workout-header" style={{
             display: 'flex',
             alignItems: 'center',
@@ -898,6 +913,12 @@ const WorkoutModal: React.FC = () => {
             marginBottom: '12px',
             gap: '8px',
             padding: '0 4px',
+            position: 'sticky',
+            top: 0,
+            background: '#0A0A0A',
+            zIndex: 5,
+            paddingTop: '10px',
+            paddingBottom: '10px',
           }}>
             <div 
               className="timer-button" 
