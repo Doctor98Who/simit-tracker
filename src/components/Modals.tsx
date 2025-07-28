@@ -690,12 +690,20 @@ const Modals = () => {
 
   // Handle drag for minimized workout
   const handleMinimizedTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     minimizedStartY.current = clientY;
     setIsDraggingMinimized(true);
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
   };
 
   const handleMinimizedTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!isDraggingMinimized) return;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = minimizedStartY.current - clientY;
@@ -706,9 +714,16 @@ const Modals = () => {
     }
   };
 
-  const handleMinimizedTouchEnd = () => {
+  const handleMinimizedTouchEnd = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!isDraggingMinimized) return;
     setIsDraggingMinimized(false);
+    
+    // Unlock body scroll
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
     
     const deltaY = -minimizedDragY;
     

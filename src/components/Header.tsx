@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 interface HeaderProps {
   version?: string; // Optional prop for dynamic version
 }
-const Header: React.FC<HeaderProps> = ({ version = 'v0.0.22' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.0.23' }) => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
