@@ -1018,7 +1018,7 @@ const WorkoutModal: React.FC = () => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                fontSize: '6em',
+                fontSize: '30em',
                 fontWeight: '700',
                 textAlign: 'center',
                 flex: 1,
