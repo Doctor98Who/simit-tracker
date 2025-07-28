@@ -1018,14 +1018,14 @@ const WorkoutModal: React.FC = () => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                fontSize: '32px !important',
+                fontSize: '2em',
                 fontWeight: '700',
                 textAlign: 'center',
                 flex: 1,
-                padding: '10px !important',
+                padding: '0',
                 color: 'var(--text)',
                 letterSpacing: '-0.3px',
-                marginTop: '20px',
+                marginTop: '10px',
               }}
             />
             <button 
