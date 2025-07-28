@@ -54,6 +54,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         alignItems: 'center',
         justifyContent: 'flex-start',
         position: 'relative',
+        backgroundColor: data.theme === 'dark' ? '#1a1a1a' : '#ffffff', // Match theme background
       }}>
        <img 
         src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'} 
@@ -63,6 +64,10 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         height: '80px',
         width: 'auto',
         objectFit: 'contain',
+        backgroundColor: 'transparent', // Ensure no background on img
+        border: 'none', // Remove any default border
+        boxShadow: 'none', // Remove any shadow
+        outline: 'none', // Remove any outline
   }}
 />
         <span id="app-version" style={{
