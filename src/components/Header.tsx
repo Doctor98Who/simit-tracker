@@ -63,8 +63,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         height: '100px',
         width: 'auto',
         objectFit: 'contain',
-        backgroundColor: 'transparent', // Ensure no background on img
-        border: 'none', // Remove any default border
+        backgroundColor: data.theme === 'dark' ? '#000000' : '#ffffff', // Match header background        border: 'none', // Remove any default border
         boxShadow: 'none', // Remove any shadow
         outline: 'none', // Remove any outline
   }}
