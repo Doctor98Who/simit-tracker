@@ -404,11 +404,12 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
           <div className="exercise-name" style={{ 
-            fontSize: '6em', 
+            fontSize: '1.2em', 
             fontWeight: '600',
             color: isDragging ? 'var(--accent-primary)' : 'var(--accent-blue)',
             letterSpacing: '-0.3px',
-            marginTop: '80px',
+            marginTop: '20px',
+            
           }}>
             {ex.name} 
             {ex.subtype && <span style={{ 
