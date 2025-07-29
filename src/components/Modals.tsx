@@ -1383,80 +1383,97 @@ const Modals = () => {
       </div>
       
       <div id="history-menu-modal" className={`modal ${activeModal === 'history-menu-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>Workout Options</h2>
-          <button onClick={startWorkoutFromHistory}>Start Workout</button>
-          <button className="secondary" onClick={deleteHistoryEntry}>Delete</button>
-          <button onClick={closeModal}>Cancel</button>
-        </div>
-      </div>
-      
-      <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>Edit Profile</h2>
-          <label htmlFor="cover-photo-upload" id="cover-photo-label">Upload Cover Photo</label>
-          <input type="file" id="cover-photo-upload" accept="image/*" onChange={handleCoverPhotoUpload} />
-          <input type="text" id="edit-first-name" placeholder="First Name" defaultValue={data.firstName} />
-          <input type="text" id="edit-last-name" placeholder="Last Name" defaultValue={data.lastName} />
-          <input type="text" id="edit-username" placeholder="Username" defaultValue={data.username} />
-          <textarea id="edit-bio" placeholder="Bio" defaultValue={data.bio}></textarea>
-          <input type="email" id="edit-email" placeholder="Email" defaultValue={data.email} />
-          <select id="edit-country" defaultValue={data.country}>
-            <option value="United States">United States</option>
-            <option value="Canada">Canada</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Australia">Australia</option>
-            <option value="Other">Other</option>
-          </select>
-          <input type="text" id="edit-state" placeholder="State/Province" defaultValue={data.state} />
-          <button onClick={saveProfile}>Save</button>
-          <button className="secondary" onClick={closeModal}>Cancel</button>
-        </div>
-      </div>
-      
-      <div id="custom-exercise-modal" className={`modal ${activeModal === 'custom-exercise-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>Create Custom Exercise</h2>
-          <input type="text" id="custom-exercise-name" placeholder="Exercise Name" />
-          <input type="text" id="custom-exercise-subtype" placeholder="Subtype (optional)" />
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>
-              Muscle Group
-            </label>
-            <select id="custom-exercise-muscles" style={{ width: '100%', marginBottom: '10px' }}
-              onChange={(e) => {
-                const customInput = document.getElementById('custom-muscle-container');
-                if (customInput) {
-                  customInput.style.display = e.target.value === 'Other' ? 'block' : 'none';
-                }
-              }}
-            >
-              <option value="">Select muscle group</option>
-              {muscleGroups.map(muscle => (
-                <option key={muscle} value={muscle}>{muscle}</option>
-              ))}
-            </select>
-            <div id="custom-muscle-container" style={{ display: 'none' }}>
-              <input 
-                type="text" 
-                id="custom-muscle-input" 
-                placeholder="Enter custom muscle group" 
-                style={{ width: '100%' }}
-              />
-            </div>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'white',
+            }}
+            onClick={startWorkoutFromHistory}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Start Workout
           </div>
-          <textarea id="custom-exercise-instructions" placeholder="Instructions (optional)"></textarea>
-          <input type="text" id="custom-exercise-equipment" placeholder="Equipment (optional)" />
-          <button onClick={saveCustomExercise}>Save</button>
-          <button className="secondary" onClick={closeModal}>Cancel</button>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={deleteHistoryEntry}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Delete
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={closeModal}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
         </div>
       </div>
       
       <div id="custom-menu-modal" className={`modal ${activeModal === 'custom-menu-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>Custom Exercise Options</h2>
-          <button className="secondary" onClick={deleteCustomExercise}>Delete</button>
-          <button onClick={closeModal}>Cancel</button>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={deleteCustomExercise}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Delete Exercise
+          </div>
+          <div 
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={closeModal}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
         </div>
       </div>
       
@@ -1477,6 +1494,68 @@ const Modals = () => {
             </div>
           )}
           <button onClick={closeModal}>Close</button>
+        </div>
+      </div>
+      
+      <div id="custom-exercise-modal" className={`modal ${activeModal === 'custom-exercise-modal' ? 'active' : ''}`}>
+        <div className="modal-content">
+          <h2>Create Custom Exercise</h2>
+          <input type="text" id="custom-exercise-name" placeholder="Exercise Name" />
+          <input type="text" id="custom-exercise-subtype" placeholder="Subtype (optional)" />
+          <select id="custom-exercise-muscles" onChange={(e) => {
+            const customInput = document.getElementById('custom-muscle-input');
+            if (customInput) {
+              customInput.style.display = e.target.value === 'Other' ? 'block' : 'none';
+            }
+          }}>
+            <option value="">Select Muscle Group</option>
+            {muscleGroups.map(muscle => (
+              <option key={muscle} value={muscle}>{muscle}</option>
+            ))}
+          </select>
+          <input 
+            type="text" 
+            id="custom-muscle-input" 
+            placeholder="Enter muscle group" 
+            style={{ display: 'none' }}
+          />
+          <textarea id="custom-exercise-instructions" placeholder="Instructions (optional)" />
+          <input type="text" id="custom-exercise-equipment" placeholder="Equipment (optional)" />
+          <button onClick={saveCustomExercise}>Save Exercise</button>
+          <button className="secondary" onClick={() => {
+            setData((prev: DataType) => ({ 
+              ...prev, 
+              activeModal: prev.returnModal || null,
+              returnModal: null
+            }));
+          }}>Cancel</button>
+        </div>
+      </div>
+      
+      <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
+        <div className="modal-content">
+          <h2>Edit Profile</h2>
+          <input type="text" id="edit-first-name" placeholder="First Name" defaultValue={data.firstName} />
+          <input type="text" id="edit-last-name" placeholder="Last Name" defaultValue={data.lastName} />
+          <input type="text" id="edit-username" placeholder="Username" defaultValue={data.username} />
+          <textarea id="edit-bio" placeholder="Bio (optional)" defaultValue={data.bio} />
+          <input type="email" id="edit-email" placeholder="Email (optional)" defaultValue={data.email} />
+          <select id="edit-country" defaultValue={data.country}>
+            <option value="United States">United States</option>
+            <option value="Canada">Canada</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Australia">Australia</option>
+            <option value="Germany">Germany</option>
+            <option value="France">France</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="edit-state" placeholder="State/Province (optional)" defaultValue={data.state} />
+          <label id="cover-photo-label">
+            <input type="file" id="cover-photo-upload" accept="image/*" onChange={handleCoverPhotoUpload} />
+            Upload Cover Photo
+          </label>
+          <button onClick={saveProfile}>Save Profile</button>
+          <button className="secondary" onClick={closeModal}>Cancel</button>
         </div>
       </div>
       
@@ -1781,7 +1860,7 @@ const Modals = () => {
                 </div>
               </div>
               
- <button onClick={() => {
+              <button onClick={() => {
                 const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
                 const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
                 const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');

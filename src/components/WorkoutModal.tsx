@@ -42,7 +42,8 @@ interface HistoryEntry {
 const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
-  const [customTime, setCustomTime] = useState('');
+  const [customMinutes, setCustomMinutes] = useState('');
+  const [customSeconds, setCustomSeconds] = useState('');
   const [showCustom, setShowCustom] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -93,13 +94,15 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   const startCustomTimer = () => {
-    const minutes = parseInt(customTime);
-    if (!isNaN(minutes) && minutes > 0) {
-      const seconds = minutes * 60;
-      setSelectedTime(seconds);
-      setTimeLeft(seconds);
+    const minutes = parseInt(customMinutes) || 0;
+    const seconds = parseInt(customSeconds) || 0;
+    const totalSeconds = minutes * 60 + seconds;
+    if (totalSeconds > 0) {
+      setSelectedTime(totalSeconds);
+      setTimeLeft(totalSeconds);
       setShowCustom(false);
-      setCustomTime('');
+      setCustomMinutes('');
+      setCustomSeconds('');
     }
   };
 
@@ -115,63 +118,141 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      background: 'var(--bg-dark)',
+      background: '#1a1a1a',
       borderRadius: '16px',
-      padding: '20px',
+      padding: '8px',
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       zIndex: 2000,
       minWidth: '280px',
       border: '1px solid var(--border)',
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-      }}>
-        <h3 style={{ margin: 0, fontSize: '1.1em', color: 'var(--text)' }}>Rest Timer</h3>
-        <button
-          onClick={onClose}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '1.2em',
-            cursor: 'pointer',
-            padding: '4px',
-            minHeight: 'auto',
-          }}
-        >
-          ×
-        </button>
-      </div>
-      
-      {timeLeft === null ? (
+      {timeLeft === null && !showCustom ? (
         <>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-            {restOptions.map(option => (
-              <button
-                key={option.value}
-                onClick={() => startTimer(option.value)}
-                style={{
-                  padding: '12px 20px',
-                  background: 'var(--accent-primary)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '0.9em',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  minHeight: '44px',
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-            <button
-              onClick={() => setShowCustom(!showCustom)}
+          <div style={{
+            padding: '12px 16px',
+            textAlign: 'center',
+            fontSize: '1.1em',
+            fontWeight: '600',
+            color: 'var(--text)',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            marginBottom: '4px',
+          }}>
+            Rest Timer
+          </div>
+          {restOptions.map(option => (
+            <div
+              key={option.value}
+              onClick={() => startTimer(option.value)}
               style={{
-                padding: '12px 20px',
+                padding: '12px 16px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                transition: 'background 0.15s',
+                fontSize: '0.9em',
+                color: 'white',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              {option.label}
+            </div>
+          ))}
+          <div
+            onClick={() => setShowCustom(true)}
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--accent-primary)',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Custom
+          </div>
+          <div
+            onClick={onClose}
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              marginTop: '4px',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
+        </>
+      ) : showCustom ? (
+        <div style={{ padding: '20px' }}>
+          <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text)', textAlign: 'center' }}>
+            Custom Timer
+          </h3>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '20px' }}>
+            <input
+              type="number"
+              value={customMinutes}
+              onChange={(e) => setCustomMinutes(e.target.value)}
+              placeholder="0"
+              style={{
+                flex: 1,
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-lighter)',
+                color: 'var(--text)',
+                fontSize: '16px',
+                textAlign: 'center',
+              }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>min</span>
+            <input
+              type="number"
+              value={customSeconds}
+              onChange={(e) => setCustomSeconds(e.target.value)}
+              placeholder="0"
+              style={{
+                flex: 1,
+                padding: '8px',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                background: 'var(--bg-lighter)',
+                color: 'var(--text)',
+                fontSize: '16px',
+                textAlign: 'center',
+              }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>sec</span>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={startCustomTimer}
+              style={{
+                flex: 1,
+                padding: '10px',
+                background: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9em',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Start
+            </button>
+            <button
+              onClick={() => setShowCustom(false)}
+              style={{
+                flex: 1,
+                padding: '10px',
                 background: 'var(--bg-lighter)',
                 color: 'var(--text)',
                 border: '1px solid var(--border)',
@@ -179,56 +260,21 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 fontSize: '0.9em',
                 fontWeight: '600',
                 cursor: 'pointer',
-                minHeight: '44px',
               }}
             >
-              Custom
+              Back
             </button>
           </div>
-          {showCustom && (
-            <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
-              <input
-                type="number"
-                value={customTime}
-                onChange={(e) => setCustomTime(e.target.value)}
-                placeholder="Minutes"
-                style={{
-                  flex: 1,
-                  padding: '8px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)',
-                  background: 'var(--bg-lighter)',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                }}
-              />
-              <button
-                onClick={startCustomTimer}
-                style={{
-                  padding: '8px 16px',
-                  background: 'var(--accent-primary)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '0.9em',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
-                Start
-              </button>
-            </div>
-          )}
-        </>
+        </div>
       ) : (
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ padding: '20px', textAlign: 'center' }}>
           <div style={{
             fontSize: '3em',
             fontWeight: '700',
-            color: timeLeft <= 10 ? '#ef4444' : 'var(--accent-primary)',
+            color: timeLeft! <= 10 ? '#ef4444' : 'var(--accent-primary)',
             marginBottom: '20px',
           }}>
-            {formatTime(timeLeft)}
+            {formatTime(timeLeft!)}
           </div>
           <button
             onClick={() => setTimeLeft(null)}

@@ -19,7 +19,7 @@ interface Exercise {
   muscles: string;
   instructions?: string;
   equipment?: string;
-  sets?: { weight: string; reps: string; rpe: string; completed: boolean }[];
+  sets?: { weight: string; reps: string; rpe: string; rir?: string; completed: boolean }[];
 }
 
 const ProfileTab = () => {
@@ -118,14 +118,14 @@ const ProfileTab = () => {
                   <header>Set</header>
                   <header>lbs</header>
                   <header>Reps</header>
-                  <header>RPE</header>
+                  <header>{ex.sets?.[0]?.rir !== undefined ? 'RIR' : 'RPE'}</header>
                 </div>
-                {ex.sets?.map((s: { weight?: string; reps?: string; rpe?: string }, sIdx: number) => (
+                {ex.sets?.map((s: { weight?: string; reps?: string; rpe?: string; rir?: string }, sIdx: number) => (
                   <div key={sIdx} className="set-row">
                     <div>{sIdx + 1}</div>
                     <div>{s.weight}</div>
                     <div>{s.reps}</div>
-                    <div>{s.rpe}</div>
+                    <div>{s.rir !== undefined ? s.rir : s.rpe}</div>
                   </div>
                 ))}
               </div>
