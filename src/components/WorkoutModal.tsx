@@ -566,13 +566,15 @@ const toggleSetType = (setIdx: number) => {
     newType = 'W';
   } else if (currentSet.type === 'W') {
     newType = 'D';
+    // Add drop set automatically when D is selected
+    addDropSet(idx, setIdx);
   } else {
     newType = 'S';
   }
   
   updateSet(idx, setIdx, 'type', newType);
-};
-  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
+};  
+const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
     if (set.type === 'W') return 'W';
     if (set.type === 'D') return 'D';
     
