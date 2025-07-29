@@ -1545,33 +1545,207 @@ onClick={() =>
         </div>
       </div>
       
-      <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>Edit Profile</h2>
-          <input type="text" id="edit-first-name" placeholder="First Name" defaultValue={data.firstName} />
-          <input type="text" id="edit-last-name" placeholder="Last Name" defaultValue={data.lastName} />
-          <input type="text" id="edit-username" placeholder="Username" defaultValue={data.username} />
-          <textarea id="edit-bio" placeholder="Bio (optional)" defaultValue={data.bio} />
-          <input type="email" id="edit-email" placeholder="Email (optional)" defaultValue={data.email} />
-          <select id="edit-country" defaultValue={data.country}>
-            <option value="United States">United States</option>
-            <option value="Canada">Canada</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Australia">Australia</option>
-            <option value="Germany">Germany</option>
-            <option value="France">France</option>
-            <option value="Other">Other</option>
-          </select>
-          <input type="text" id="edit-state" placeholder="State/Province (optional)" defaultValue={data.state} />
-          <label id="cover-photo-label">
-            <input type="file" id="cover-photo-upload" accept="image/*" onChange={handleCoverPhotoUpload} />
-            Upload Cover Photo
-          </label>
-          <button onClick={saveProfile}>Save Profile</button>
-          <button className="secondary" onClick={closeModal}>Cancel</button>
-        </div>
+<div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    maxWidth: '400px',
+    background: 'var(--bg-dark)',
+    borderRadius: '20px',
+    padding: '0',
+    overflow: 'hidden',
+  }}>
+    <div style={{
+      padding: '20px',
+      borderBottom: '1px solid var(--border)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}>
+      <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Edit Profile</h2>
+      <button
+        onClick={closeModal}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--text-muted)',
+          fontSize: '1.2em',
+          cursor: 'pointer',
+          padding: '0',
+          minHeight: 'auto',
+          width: '24px',
+          height: '24px',
+        }}
+      >
+        ×
+      </button>
+    </div>
+    
+    <div style={{ padding: '20px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <input 
+          type="text" 
+          id="edit-first-name" 
+          placeholder="First Name" 
+          defaultValue={data.firstName}
+          style={{
+            flex: 1,
+            padding: '10px 12px',
+            background: 'var(--bg-lighter)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            color: 'var(--text)',
+            fontSize: '16px',
+          }}
+        />
+        <input 
+          type="text" 
+          id="edit-last-name" 
+          placeholder="Last Name" 
+          defaultValue={data.lastName}
+          style={{
+            flex: 1,
+            padding: '10px 12px',
+            background: 'var(--bg-lighter)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            color: 'var(--text)',
+            fontSize: '16px',
+          }}
+        />
       </div>
       
+      <input 
+        type="text" 
+        id="edit-username" 
+        placeholder="Username" 
+        defaultValue={data.username}
+        style={{
+          width: '100%',
+          padding: '10px 12px',
+          marginBottom: '16px',
+          background: 'var(--bg-lighter)',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          color: 'var(--text)',
+          fontSize: '16px',
+        }}
+      />
+      
+      <textarea 
+        id="edit-bio" 
+        placeholder="Bio (optional)" 
+        defaultValue={data.bio}
+        style={{
+          width: '100%',
+          padding: '10px 12px',
+          marginBottom: '16px',
+          background: 'var(--bg-lighter)',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          color: 'var(--text)',
+          fontSize: '16px',
+          minHeight: '80px',
+          resize: 'vertical',
+        }}
+      />
+      
+      <input 
+        type="email" 
+        id="edit-email" 
+        placeholder="Email (optional)" 
+        defaultValue={data.email}
+        style={{
+          width: '100%',
+          padding: '10px 12px',
+          marginBottom: '16px',
+          background: 'var(--bg-lighter)',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          color: 'var(--text)',
+          fontSize: '16px',
+        }}
+      />
+      
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <select 
+          id="edit-country" 
+          defaultValue={data.country}
+          style={{
+            flex: 1,
+            padding: '10px 12px',
+            background: 'var(--bg-lighter)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            color: 'var(--text)',
+            fontSize: '16px',
+          }}
+        >
+          <option value="United States">United States</option>
+          <option value="Canada">Canada</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="Australia">Australia</option>
+          <option value="Germany">Germany</option>
+          <option value="France">France</option>
+          <option value="Other">Other</option>
+        </select>
+        
+        <input 
+          type="text" 
+          id="edit-state" 
+          placeholder="State/Province" 
+          defaultValue={data.state}
+          style={{
+            flex: 1,
+            padding: '10px 12px',
+            background: 'var(--bg-lighter)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            color: 'var(--text)',
+            fontSize: '16px',
+          }}
+        />
+      </div>
+      
+      <label style={{
+        display: 'block',
+        padding: '10px 12px',
+        marginBottom: '20px',
+        background: 'var(--bg-lighter)',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        textAlign: 'center',
+        cursor: 'pointer',
+        fontSize: '0.9em',
+        color: 'var(--text-muted)',
+      }}>
+        <input 
+          type="file" 
+          id="cover-photo-upload" 
+          accept="image/*" 
+          onChange={handleCoverPhotoUpload}
+          style={{ display: 'none' }}
+        />
+        Upload Cover Photo
+      </label>
+      
+      <button 
+        onClick={saveProfile}
+        style={{
+          width: '100%',
+          padding: '10px',
+          background: 'var(--accent-primary)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '0.9em',
+          fontWeight: '600',
+          cursor: 'pointer',
+        }}
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>      
       <div id="feedback-modal" className={`modal ${activeModal === 'feedback-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>How was your workout?</h2>
