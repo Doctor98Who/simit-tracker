@@ -1012,48 +1012,52 @@ onClick={() =>
               WebkitTextFillColor: 'transparent',
             }}>Create Program</h2>
           </div>
-          <input 
-            type="text" 
-            id="program-name" 
-            placeholder="Program Name (e.g., PUSH PULL LEGS)" 
-            style={{ 
-              marginBottom: '24px',
-              background: 'var(--bg-lighter)',
-              border: '1px solid var(--border)',
-              borderRadius: '12px',
-              padding: '14px 16px',
-              fontSize: '1em',
-            }}
-          />
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ 
-              color: 'var(--text-muted)', 
-              fontSize: '0.9em', 
-              marginBottom: '12px', 
-              display: 'block',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              fontWeight: '600',
-            }}>
-              Number of Weeks
-            </label>
-            <input
-              type="number"
-              id="mesocycle-length"
-              placeholder="Number of weeks"
-              min="1"
-              max="52"
-              onInput={generateWeeks}
-              style={{ 
-                marginBottom: '12px',
-                background: 'var(--bg-lighter)',
-                border: '1px solid var(--border)',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                fontSize: '1em',
-              }}
-            />
-          </div>
+<input 
+  type="text" 
+  id="program-name" 
+  placeholder="Program Name (e.g., PUSH PULL LEGS)" 
+  style={{ 
+    marginBottom: '24px',
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: '14px 16px',
+    fontSize: '1em',
+    width: 'calc(100% - 32px)',
+    boxSizing: 'border-box',
+  }}
+/>
+<div style={{ marginBottom: '24px' }}>
+  <label style={{ 
+    color: 'var(--text-muted)', 
+    fontSize: '0.9em', 
+    marginBottom: '12px', 
+    display: 'block',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    fontWeight: '600',
+  }}>
+    Number of Weeks
+  </label>
+  <input
+    type="number"
+    id="mesocycle-length"
+    placeholder="# weeks"
+    min="1"
+    max="52"
+    onInput={generateWeeks}
+    style={{ 
+      marginBottom: '12px',
+      background: 'var(--bg-lighter)',
+      border: '1px solid var(--border)',
+      borderRadius: '12px',
+      padding: '14px 16px',
+      fontSize: '1em',
+      width: '120px',
+      boxSizing: 'border-box',
+    }}
+  />
+  </div>
           <div id="program-weeks" style={{ marginBottom: '20px' }}>
             {renderProgramWeeks}
           </div>
@@ -1656,23 +1660,23 @@ onClick={() =>
     boxSizing: 'border-box',
   }}
 />      
-      <input 
-        type="email" 
-        id="edit-email" 
-        placeholder="Email (optional)" 
-        defaultValue={data.email}
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          marginBottom: '16px',
-          background: 'var(--bg-lighter)',
-          border: '1px solid var(--border)',
-          borderRadius: '8px',
-          color: 'var(--text)',
-          fontSize: '16px',
-        }}
-      />
-      
+<input 
+  type="email" 
+  id="edit-email" 
+  placeholder="Email (optional)" 
+  defaultValue={data.email}
+  style={{
+    width: 'calc(100% - 24px)',
+    padding: '10px 12px',
+    marginBottom: '16px',
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    color: 'var(--text)',
+    fontSize: '16px',
+    boxSizing: 'border-box',
+  }}
+/>      
       <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
         <select 
           id="edit-country" 
@@ -2012,50 +2016,57 @@ setData((prev) => ({
                 />
               </div>
               
-              <textarea
-                id="progress-caption"
-                placeholder="Write a caption..."
-                style={{
-                  width: '100%',
-                  minHeight: '80px',
-                  padding: '12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                  resize: 'vertical',
-                  marginBottom: '16px',
-                }}
-              />
-              
+<textarea
+  id="progress-caption"
+  placeholder="Write a caption..."
+  style={{
+    width: 'calc(100% - 24px)',
+    minHeight: '80px',
+    padding: '12px',
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    color: 'var(--text)',
+    fontSize: '16px',
+    resize: 'vertical',
+    marginBottom: '16px',
+    boxSizing: 'border-box',
+  }}
+/>              
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
                   Weight (optional)
                 </label>
-                <input 
-                  type="number" 
-                  id="progress-weight" 
-                  placeholder="Enter weight in lbs"
-                  style={{ fontSize: '16px' }}
-                />
-              </div>
+<input 
+  type="number" 
+  id="progress-weight" 
+  placeholder="Weight"
+  style={{ 
+    fontSize: '16px',
+    width: '120px',
+    padding: '10px 12px',
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    color: 'var(--text)',
+    boxSizing: 'border-box',
+  }}
+/>              </div>
               
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
                   Pump Rating
                 </label>
-                <input 
-                  type="range" 
-                  id="progress-pump"
-                  min="0"
-                  max="100"
-                  defaultValue="50"
-                  style={{
-                    width: '100%',
-                    marginBottom: '8px',
-                  }}
-                  onChange={(e) => {
+<input 
+  type="range" 
+  id="progress-pump"
+  min="0"
+  max="100"
+  defaultValue="50"
+  style={{
+    width: 'calc(100% - 24px)',
+    marginBottom: '8px',
+  }}                  onChange={(e) => {
                     const value = e.target.value;
                     const label = document.getElementById('pump-value');
                     if (label) label.textContent = value;
