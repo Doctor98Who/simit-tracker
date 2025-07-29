@@ -1220,13 +1220,24 @@ const Modals = () => {
             <h2>Select Exercise</h2>
           </div>
           <div className="exercise-select-search">
-            <input
+<input
               type="text"
               className="search-bar"
               id="exercise-search-select"
               placeholder="Search exercises..."
               value={selectSearchQuery}
               onChange={(e) => setSelectSearchQuery(e.target.value)}
+              style={{
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '8px',
+                fontSize: '16px',
+                color: 'var(--text)',
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
             />
             <button
               onClick={() => {
@@ -1246,8 +1257,7 @@ const Modals = () => {
                 fontWeight: '500',
                 cursor: 'pointer',
                 width: '100%',
-              }}
-            >
+              }}            >
               + Create Custom Exercise
             </button>
           </div>

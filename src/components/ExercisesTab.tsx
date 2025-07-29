@@ -183,15 +183,16 @@ return (
       value={searchQuery}
       onChange={(e) => setSearchQuery(e.target.value)}
       style={{
-        background: 'var(--bg-lighter)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        padding: '12px 16px',
-        marginBottom: '8px',
-        fontSize: '16px',
-        color: 'var(--text)',
-        width: '100%',
-      }}
+  background: 'var(--bg-lighter)',
+  border: '1px solid var(--border)',
+  borderRadius: '8px',
+  padding: '12px 16px',
+  marginBottom: '8px',
+  fontSize: '16px',
+  color: 'var(--text)',
+  width: 'calc(100% - 32px)',
+  boxSizing: 'border-box',
+}}
     />
     <button
   onClick={openCustomExerciseModal}
