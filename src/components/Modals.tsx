@@ -1991,270 +1991,287 @@ const Modals = () => {
         </div>
       </div>
 
-<div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{ maxWidth: '400px' }}>
-    <h2>New Progress Photo</h2>
+      <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{ maxWidth: '400px' }}>
+          <h2>New Progress Photo</h2>
 
-    {data.tempBase64 ? (
-      <>
-        <div style={{
-          width: '100%',
-          height: '300px',
-          marginBottom: '16px',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          background: 'var(--bg-lighter)',
-        }}>
-          <img
-            src={data.tempBase64}
-            alt="Preview"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-          />
-        </div>
+          {data.tempBase64 ? (
+            <>
+              <div style={{
+                width: '100%',
+                height: '300px',
+                marginBottom: '16px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                background: 'var(--bg-lighter)',
+              }}>
+                <img
+                  src={data.tempBase64}
+                  alt="Preview"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+              </div>
 
-        <textarea
-          id="progress-caption"
-          placeholder="Write a caption..."
-          style={{
-            width: 'calc(100% - 24px)',
-            minHeight: '80px',
-            padding: '12px',
-            background: 'var(--bg-lighter)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            color: 'var(--text)',
-            fontSize: '16px',
-            resize: 'vertical',
-            marginBottom: '16px',
-            boxSizing: 'border-box',
-          }}
-        />
-        
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
-            Weight (optional)
-          </label>
-          <input
-            type="number"
-            id="progress-weight"
-            placeholder="Weight"
-            style={{
-              fontSize: '16px',
-              width: '120px',
-              padding: '10px 12px',
-              background: 'var(--bg-lighter)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              color: 'var(--text)',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
+              <textarea
+                id="progress-caption"
+                placeholder="Write a caption..."
+                style={{
+                  width: 'calc(100% - 24px)',
+                  minHeight: '80px',
+                  padding: '12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  resize: 'vertical',
+                  marginBottom: '16px',
+                  boxSizing: 'border-box',
+                }}
+              />
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
-            Pump Rating
-          </label>
-          <input
-            type="range"
-            id="progress-pump"
-            min="0"
-            max="100"
-            defaultValue="50"
-            style={{
-              width: 'calc(100% - 24px)',
-              marginBottom: '8px',
-            }}
-            onChange={(e) => {
-              const value = e.target.value;
-              const label = document.getElementById('pump-value');
-              if (label) label.textContent = value;
-            }}
-          />
-          <div style={{ textAlign: 'center', fontSize: '1.2em', fontWeight: '600' }}>
-            <span id="pump-value">50</span>/100
-          </div>
-        </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                  Weight (optional)
+                </label>
+                <input
+                  type="number"
+                  id="progress-weight"
+                  placeholder="Weight"
+                  style={{
+                    fontSize: '16px',
+                    width: '120px',
+                    padding: '10px 12px',
+                    background: 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    color: 'var(--text)',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-          marginTop: '20px'
-        }}>
-          <button onClick={() => {
-            const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-            const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-            const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                  Pump Rating
+                </label>
+                <input
+                  type="range"
+                  id="progress-pump"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  style={{
+                    width: 'calc(100% - 24px)',
+                    marginBottom: '8px',
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const label = document.getElementById('pump-value');
+                    if (label) label.textContent = value;
+                  }}
+                />
+                <div style={{ textAlign: 'center', fontSize: '1.2em', fontWeight: '600' }}>
+                  <span id="pump-value">50</span>/100
+                </div>
+              </div>
 
-            if (data.tempBase64 && data.tempTimestamp) {
-              const newPic = {
-                base64: data.tempBase64,
-                timestamp: data.tempTimestamp,
-                caption,
-                weight,
-                pump,
-                likes: 0,
-                comments: [],
-              };
-              setData((prev: DataType) => ({
-                ...prev,
-                progressPics: [...prev.progressPics, newPic],
-                tempBase64: null,
-                tempTimestamp: null,
-                activeModal: null,
-                activeTab: 'progress-tab',
-              }));
-            }
-          }}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'var(--accent-primary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '0.9em',
-            fontWeight: '600',
-            cursor: 'pointer',
-          }}>
-            Post
-          </button>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                marginTop: '20px'
+              }}>
+                <button
+                  onClick={() => {
+                    const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                    const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                    const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
 
-          <button
-            onClick={() => setData((prev: DataType) => ({ 
-              ...prev, 
-              tempBase64: null, 
-              tempTimestamp: null,
-              activeModal: 'progress-upload-modal'
-            }))}
-            style={{
-              width: '100%',
-              padding: '10px',
-              background: 'transparent',
-              color: 'var(--text)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }}
-          >
-            Choose Different Photo
-          </button>
-          
-          <button
-            onClick={closeModal}
-            style={{
-              width: '100%',
-              padding: '10px',
-              background: 'transparent',
-              color: 'rgba(239, 68, 68, 0.8)',
-              border: '1px dashed rgba(239, 68, 68, 0.4)',
-              borderRadius: '8px',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      </>
-    ) : (
-      <>
-        <div
-          style={{
-            border: '2px dashed var(--border)',
-            borderRadius: '12px',
-            padding: '40px',
-            textAlign: 'center',
-            marginBottom: '20px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onClick={() => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e: Event) => {
-              const target = e.target as HTMLInputElement;
-              if (target.files && target.files[0]) {
-                const file = target.files[0];
-                const reader = new FileReader();
-                reader.onload = (event: ProgressEvent<FileReader>) => {
-                  const base64 = event.target?.result as string;
-                  const img = new Image();
-                  img.src = base64;
-                  img.onload = () => {
-                    EXIF.getData(img as any, function () {
-                      let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
-                      let timestamp = Date.now();
-                      if (exifDate) {
-                        const parts = exifDate.split(' ');
-                        const datePart = parts[0].replace(/:/g, '-');
-                        const timePart = parts[1];
-                        const dt = new Date(`${datePart}T${timePart}`);
-                        if (!isNaN(dt.getTime())) {
-                          timestamp = dt.getTime();
-                        }
-                      }
+                    if (data.tempBase64 && data.tempTimestamp) {
+                      const newPic = {
+                        base64: data.tempBase64,
+                        timestamp: data.tempTimestamp,
+                        caption,
+                        weight,
+                        pump,
+                        likes: 0,
+                        comments: [],
+                      };
+                      // Close modal first, then update data
+                      document.body.style.overflow = '';
+                      document.body.style.position = '';
+                      document.body.style.width = '';
+
                       setData((prev: DataType) => ({
                         ...prev,
-                        tempBase64: base64,
-                        tempTimestamp: timestamp,
-                        activeModal: 'progress-upload-modal'
+                        progressPics: [...prev.progressPics, newPic],
+                        tempBase64: null,
+                        tempTimestamp: null,
+                        activeModal: null,
                       }));
-                    });
+
+                      // Switch to progress tab
+                      const progressTab = document.querySelector('[data-tab-id="progress-tab"]') as HTMLElement;
+                      if (progressTab) {
+                        progressTab.click();
+                      } else {
+                        // Fallback: directly set the active tab
+                        setData((prev: DataType) => ({
+                          ...prev,
+                          activeTab: 'progress-tab',
+                        }));
+                      }
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'var(--accent-primary)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.9em',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}>
+                  Post
+                </button>
+
+                <button
+                  onClick={() => setData((prev: DataType) => ({
+                    ...prev,
+                    tempBase64: null,
+                    tempTimestamp: null,
+                    activeModal: 'progress-upload-modal'
+                  }))}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: 'transparent',
+                    color: 'var(--text)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Choose Different Photo
+                </button>
+
+                <button
+                  onClick={closeModal}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: 'transparent',
+                    color: 'rgba(239, 68, 68, 0.8)',
+                    border: '1px dashed rgba(239, 68, 68, 0.4)',
+                    borderRadius: '8px',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                style={{
+                  border: '2px dashed var(--border)',
+                  borderRadius: '12px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e: Event) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.files && target.files[0]) {
+                      const file = target.files[0];
+                      const reader = new FileReader();
+                      reader.onload = (event: ProgressEvent<FileReader>) => {
+                        const base64 = event.target?.result as string;
+                        const img = new Image();
+                        img.src = base64;
+                        img.onload = () => {
+                          EXIF.getData(img as any, function () {
+                            let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
+                            let timestamp = Date.now();
+                            if (exifDate) {
+                              const parts = exifDate.split(' ');
+                              const datePart = parts[0].replace(/:/g, '-');
+                              const timePart = parts[1];
+                              const dt = new Date(`${datePart}T${timePart}`);
+                              if (!isNaN(dt.getTime())) {
+                                timestamp = dt.getTime();
+                              }
+                            }
+                            setData((prev: DataType) => ({
+                              ...prev,
+                              tempBase64: base64,
+                              tempTimestamp: timestamp,
+                              activeModal: 'progress-upload-modal'
+                            }));
+                          });
+                        };
+                      };
+                      reader.readAsDataURL(file);
+                    }
                   };
-                };
-                reader.readAsDataURL(file);
-              }
-            };
-            input.click();
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          <div style={{ fontSize: '3em', marginBottom: '16px' }}>📸</div>
-          <div style={{ fontSize: '1.1em', fontWeight: '600', marginBottom: '8px' }}>
-            Choose a photo
-          </div>
-          <div style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>
-            Tap to select from your gallery
-          </div>
+                  input.click();
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <div style={{ fontSize: '3em', marginBottom: '16px' }}>📸</div>
+                <div style={{ fontSize: '1.1em', fontWeight: '600', marginBottom: '8px' }}>
+                  Choose a photo
+                </div>
+                <div style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                  Tap to select from your gallery
+                </div>
+              </div>
+
+              <button
+                onClick={closeModal}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: 'transparent',
+                  color: 'rgba(239, 68, 68, 0.8)',
+                  border: '1px dashed rgba(239, 68, 68, 0.4)',
+                  borderRadius: '8px',
+                  fontSize: '0.85em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
         </div>
-        
-        <button
-          onClick={closeModal}
-          style={{
-            width: '100%',
-            padding: '10px',
-            background: 'transparent',
-            color: 'rgba(239, 68, 68, 0.8)',
-            border: '1px dashed rgba(239, 68, 68, 0.4)',
-            borderRadius: '8px',
-            fontSize: '0.85em',
-            fontWeight: '500',
-            cursor: 'pointer',
-          }}
-        >
-          Cancel
-        </button>
-      </>
-    )}
-  </div>
-</div>
+      </div>
       <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '400px',

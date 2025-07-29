@@ -64,10 +64,14 @@ const ProgressTab = () => {
     }));
   };
 
-  const uploadProgressPic = () => {
-    setData(prev => ({ ...prev, activeModal: 'progress-upload-modal' }));
-  };
-
+const uploadProgressPic = () => {
+  setData(prev => ({ 
+    ...prev, 
+    activeModal: 'progress-upload-modal',
+    tempBase64: null,
+    tempTimestamp: null
+  }));
+};
   const saveEditedCaption = () => {
     if (selectedPhoto) {
       const newPics = [...data.progressPics];
