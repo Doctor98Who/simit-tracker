@@ -1546,14 +1546,17 @@ onClick={() =>
       </div>
       
 <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '400px',
-    background: 'var(--bg-dark)',
-    borderRadius: '20px',
-    padding: '0',
-    overflow: 'hidden',
-  }}>
-    <div style={{
+<div className="modal-content" style={{
+  maxWidth: '400px',
+  maxHeight: '90vh',
+  background: 'var(--bg-dark)',
+  borderRadius: '20px',
+  padding: '0',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+}}>    
+<div style={{
       padding: '20px',
       borderBottom: '1px solid var(--border)',
       display: 'flex',
@@ -1579,8 +1582,13 @@ onClick={() =>
       </button>
     </div>
     
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+<div style={{ 
+  padding: '20px',
+  flex: 1,
+  overflowY: 'auto',
+  WebkitOverflowScrolling: 'touch',
+}}>      
+<div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
         <input 
           type="text" 
           id="edit-first-name" 
