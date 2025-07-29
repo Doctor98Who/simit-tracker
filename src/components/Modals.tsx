@@ -2095,48 +2095,40 @@ const Modals = () => {
                 marginTop: '20px'
               }}>
                 <button
-                  onClick={() => {
-                    const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-                    const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-                    const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+onClick={() => {
+  const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+  const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+  const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
 
-                    if (data.tempBase64 && data.tempTimestamp) {
-                      const newPic = {
-                        base64: data.tempBase64,
-                        timestamp: data.tempTimestamp,
-                        caption,
-                        weight,
-                        pump,
-                        likes: 0,
-                        comments: [],
-                      };
-                      // Close modal first, then update data
-                      document.body.style.overflow = '';
-                      document.body.style.position = '';
-                      document.body.style.width = '';
-
-                      setData((prev: DataType) => ({
-                        ...prev,
-                        progressPics: [...prev.progressPics, newPic],
-                        tempBase64: null,
-                        tempTimestamp: null,
-                        activeModal: null,
-                      }));
-
-                      // Switch to progress tab
-                      const progressTab = document.querySelector('[data-tab-id="progress-tab"]') as HTMLElement;
-                      if (progressTab) {
-                        progressTab.click();
-                      } else {
-                        // Fallback: directly set the active tab
-                        setData((prev: DataType) => ({
-                          ...prev,
-                          activeTab: 'progress-tab',
-                        }));
-                      }
-                    }
-                  }}
-                  style={{
+  if (data.tempBase64 && data.tempTimestamp) {
+    const newPic = {
+      base64: data.tempBase64,
+      timestamp: data.tempTimestamp,
+      caption,
+      weight,
+      pump,
+      likes: 0,
+      comments: [],
+    };
+    
+    // First, update the progress pics and clear the modal
+    setData((prev: DataType) => ({
+      ...prev,
+      progressPics: [...prev.progressPics, newPic],
+      tempBase64: null,
+      tempTimestamp: null,
+      activeModal: null,
+    }));
+    
+    // Then trigger the tab change through the BottomNav
+    setTimeout(() => {
+      const progressNavItem = document.querySelector('.nav-item:nth-child(5)') as HTMLElement;
+      if (progressNavItem) {
+        progressNavItem.click();
+      }
+    }, 50);
+  }
+}}                  style={{
                     width: '100%',
                     padding: '12px',
                     background: 'var(--accent-primary)',
