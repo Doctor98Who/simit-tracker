@@ -757,30 +757,30 @@ const Modals = () => {
     }));
   };
 
-const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    // Check file size (limit to 5MB for cover photos)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image is too large. Please choose an image under 5MB.');
-      return;
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (limit to 5MB for cover photos)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image is too large. Please choose an image under 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        setData((prev: DataType) => ({
+          ...prev,
+          coverPhoto: base64,
+          activeModal: 'edit-profile-modal' // Keep modal open
+        }));
+      };
+      reader.onerror = () => {
+        alert('Failed to read image. Please try again.');
+      };
+      reader.readAsDataURL(file);
     }
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setData((prev: DataType) => ({ 
-        ...prev, 
-        coverPhoto: base64,
-        activeModal: 'edit-profile-modal' // Keep modal open
-      }));
-    };
-    reader.onerror = () => {
-      alert('Failed to read image. Please try again.');
-    };
-    reader.readAsDataURL(file);
-  }
-};
+  };
   // Custom exercise handlers
   const saveCustomExercise = () => {
     const name = (document.getElementById('custom-exercise-name') as HTMLInputElement)?.value;
@@ -1221,18 +1221,30 @@ const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 
       <div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`} style={{ alignItems: 'stretch' }}>
         <div className="modal-content exercise-select-content" style={{
-          height: '100vh',
-          maxHeight: '100vh',
+          height: '-webkit-fill-available',
+          maxHeight: '-webkit-fill-available',
           borderRadius: 0,
           margin: 0,
           width: '100%',
           maxWidth: '100%',
-        }}>
-          <div className="exercise-select-header">
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        } as React.CSSProperties}>
+          <div className="exercise-select-header" style={{
+            paddingTop: 'env(safe-area-inset-top)',
+          }}>
             <h2>Select Exercise</h2>
           </div>
-          <div className="exercise-select-search">
-<input
+          <div className="exercise-select-search" style={{
+            padding: '10px 20px 15px',
+            background: 'var(--bg-dark)',
+            position: 'sticky',
+            top: '60px',
+            zIndex: 10,
+          }}>
+            <input
               type="text"
               className="search-bar"
               id="exercise-search-select"
@@ -1251,25 +1263,25 @@ const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
                 boxSizing: 'border-box',
               }}
             />
-<div
-  onClick={() => {
-    setData((prev: DataType) => ({
-      ...prev,
-      activeModal: 'custom-exercise-modal',
-      returnModal: 'exercise-select-modal'
-    }));
-  }}
-  style={{
-    color: 'var(--accent-primary)',
-    fontSize: '0.9em',
-    cursor: 'pointer',
-    textAlign: 'center',
-    padding: '8px 0',
-    fontWeight: '500',
-  }}
->
-  + Exercise
-</div>
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'custom-exercise-modal',
+                  returnModal: 'exercise-select-modal'
+                }));
+              }}
+              style={{
+                color: 'var(--accent-primary)',
+                fontSize: '0.9em',
+                cursor: 'pointer',
+                textAlign: 'center',
+                padding: '8px 0',
+                fontWeight: '500',
+              }}
+            >
+              + Exercise
+            </div>
           </div>
           <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>
             {renderExerciseSelectList}
@@ -1753,12 +1765,70 @@ const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
                 type="file"
                 id="cover-photo-upload"
                 accept="image/*"
-                onChange={handleCoverPhotoUpload}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                      alert('Image is too large. Please choose an image under 5MB.');
+                      e.target.value = ''; // Reset input
+                      return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const base64 = event.target?.result as string;
+
+                      // Create image to resize if needed
+                      const img = new Image();
+                      img.src = base64;
+
+                      img.onload = () => {
+                        const maxSize = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxSize || height > maxSize) {
+                          const ratio = Math.min(maxSize / width, maxSize / height);
+                          width = Math.round(width * ratio);
+                          height = Math.round(height * ratio);
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+
+                        if (ctx) {
+                          ctx.drawImage(img, 0, 0, width, height);
+                          const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                          // Update cover photo without changing modal
+                          setData((prev: DataType) => ({
+                            ...prev,
+                            coverPhoto: resizedBase64
+                            // Remove activeModal to prevent modal issues
+                          }));
+                        }
+                      };
+
+                      img.onerror = () => {
+                        alert('Failed to process image. Please try another photo.');
+                        e.target.value = ''; // Reset input
+                      };
+                    };
+
+                    reader.onerror = () => {
+                      alert('Failed to read image. Please try again.');
+                      e.target.value = ''; // Reset input
+                    };
+
+                    reader.readAsDataURL(file);
+                  }
+                }}
                 style={{ display: 'none' }}
               />
               Upload Cover Photo
             </label>
-
             <button
               onClick={saveProfile}
               style={{
@@ -2107,44 +2177,44 @@ const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
                 marginTop: '20px'
               }}>
                 <button
-onClick={() => {
-  const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-  const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-  const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+                  onClick={() => {
+                    const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                    const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                    const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
 
-  if (data.tempBase64 && data.tempTimestamp) {
-    const newPic = {
-      base64: data.tempBase64,
-      timestamp: data.tempTimestamp,
-      caption,
-      weight,
-      pump,
-      likes: 0,
-      comments: [],
-    };
-    
-    // Save the photo first
-    const newProgressPics = [...data.progressPics, newPic];
-    
-    // Close modal first
-    setData((prev: DataType) => ({
-      ...prev,
-      progressPics: newProgressPics,
-      tempBase64: null,
-      tempTimestamp: null,
-      activeModal: null
-    }));
-    
-    // Use requestAnimationFrame for Firefox compatibility
-    requestAnimationFrame(() => {
-      setData((prev: DataType) => ({
-        ...prev,
-        activeTab: 'progress-tab'
-      }));
-    });
-  }
-}}
-                style={{
+                    if (data.tempBase64 && data.tempTimestamp) {
+                      const newPic = {
+                        base64: data.tempBase64,
+                        timestamp: data.tempTimestamp,
+                        caption,
+                        weight,
+                        pump,
+                        likes: 0,
+                        comments: [],
+                      };
+
+                      // Save the photo first
+                      const newProgressPics = [...data.progressPics, newPic];
+
+                      // Close modal first
+                      setData((prev: DataType) => ({
+                        ...prev,
+                        progressPics: newProgressPics,
+                        tempBase64: null,
+                        tempTimestamp: null,
+                        activeModal: null
+                      }));
+
+                      // Use requestAnimationFrame for Firefox compatibility
+                      requestAnimationFrame(() => {
+                        setData((prev: DataType) => ({
+                          ...prev,
+                          activeTab: 'progress-tab'
+                        }));
+                      });
+                    }
+                  }}
+                  style={{
                     width: '100%',
                     padding: '12px',
                     background: 'var(--accent-primary)',
@@ -2210,106 +2280,106 @@ onClick={() => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
-onClick={() => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  // Remove capture attribute to allow gallery selection
-  
-  input.onchange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files[0]) {
-      const file = target.files[0];
-      
-      const reader = new FileReader();
-      
-      reader.onload = (event: ProgressEvent<FileReader>) => {
-        const base64 = event.target?.result as string;
-        
-        // Create image to resize if needed
-        const img = new Image();
-        img.src = base64;
-        
-        img.onload = () => {
-          // Resize image if it's too large
-          const maxWidth = 1080;
-          const maxHeight = 1920;
-          let width = img.width;
-          let height = img.height;
-          
-          // Calculate new dimensions maintaining aspect ratio
-          if (width > maxWidth || height > maxHeight) {
-            const ratio = Math.min(maxWidth / width, maxHeight / height);
-            width = Math.round(width * ratio);
-            height = Math.round(height * ratio);
-          }
-          
-          // Create canvas to resize image
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-            
-            // Try to get EXIF data for timestamp
-            let timestamp = Date.now();
-            try {
-              EXIF.getData(img as any, function() {
-                try {
-                  const exifDate = EXIF.getTag(img, 'DateTimeOriginal');
-                  if (exifDate) {
-                    const parts = exifDate.split(' ');
-                    if (parts.length === 2) {
-                      const datePart = parts[0].replace(/:/g, '-');
-                      const timePart = parts[1];
-                      const dt = new Date(`${datePart}T${timePart}`);
-                      if (!isNaN(dt.getTime())) {
-                        timestamp = dt.getTime();
-                      }
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  // Remove capture attribute to allow gallery selection
+
+                  input.onchange = (e: Event) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.files && target.files[0]) {
+                      const file = target.files[0];
+
+                      const reader = new FileReader();
+
+                      reader.onload = (event: ProgressEvent<FileReader>) => {
+                        const base64 = event.target?.result as string;
+
+                        // Create image to resize if needed
+                        const img = new Image();
+                        img.src = base64;
+
+                        img.onload = () => {
+                          // Resize image if it's too large
+                          const maxWidth = 1080;
+                          const maxHeight = 1920;
+                          let width = img.width;
+                          let height = img.height;
+
+                          // Calculate new dimensions maintaining aspect ratio
+                          if (width > maxWidth || height > maxHeight) {
+                            const ratio = Math.min(maxWidth / width, maxHeight / height);
+                            width = Math.round(width * ratio);
+                            height = Math.round(height * ratio);
+                          }
+
+                          // Create canvas to resize image
+                          const canvas = document.createElement('canvas');
+                          canvas.width = width;
+                          canvas.height = height;
+                          const ctx = canvas.getContext('2d');
+
+                          if (ctx) {
+                            ctx.drawImage(img, 0, 0, width, height);
+                            const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+                            // Try to get EXIF data for timestamp
+                            let timestamp = Date.now();
+                            try {
+                              EXIF.getData(img as any, function () {
+                                try {
+                                  const exifDate = EXIF.getTag(img, 'DateTimeOriginal');
+                                  if (exifDate) {
+                                    const parts = exifDate.split(' ');
+                                    if (parts.length === 2) {
+                                      const datePart = parts[0].replace(/:/g, '-');
+                                      const timePart = parts[1];
+                                      const dt = new Date(`${datePart}T${timePart}`);
+                                      if (!isNaN(dt.getTime())) {
+                                        timestamp = dt.getTime();
+                                      }
+                                    }
+                                  }
+                                } catch (e) {
+                                  console.log('EXIF date parsing failed');
+                                }
+
+                                // Set data with resized image
+                                setData((prev: DataType) => ({
+                                  ...prev,
+                                  tempBase64: resizedBase64,
+                                  tempTimestamp: timestamp,
+                                  activeModal: 'progress-upload-modal'
+                                }));
+                              });
+                            } catch (error) {
+                              // If EXIF fails, still upload
+                              setData((prev: DataType) => ({
+                                ...prev,
+                                tempBase64: resizedBase64,
+                                tempTimestamp: timestamp,
+                                activeModal: 'progress-upload-modal'
+                              }));
+                            }
+                          }
+                        };
+
+                        img.onerror = () => {
+                          alert('Failed to process image. Please try another photo.');
+                        };
+                      };
+
+                      reader.onerror = () => {
+                        alert('Failed to read image. Please try another photo.');
+                      };
+
+                      reader.readAsDataURL(file);
                     }
-                  }
-                } catch (e) {
-                  console.log('EXIF date parsing failed');
-                }
-                
-                // Set data with resized image
-                setData((prev: DataType) => ({
-                  ...prev,
-                  tempBase64: resizedBase64,
-                  tempTimestamp: timestamp,
-                  activeModal: 'progress-upload-modal'
-                }));
-              });
-            } catch (error) {
-              // If EXIF fails, still upload
-              setData((prev: DataType) => ({
-                ...prev,
-                tempBase64: resizedBase64,
-                tempTimestamp: timestamp,
-                activeModal: 'progress-upload-modal'
-              }));
-            }
-          }
-        };
-        
-        img.onerror = () => {
-          alert('Failed to process image. Please try another photo.');
-        };
-      };
-      
-      reader.onerror = () => {
-        alert('Failed to read image. Please try another photo.');
-      };
-      
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  input.click();
-}}
+                  };
+
+                  input.click();
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'var(--accent-primary)';
                   e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
@@ -2505,110 +2575,110 @@ onClick={() => {
               </div>
             </div>
 
-{/* Account Section */}
-<div style={{ padding: '20px' }}>
-  <h3 style={{
-    margin: '0 0 15px 0',
-    fontSize: '0.8em',
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
-  }}>
-    TROUBLESHOOTING
-  </h3>
-  
-  <button
-    onClick={() => {
-      if (window.confirm('Clear app cache? This will fix display issues but keep all your workout data, photos, and settings.')) {
-        // Keep user data
-        const userData = {
-          templates: data.templates,
-          history: data.history,
-          progressPics: data.progressPics,
-          profilePic: data.profilePic,
-          username: data.username,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          bio: data.bio,
-          email: data.email,
-          country: data.country,
-          state: data.state,
-          coverPhoto: data.coverPhoto,
-          completedPrograms: data.completedPrograms,
-          customExercises: data.customExercises,
-          theme: data.theme,
-          intensityMetric: data.intensityMetric,
-          weightUnit: data.weightUnit,
-          distanceUnit: data.distanceUnit,
-        };
-        
-        // Clear everything
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Restore user data
-        Object.entries(userData).forEach(([key, value]) => {
-          if (typeof value === 'string') {
-            localStorage.setItem(key, value);
-          } else {
-            localStorage.setItem(key, JSON.stringify(value));
-          }
-        });
-        
-        // Set data version
-        localStorage.setItem('dataVersion', '1.0.1');
-        
-        // Reload
-        window.location.reload();
-      }
-    }}
-    style={{
-      width: '100%',
-      background: 'var(--bg-lighter)',
-      color: 'var(--text)',
-      border: '1px solid var(--border)',
-      borderRadius: '8px',
-      padding: '12px',
-      fontSize: '0.9em',
-      fontWeight: '500',
-      cursor: 'pointer',
-      marginBottom: '40px',
-      transition: 'all 0.2s ease',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = 'var(--accent-primary)';
-      e.currentTarget.style.color = 'white';
-      e.currentTarget.style.borderColor = 'var(--accent-primary)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = 'var(--bg-lighter)';
-      e.currentTarget.style.color = 'var(--text)';
-      e.currentTarget.style.borderColor = 'var(--border)';
-    }}
-  >
-    Clear Cache
-  </button>
-  
-  <div style={{ 
-    fontSize: '0.75em', 
-    color: 'var(--text-muted)', 
-    marginTop: '-30px',
-    marginBottom: '30px',
-    textAlign: 'center'
-  }}>
-    Fixes black screens and display issues
-  </div>
+            {/* Account Section */}
+            <div style={{ padding: '20px' }}>
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                TROUBLESHOOTING
+              </h3>
 
-  <button
-    className="delete-account-btn"
-    onClick={() => {
-      if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.reload();
-      }
-    }}
-                    style={{
+              <button
+                onClick={() => {
+                  if (window.confirm('Clear app cache? This will fix display issues but keep all your workout data, photos, and settings.')) {
+                    // Keep user data
+                    const userData = {
+                      templates: data.templates,
+                      history: data.history,
+                      progressPics: data.progressPics,
+                      profilePic: data.profilePic,
+                      username: data.username,
+                      firstName: data.firstName,
+                      lastName: data.lastName,
+                      bio: data.bio,
+                      email: data.email,
+                      country: data.country,
+                      state: data.state,
+                      coverPhoto: data.coverPhoto,
+                      completedPrograms: data.completedPrograms,
+                      customExercises: data.customExercises,
+                      theme: data.theme,
+                      intensityMetric: data.intensityMetric,
+                      weightUnit: data.weightUnit,
+                      distanceUnit: data.distanceUnit,
+                    };
+
+                    // Clear everything
+                    localStorage.clear();
+                    sessionStorage.clear();
+
+                    // Restore user data
+                    Object.entries(userData).forEach(([key, value]) => {
+                      if (typeof value === 'string') {
+                        localStorage.setItem(key, value);
+                      } else {
+                        localStorage.setItem(key, JSON.stringify(value));
+                      }
+                    });
+
+                    // Set data version
+                    localStorage.setItem('dataVersion', '1.0.1');
+
+                    // Reload
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-lighter)',
+                  color: 'var(--text)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  marginBottom: '40px',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--accent-primary)';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-lighter)';
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }}
+              >
+                Clear Cache
+              </button>
+
+              <div style={{
+                fontSize: '0.75em',
+                color: 'var(--text-muted)',
+                marginTop: '-30px',
+                marginBottom: '30px',
+                textAlign: 'center'
+              }}>
+                Fixes black screens and display issues
+              </div>
+
+              <button
+                className="delete-account-btn"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+                style={{
                   width: '100%',
                   background: 'transparent',
                   color: '#FF3B30',
