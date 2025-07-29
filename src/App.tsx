@@ -16,13 +16,12 @@ const AppContent = () => {
   const { data, setData } = useContext(DataContext);
   const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
 
-  // Sync activeTab from context
+// Sync activeTab from context
   useEffect(() => {
-    if (data.activeTab && data.activeTab !== activeTab) {
+    if (data.activeTab !== activeTab) {
       setActiveTab(data.activeTab);
     }
-  }, [data.activeTab]);
-
+  }, [data.activeTab, activeTab]);
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setData(prev => ({ ...prev, activeTab: tab }));

@@ -2111,17 +2111,20 @@ onClick={() => {
       comments: [],
     };
     
-    // Update everything at once
+    // Save the photo
+    const newProgressPics = [...data.progressPics, newPic];
+    
+    // Reset all modal-related state and switch tab
     setData((prev: DataType) => ({
       ...prev,
-      progressPics: [...prev.progressPics, newPic],
+      progressPics: newProgressPics,
       tempBase64: null,
       tempTimestamp: null,
       activeModal: null,
-      activeTab: 'progress-tab'  // This will trigger the useEffect in App.tsx
+      activeTab: 'progress-tab'
     }));
   }
-}}               
+}}            
                 style={{
                     width: '100%',
                     padding: '12px',
