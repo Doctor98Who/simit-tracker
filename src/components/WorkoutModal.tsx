@@ -1332,7 +1332,7 @@ const WorkoutModal: React.FC = () => {
           WebkitTransform: `translateY(${modalTransform}px)`,
         }}
       >
-        <div style={{
+         <div style={{
           position: 'fixed',
           top: 0,
           left: 0,
@@ -1342,17 +1342,16 @@ const WorkoutModal: React.FC = () => {
           borderBottom: '1px solid var(--border)',
           borderRadius: '20px 20px 0 0',
         }}>
-        </div>
           <div 
             className="drag-handle"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleTouchStart}
-          onMouseMove={handleTouchMove}
-          onMouseUp={handleTouchEnd}
-          onMouseLeave={handleTouchEnd}
-          style={{
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleTouchStart}
+            onMouseMove={handleTouchMove}
+            onMouseUp={handleTouchEnd}
+            onMouseLeave={handleTouchEnd}
+            style={{
             padding: '6px',
             cursor: 'grab',
             background: 'var(--bg-dark)',
@@ -1444,6 +1443,7 @@ const WorkoutModal: React.FC = () => {
             Finish
           </button>
         </div>
+      </div>
         
         <div 
           ref={scrollContainerRef}
