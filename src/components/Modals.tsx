@@ -1621,41 +1621,41 @@ onClick={() =>
         />
       </div>
       
-      <input 
-        type="text" 
-        id="edit-username" 
-        placeholder="Username" 
-        defaultValue={data.username}
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          marginBottom: '16px',
-          background: 'var(--bg-lighter)',
-          border: '1px solid var(--border)',
-          borderRadius: '8px',
-          color: 'var(--text)',
-          fontSize: '16px',
-        }}
-      />
-      
-      <textarea 
-        id="edit-bio" 
-        placeholder="Bio (optional)" 
-        defaultValue={data.bio}
-        style={{
-          width: '100%',
-          padding: '10px 12px',
-          marginBottom: '16px',
-          background: 'var(--bg-lighter)',
-          border: '1px solid var(--border)',
-          borderRadius: '8px',
-          color: 'var(--text)',
-          fontSize: '16px',
-          minHeight: '80px',
-          resize: 'vertical',
-        }}
-      />
-      
+<input 
+  type="text" 
+  id="edit-username" 
+  placeholder="Username" 
+  defaultValue={data.username}
+  style={{
+    width: 'calc(100% - 24px)',
+    padding: '10px 12px',
+    marginBottom: '16px',
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    color: 'var(--text)',
+    fontSize: '16px',
+    boxSizing: 'border-box',
+  }}
+/>      
+<textarea 
+  id="edit-bio" 
+  placeholder="Bio (optional)" 
+  defaultValue={data.bio}
+  style={{
+    width: 'calc(100% - 24px)',
+    padding: '10px 12px',
+    marginBottom: '16px',
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    color: 'var(--text)',
+    fontSize: '16px',
+    minHeight: '80px',
+    resize: 'vertical',
+    boxSizing: 'border-box',
+  }}
+/>      
       <input 
         type="email" 
         id="edit-email" 
