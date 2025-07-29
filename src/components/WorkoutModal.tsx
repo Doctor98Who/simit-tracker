@@ -589,11 +589,17 @@ const toggleSetType = (setIdx: number) => {
 const isDropSet = (setIdx: number): boolean => {
   if (setIdx === 0) return false;
   
-  // A set is a drop set only if it was added right after a 'D' type set
-  // and doesn't have its own type yet
-  return ex.sets[setIdx - 1].type === 'D' && !ex.sets[setIdx].type;
-};
-  // Collapsed state when any exercise is being dragged
+  // A set is a drop set if the previous set is type 'D'
+  // This works for chained drop sets too
+  let checkIdx = setIdx - 1;
+  while (checkIdx >= 0) {
+    if (ex.sets[checkIdx].type === 'D') return true;
+    if (ex.sets[checkIdx].type === 'W' || ex.sets[checkIdx].type === 'S') return false;
+    checkIdx--;
+  }
+  return false;
+};  
+// Collapsed state when any exercise is being dragged
   const isCollapsed = isGlobalDragging && !isDragging;
 
   return (
@@ -1220,31 +1226,25 @@ const WorkoutModal: React.FC = () => {
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
 
-  const addDropSet = useCallback((exIdx: number, afterSetIdx: number) => {
-    if (!currentWorkout) return;
-    const newExercises = [...currentWorkout.exercises];
-    const exercise = newExercises[exIdx];
-    
-    // Check if there's already a drop set after this set
-    if (afterSetIdx + 1 < exercise.sets.length && 
-        afterSetIdx > 0 && 
-        exercise.sets[afterSetIdx - 1].type === 'D') {
-      return; // Already has a drop set
-    }
-    
-    // Insert a new drop set after the specified set
-    const dropSet = { 
-      weight: '', 
-      reps: '', 
-      rpe: '', 
-      completed: false, 
-      type: undefined 
-    };
-    
-    exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
-    setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
-  }, [currentWorkout, setData]);
-
+const addDropSet = useCallback((exIdx: number, afterSetIdx: number) => {
+  if (!currentWorkout) return;
+  const newExercises = [...currentWorkout.exercises];
+  const exercise = newExercises[exIdx];
+  
+  // Remove the check that prevents adding drop sets - we want to allow multiple drop sets
+  
+  // Insert a new drop set after the specified set
+  const dropSet = {
+    weight: '',
+    reps: '',
+    rpe: '',
+    completed: false,
+    type: undefined
+  };
+  
+  exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
+  setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
+}, [currentWorkout, setData]);
   const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string }[] => {
     const previous: { weight: string; reps: string }[] = [];
     
