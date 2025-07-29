@@ -1332,8 +1332,6 @@ const WorkoutModal: React.FC = () => {
   // Safari-specific fixes
   WebkitOverflowScrolling: 'touch',
   WebkitTransform: `translateY(${modalTransform}px)`,
-  // Add padding top only for Safari iOS to account for status bar
-  paddingTop: isSafariIOS ? '20px' : '0',
 }}
       >
          <div style={{
@@ -1346,23 +1344,20 @@ const WorkoutModal: React.FC = () => {
           borderBottom: '1px solid var(--border)',
           borderRadius: '20px 20px 0 0',
         }}>
-          <div className="drag-handle"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleTouchStart}
-            onMouseMove={handleTouchMove}
-            onMouseUp={handleTouchEnd}
-            onMouseLeave={handleTouchEnd}
-            style={{
-            padding: '6px',
-            cursor: 'grab',
-            background: 'var(--bg-dark)',
-            position: isSafariIOS ? 'relative' : 'sticky',
-            top: isSafariIOS ? undefined : 0,
-            zIndex: 10,
-            flexShrink: 0,
-  }}
+          <div className="workout-header" 
+          style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+  padding: '10px 14px',
+  background: 'var(--bg-dark)',
+  position: 'sticky',
+  top: '15px',
+  zIndex: 5,
+  flexShrink: 0,
+  minHeight: '60px',
+}}
 >
           <div className="drag-indicator" style={{
             width: '32px',
