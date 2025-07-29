@@ -26,7 +26,6 @@ const ProfileTab = () => {
   const { data, setData } = useContext(DataContext);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryItems, setExpandedHistoryItems] = useState<number[]>([]);
-  const [showTotalVolume, setShowTotalVolume] = useState(false);
 
   const toggleHistorySection = () => {
     setShowHistory(!showHistory);
@@ -192,8 +191,9 @@ const ProfileTab = () => {
       </div>
       <div className="profile-actions">
         <div className="profile-action-btn" onClick={openEditProfileModal}>Edit</div>
-        <div className="profile-action-btn" id="total-volume-btn" onClick={() => setShowTotalVolume(!showTotalVolume)}>
-          {showTotalVolume ? `${totalVolume.toLocaleString()} lbs` : 'Total lbs Lifted'}
+        <div className="profile-action-btn" id="total-volume-btn">
+          <div className="volume-number">{totalVolume.toLocaleString()}</div>
+          <div className="volume-label">Total lbs</div>
         </div>
         <div className="profile-action-btn" onClick={toggleHistorySection}>History</div>
       </div>

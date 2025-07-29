@@ -42,6 +42,27 @@ interface ExerciseFromDatabase {
   equipment?: string;
 }
 
+const muscleGroups = [
+  'Chest',
+  'Back',
+  'Shoulders',
+  'Biceps',
+  'Triceps',
+  'Quads',
+  'Hamstrings',
+  'Glutes',
+  'Calves',
+  'Abdominals',
+  'Core',
+  'Obliques',
+  'Forearms',
+  'Traps',
+  'Lower Back',
+  'Full Body',
+  'Neck',
+  'Other'
+];
+
 const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
   const activeModal = data.activeModal;
@@ -58,6 +79,7 @@ const Modals = () => {
   const goBack = () => {
     if (activeModal === 'day-modal') openModal('week-modal');
     else if (activeModal === 'week-modal') openModal('program-weeks-modal');
+    else if (activeModal === 'program-modal') openModal('start-workout-tab');
     else closeModal();
   };
 
@@ -70,10 +92,11 @@ const Modals = () => {
     const input = document.getElementById('mesocycle-length') as HTMLInputElement | null;
     if (input) {
       const length = parseInt(input.value);
-      if (!isNaN(length)) {
+      if (!isNaN(length) && length > 0) {
         setData((prev: DataType) => ({
           ...prev,
           currentProgram: {
+            ...prev.currentProgram,
             weeks: Array.from({ length }, () => ({ days: [] } as Week)),
           },
         }));
@@ -406,61 +429,69 @@ const Modals = () => {
     if (data.currentWeekIndex === null) return null;
     const week = data.currentProgram.weeks[data.currentWeekIndex];
     if (!week) return null;
-    return week.days.map((day: Day, index: number) => (
-      <div
-        key={index}
-        className="program-day-card"
-        onClick={() => {
-          if (isSimitProgram) {
-            // For Simit programs, start the workout directly
-            const simitDay = (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
-            const preFilledExercises: Exercise[] = simitDay.exercises.map((ex: any) => {
-              // Find the full exercise data from exerciseDatabase
-              const fullExercise = exerciseDatabase.find((dbEx: any) => 
-                dbEx.name === ex.name && dbEx.subtype === ex.subtype
-              ) || { muscles: '', instructions: '', equipment: '' };
-              
-              return {
-                name: ex.name,
-                subtype: ex.subtype,
-                muscles: fullExercise.muscles,
-                instructions: fullExercise.instructions,
-                equipment: fullExercise.equipment,
-                sets: Array.from({ length: ex.numSets || 3 }, () => ({
-                  weight: '',
-                  reps: '',
-                  rpe: '',
-                  completed: false,
-                })),
+    
+    const programName = (data.currentProgram as any).name || '';
+    
+    return week.days.map((day: Day, index: number) => {
+      // Check if this day is completed
+      const isCompleted = programName && data.completedPrograms[programName]?.[`${data.currentWeekIndex}-${index}`];
+      
+      return (
+        <div
+          key={index}
+          className={`program-day-card ${isCompleted ? 'completed' : ''}`}
+          onClick={() => {
+            if (isSimitProgram) {
+              // For Simit programs, start the workout directly
+              const simitDay = (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
+              const preFilledExercises: Exercise[] = simitDay.exercises.map((ex: any) => {
+                // Find the full exercise data from exerciseDatabase
+                const fullExercise = exerciseDatabase.find((dbEx: any) => 
+                  dbEx.name === ex.name && dbEx.subtype === ex.subtype
+                ) || { muscles: '', instructions: '', equipment: '' };
+                
+                return {
+                  name: ex.name,
+                  subtype: ex.subtype,
+                  muscles: fullExercise.muscles,
+                  instructions: fullExercise.instructions,
+                  equipment: fullExercise.equipment,
+                  sets: Array.from({ length: ex.numSets || 3 }, () => ({
+                    weight: '',
+                    reps: '',
+                    rpe: '',
+                    completed: false,
+                  })),
+                };
+              });
+              const newWorkout = {
+                name: simitDay.name,
+                exercises: preFilledExercises,
+                startTime: Date.now(),
+                duration: 0,
               };
-            });
-            const newWorkout = {
-              name: simitDay.name,
-              exercises: preFilledExercises,
-              startTime: Date.now(),
-              duration: 0,
-            };
-            setData((prev: DataType) => ({
-              ...prev,
-              currentWorkout: newWorkout,
-              activeModal: 'workout-modal',
-            }));
-          } else {
-            // For custom programs, open day modal for editing
-            setData((prev: DataType) => ({
-              ...prev,
-              currentDayIndex: index,
-              currentDayExercises: day.exercises || [],
-              activeModal: 'day-modal',
-            }));
-          }
-        }}
-      >
-        {day.name || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.name}
-        <div>Exercises: {day.exercises?.length || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.exercises?.length || 0}</div>
-      </div>
-    ));
-  }, [data.currentWeekIndex, data.currentProgram.weeks, isSimitProgram]);
+              setData((prev: DataType) => ({
+                ...prev,
+                currentWorkout: newWorkout,
+                activeModal: 'workout-modal',
+              }));
+            } else {
+              // For custom programs, open day modal for editing
+              setData((prev: DataType) => ({
+                ...prev,
+                currentDayIndex: index,
+                currentDayExercises: day.exercises || [],
+                activeModal: 'day-modal',
+              }));
+            }
+          }}
+        >
+          {day.name || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.name}
+          <div>Exercises: {day.exercises?.length || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.exercises?.length || 0}</div>
+        </div>
+      );
+    });
+  }, [data.currentWeekIndex, data.currentProgram.weeks, data.completedPrograms, isSimitProgram]);
 
   const renderDayExercises = useMemo(() => {
     return data.currentDayExercises.map((ex: Exercise, index: number) => (
@@ -609,15 +640,18 @@ const Modals = () => {
   const saveCustomExercise = () => {
     const name = (document.getElementById('custom-exercise-name') as HTMLInputElement)?.value;
     const subtype = (document.getElementById('custom-exercise-subtype') as HTMLInputElement)?.value;
-    const muscles = (document.getElementById('custom-exercise-muscles') as HTMLInputElement)?.value;
+    const muscles = (document.getElementById('custom-exercise-muscles') as HTMLSelectElement)?.value;
+    const customMuscle = (document.getElementById('custom-muscle-input') as HTMLInputElement)?.value;
     const instructions = (document.getElementById('custom-exercise-instructions') as HTMLTextAreaElement)?.value;
     const equipment = (document.getElementById('custom-exercise-equipment') as HTMLInputElement)?.value;
 
-    if (name && muscles) {
+    const finalMuscles = muscles === 'Other' && customMuscle ? customMuscle : muscles;
+
+    if (name && finalMuscles) {
       const newExercise: Exercise = {
         name,
         subtype: subtype || '',
-        muscles,
+        muscles: finalMuscles,
         instructions: instructions || '',
         equipment: equipment || '',
         sets: []
@@ -821,7 +855,10 @@ const Modals = () => {
     <>
       <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{ maxHeight: '80vh', overflow: 'auto' }}>
-          <h2>Create Program</h2>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+            <span className="back-button" onClick={goBack} style={{ marginRight: '10px' }}>←</span>
+            <h2 style={{ margin: 0, flex: 1 }}>Create Program</h2>
+          </div>
           <input 
             type="text" 
             id="program-name" 
@@ -835,10 +872,9 @@ const Modals = () => {
             <input
               type="number"
               id="mesocycle-length"
-              placeholder="Mesocycle Length"
+              placeholder="Number of weeks"
               min="1"
               max="52"
-              defaultValue="8"
               onInput={generateWeeks}
               style={{ marginBottom: '10px' }}
             />
@@ -846,6 +882,9 @@ const Modals = () => {
           <div id="program-weeks" style={{ marginBottom: '20px' }}>
             {renderProgramWeeks}
           </div>
+          <button onClick={addWeek} style={{ background: 'var(--bg-lighter)', color: 'var(--text)', marginBottom: '10px' }}>
+            + Add Week
+          </button>
           <button onClick={saveProgram} style={{ background: 'var(--accent-primary)' }}>
             Save Program
           </button>
@@ -915,28 +954,6 @@ const Modals = () => {
         }}>
           <div className="exercise-select-header">
             <h2>Select Exercise</h2>
-            <button
-              onClick={() => {
-                setData((prev: DataType) => ({ 
-                  ...prev, 
-                  activeModal: 'custom-exercise-modal',
-                  returnModal: 'exercise-select-modal'
-                }));
-              }}
-              style={{
-                background: 'var(--accent-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '0.85em',
-                fontWeight: '600',
-                cursor: 'pointer',
-                marginTop: '10px',
-              }}
-            >
-              + Create Custom Exercise
-            </button>
           </div>
           <div className="exercise-select-search">
             <input
@@ -947,6 +964,28 @@ const Modals = () => {
               value={selectSearchQuery}
               onChange={(e) => setSelectSearchQuery(e.target.value)}
             />
+            <button
+              onClick={() => {
+                setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'custom-exercise-modal',
+                  returnModal: 'exercise-select-modal'
+                }));
+              }}
+              style={{
+                background: 'var(--bg-lighter)',
+                color: 'var(--text)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '0.85em',
+                fontWeight: '500',
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              + Create Custom Exercise
+            </button>
           </div>
           <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>
             {renderExerciseSelectList}
@@ -1124,7 +1163,6 @@ const Modals = () => {
           <input type="text" id="edit-state" placeholder="State/Province" defaultValue={data.state} />
           <button onClick={saveProfile}>Save</button>
           <button className="secondary" onClick={closeModal}>Cancel</button>
-          <div className="delete-account">Delete Account</div>
         </div>
       </div>
       
@@ -1133,7 +1171,32 @@ const Modals = () => {
           <h2>Create Custom Exercise</h2>
           <input type="text" id="custom-exercise-name" placeholder="Exercise Name" />
           <input type="text" id="custom-exercise-subtype" placeholder="Subtype (optional)" />
-          <input type="text" id="custom-exercise-muscles" placeholder="Muscles Worked" />
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>
+              Muscle Group
+            </label>
+            <select id="custom-exercise-muscles" style={{ width: '100%', marginBottom: '10px' }}
+              onChange={(e) => {
+                const customInput = document.getElementById('custom-muscle-container');
+                if (customInput) {
+                  customInput.style.display = e.target.value === 'Other' ? 'block' : 'none';
+                }
+              }}
+            >
+              <option value="">Select muscle group</option>
+              {muscleGroups.map(muscle => (
+                <option key={muscle} value={muscle}>{muscle}</option>
+              ))}
+            </select>
+            <div id="custom-muscle-container" style={{ display: 'none' }}>
+              <input 
+                type="text" 
+                id="custom-muscle-input" 
+                placeholder="Enter custom muscle group" 
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
           <textarea id="custom-exercise-instructions" placeholder="Instructions (optional)"></textarea>
           <input type="text" id="custom-exercise-equipment" placeholder="Equipment (optional)" />
           <button onClick={saveCustomExercise}>Save</button>
@@ -1582,87 +1645,152 @@ const Modals = () => {
           maxWidth: '350px',
           background: 'var(--bg-dark)',
           borderRadius: '16px',
-          padding: '20px',
+          padding: '0',
+          overflow: 'hidden',
         }}>
-          <h2>Settings</h2>
+          <div className="settings-header" style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--bg-light)',
+          }}>
+            <h2 style={{ margin: 0, fontSize: '1.3em' }}>Settings</h2>
+          </div>
           
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9em' }}>
-              Intensity Metric
-            </label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rpe' }))}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  background: data.intensityMetric === 'rpe' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '0.9em',
-                  cursor: 'pointer',
-                }}
-              >
-                RPE
-              </button>
-              <button
-                onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rir' }))}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  background: data.intensityMetric === 'rir' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '0.9em',
-                  cursor: 'pointer',
-                }}
-              >
-                RIR
-              </button>
+          <div className="settings-section" style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+          }}>
+            <div className="settings-item">
+              <label className="settings-label" style={{
+                display: 'block',
+                marginBottom: '10px',
+                color: 'var(--text-muted)',
+                fontSize: '0.9em',
+              }}>
+                Intensity Metric
+              </label>
+              <div className="settings-options" style={{ display: 'flex', gap: '10px' }}>
+                <div
+                  className={`settings-option ${data.intensityMetric === 'rpe' ? 'active' : ''}`}
+                  onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rpe' }))}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    background: data.intensityMetric === 'rpe' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    color: data.intensityMetric === 'rpe' ? 'white' : 'var(--text)',
+                  }}
+                >
+                  RPE
+                </div>
+                <div
+                  className={`settings-option ${data.intensityMetric === 'rir' ? 'active' : ''}`}
+                  onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rir' }))}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    background: data.intensityMetric === 'rir' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    color: data.intensityMetric === 'rir' ? 'white' : 'var(--text)',
+                  }}
+                >
+                  RIR
+                </div>
+              </div>
             </div>
           </div>
           
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9em' }}>
-              Theme
-            </label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => setData(prev => ({ ...prev, theme: 'dark' }))}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  background: data.theme === 'dark' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '0.9em',
-                  cursor: 'pointer',
-                }}
-              >
-                🌙 Dark
-              </button>
-              <button
-                onClick={() => setData(prev => ({ ...prev, theme: 'light' }))}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  background: data.theme === 'light' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '0.9em',
-                  cursor: 'pointer',
-                }}
-              >
-                ☀️ Light
-              </button>
+          <div className="settings-section" style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+          }}>
+            <div className="settings-item">
+              <label className="settings-label" style={{
+                display: 'block',
+                marginBottom: '10px',
+                color: 'var(--text-muted)',
+                fontSize: '0.9em',
+              }}>
+                Theme
+              </label>
+              <div className="settings-options" style={{ display: 'flex', gap: '10px' }}>
+                <div
+                  className={`settings-option ${data.theme === 'dark' ? 'active' : ''}`}
+                  onClick={() => setData(prev => ({ ...prev, theme: 'dark' }))}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    background: data.theme === 'dark' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    color: data.theme === 'dark' ? 'white' : 'var(--text)',
+                  }}
+                >
+                  🌙 Dark
+                </div>
+                <div
+                  className={`settings-option ${data.theme === 'light' ? 'active' : ''}`}
+                  onClick={() => setData(prev => ({ ...prev, theme: 'light' }))}
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    background: data.theme === 'light' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    color: data.theme === 'light' ? 'white' : 'var(--text)',
+                  }}
+                >
+                  ☀️ Light
+                </div>
+              </div>
             </div>
           </div>
           
-          <button onClick={closeModal} style={{ width: '100%' }}>Done</button>
+          <div className="settings-footer" style={{
+            padding: '20px',
+            background: 'var(--bg-light)',
+          }}>
+            <button onClick={closeModal} style={{ width: '100%', marginTop: 0 }}>Done</button>
+            <button 
+              className="delete-account-btn"
+              onClick={() => {
+                if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.reload();
+                }
+              }}
+              style={{
+                width: '100%',
+                background: 'transparent',
+                color: '#FF3B30',
+                border: '1px solid #FF3B30',
+                marginTop: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              Delete Account
+            </button>
+          </div>
         </div>
       </div>
       
@@ -1710,7 +1838,7 @@ const Modals = () => {
                 setData((prev: DataType) => ({
                   ...prev,
                   progressPics: newPics,
-                  activeModal: 'progress-photo-modal',
+                  activeModal: null,
                   tempBase64: null,
                   tempTimestamp: null,
                 }));

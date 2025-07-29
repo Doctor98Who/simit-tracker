@@ -1,15 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { DataContext } from '../DataContext'; // ✅ Fixed import path
-import type { DataContextType } from '../DataContext'; // ✅ Also import the type
-import logoDark from './public/logo-dark.png';
-import logoLight from './public/logo-light.png';
+import { DataContext } from '../DataContext';
+import type { DataContextType } from '../DataContext';
 
 interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
-  const { data } = useContext(DataContext) as DataContextType; // ✅ Type assertion fixes 'unknown' error
+const Header: React.FC<HeaderProps> = ({ version = 'v0.0.25' }) => {
+  const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -55,28 +53,32 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.24' }) => {
         justifyContent: 'flex-start',
         position: 'relative',
       }}>
-       <img 
-        src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'} 
-        alt="Pump Inc Logo" 
-        className="logo" 
-        style={{
-        height: '80px',
-        width: 'auto',
-        objectFit: 'contain',
-        backgroundColor: 'transparent', // Rely on parent background
-        border: 'none',
-        boxShadow: 'none',
-        outline: 'none',  }}
-/>
+        <img 
+          src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'} 
+          alt="Pump Inc Logo" 
+          className="logo" 
+          style={{
+            height: '30px',
+            width: 'auto',
+            objectFit: 'contain',
+            backgroundColor: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+            outline: 'none',
+            imageRendering: '-webkit-optimize-contrast',
+            mixBlendMode: 'normal',
+          }}
+        />
         <span id="app-version" style={{
           position: 'absolute',
           right: '15px',
           top: '50%',
           transform: 'translateY(-50%)',
-          fontSize: '0.6em',
+          fontSize: '0.45em',
           color: 'var(--text-muted)',
+          fontWeight: '400',
         }}>
-          {version}
+          Beta {version}
         </span>
       </div>
 

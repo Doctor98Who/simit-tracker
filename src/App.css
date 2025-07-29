@@ -18,23 +18,154 @@
     --subtle-gradient: linear-gradient(135deg, var(--bg-light), var(--bg-lighter));
 }
 
-/* Light theme */
+/* Light theme - Modern and Sleek */
 [data-theme="light"] {
     --bg-dark: #FFFFFF;
-    --bg-light: #F2F2F7;
-    --bg-lighter: #E5E5EA;
-    --text: #000000;
-    --text-muted: #3C3C43;
-    --accent-blue: #007AFF;
-    --accent-primary: #007AFF;
-    --accent-hover: #0051D5;
-    --accent-gradient: linear-gradient(135deg, #0051D5, #007AFF);
-    --soft-gradient: linear-gradient(135deg, #007AFF, #0051D5);
-    --border: #C6C6C8;
-    --shadow: 0 2px 10px rgba(0,0,0,0.1);
-    --completed-green: #D1F2E3;
-    --completed-check: #34C759;
-    --subtle-gradient: linear-gradient(135deg, var(--bg-light), var(--bg-lighter));
+    --bg-light: #F8F9FA;
+    --bg-lighter: #F0F2F5;
+    --text: #1A1A1A;
+    --text-muted: #65676B;
+    --accent-blue: #0866FF;
+    --accent-primary: #0866FF;
+    --accent-hover: #0653D3;
+    --accent-gradient: linear-gradient(135deg, #0866FF, #0A7CFF);
+    --soft-gradient: linear-gradient(135deg, #F8F9FA, #FFFFFF);
+    --border: #E4E6EB;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.08);
+    --completed-green: #E3F2E6;
+    --completed-check: #42B554;
+    --subtle-gradient: linear-gradient(135deg, #FFFFFF, #F8F9FA);
+}
+
+/* Light mode specific adjustments */
+[data-theme="light"] .program-card,
+[data-theme="light"] .exercise-item,
+[data-theme="light"] .history-item {
+    background: #FFFFFF;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .program-card:hover,
+[data-theme="light"] .exercise-item:hover,
+[data-theme="light"] .history-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+}
+
+[data-theme="light"] .modal-content {
+    background: #FFFFFF;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+    background: #F8F9FA;
+    border: 1px solid #E4E6EB;
+    color: var(--text);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+    background: #FFFFFF;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(8, 102, 255, 0.1);
+}
+
+[data-theme="light"] .bottom-nav {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .letter-header,
+[data-theme="light"] .muscle-group-header {
+    background: #F0F2F5;
+    color: var(--accent-primary);
+    border: none;
+}
+
+[data-theme="light"] button {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+[data-theme="light"] button:hover {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .search-bar {
+    background: #F0F2F5;
+    border: 1px solid transparent;
+}
+
+[data-theme="light"] .search-bar:focus {
+    border-color: var(--accent-primary);
+    background: #FFFFFF;
+}
+
+[data-theme="light"] .profile-action-btn {
+    background: #F0F2F5;
+    border: none;
+    box-shadow: none;
+}
+
+[data-theme="light"] .profile-action-btn:hover {
+    background: #E4E6EB;
+}
+
+[data-theme="light"] #workout-modal input[type="number"] {
+    background: #F8F9FA;
+    border: 1px solid #E4E6EB;
+}
+
+[data-theme="light"] #workout-modal input[type="number"]:focus {
+    background: #FFFFFF;
+    border-color: var(--accent-primary);
+}
+
+[data-theme="light"] .minimized-workout {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .quick-start {
+    background: var(--accent-gradient);
+    box-shadow: 0 2px 8px rgba(8, 102, 255, 0.2);
+}
+
+[data-theme="light"] .nav-item {
+    color: #65676B;
+}
+
+[data-theme="light"] .nav-item.active {
+    color: var(--accent-primary);
+    filter: none;
+}
+
+[data-theme="light"] .add-program,
+[data-theme="light"] .add-custom-exercise {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+[data-theme="light"] .exercise-menu {
+    color: var(--text-muted);
+}
+
+[data-theme="light"] .log-square {
+    background: #F8F9FA;
+    border-color: #E4E6EB;
+}
+
+[data-theme="light"] .inline-exercise-menu {
+    background: #FFFFFF;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    border: 1px solid rgba(0,0,0,0.06);
 }
 
 /* Prevent zoom on input focus for iOS */
@@ -78,10 +209,18 @@ textarea {
     font-weight: 700;
     position: relative;
 }
+
+/* Fix for logo background blend - Bug 9 */
 .header img {
-    height: 50px;
+    height: 30px; /* Reduced from 40px - Feature 6 */
     border-radius: 12px;
+    background: transparent;
+    isolation: isolate;
+    mix-blend-mode: normal;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
+
 body {
     font-family: var(--font-modern);
     background-color: var(--bg-dark);
@@ -149,6 +288,13 @@ body {
 .program-card:hover {
     transform: translateY(-2px);
 }
+
+/* Program card completed state - Bug 5 */
+.program-card.completed {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+
 .program-name {
     font-weight: 600;
     margin-bottom: 5px;
@@ -204,6 +350,7 @@ body {
     appearance: none;
     color: var(--text);
     border: 1px solid var(--border);
+    width: 100%;
 }
 .letter-header {
     font-size: 1.8em;
@@ -337,13 +484,30 @@ body {
 .progress-pic:hover .timestamp {
     display: block;
 }
+
+/* Profile header improvements - Bug 11 */
 .profile-header {
     text-align: center;
-    padding: 20px 0;
+    padding: 60px 0 20px 0;
     background-size: cover;
-    background-position: center;
+    background-position: center 20%;
     background-color: var(--bg-light);
+    position: relative;
+    margin-top: -80px;
+    min-height: 200px;
 }
+
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 50%, var(--bg-dark) 100%);
+    pointer-events: none;
+}
+
 .profile-pic {
     width: 120px;
     height: 120px;
@@ -353,49 +517,88 @@ body {
     background-size: cover;
     background-position: center;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    border: 4px solid var(--bg-dark);
+    margin-top: 80px;
 }
 .profile-name {
     font-size: 1.5em;
     font-weight: 700;
     margin-top: 10px;
+    position: relative;
+    z-index: 1;
 }
 .profile-username {
     color: var(--text-muted);
     font-size: 1em;
+    position: relative;
+    z-index: 1;
 }
 .profile-location {
     color: var(--text-muted);
     font-size: 0.9em;
+    position: relative;
+    z-index: 1;
 }
+
+/* Profile stats improvements - Bug 13 */
 .profile-stats {
     display: flex;
     justify-content: space-around;
-    margin: 20px 0;
+    margin: 15px 0;
 }
 .stat-box {
     text-align: center;
 }
 .stat-number {
-    font-size: 2em;
-    font-weight: 700;
+    font-size: 1.3em;
+    font-weight: 600;
 }
 .stat-label {
     color: var(--text-muted);
-    font-size: 0.9em;
+    font-size: 0.8em;
 }
+
+/* Profile actions improvements - Bug 13 */
 .profile-actions {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
+    gap: 10px;
+    padding: 0 20px;
 }
 .profile-action-btn {
     background: var(--bg-lighter);
     color: var(--text);
-    border-radius: 12px;
-    padding: 10px 20px;
+    border-radius: 8px;
+    padding: 6px 12px;
     cursor: pointer;
     box-shadow: var(--shadow);
+    font-size: 0.85em;
+    font-weight: 500;
+    flex: 1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
 }
+
+/* Total lbs display fix - Bug 12 */
+#total-volume-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+#total-volume-btn .volume-number {
+    font-size: 1em;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
 .modal {
     position: fixed;
     top: 0;
@@ -444,7 +647,7 @@ body {
 }
 
 .exercise-select-header {
-    padding: 20px 20px 0;
+    padding: 20px 20px 10px;
     border-bottom: 1px solid var(--border);
     background: var(--bg-dark);
     position: sticky;
@@ -453,13 +656,14 @@ body {
 }
 
 .exercise-select-header h2 {
-    margin: 0 0 16px 0;
-    font-size: 1.5em;
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
     text-align: center;
 }
 
+/* Improved exercise select search - Bug 10 */
 .exercise-select-search {
-    padding: 0 20px 20px;
+    padding: 0 20px 15px;
     background: var(--bg-dark);
     position: sticky;
     top: 60px;
@@ -467,10 +671,20 @@ body {
 }
 
 .exercise-select-search .search-bar {
-    margin: 0;
+    margin: 0 0 8px 0;
     background: var(--bg-lighter);
     border: 1px solid var(--border);
     font-size: 16px !important;
+}
+
+/* Create custom exercise button - Bug 10 */
+.exercise-select-search button {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.85em;
+    background: var(--bg-lighter);
+    color: var(--text);
+    border: 1px solid var(--border);
 }
 
 .exercise-select-list {
@@ -565,11 +779,6 @@ body {
     background: var(--bg-lighter);
     color: var(--text);
     font-size: 16px !important;
-}
-#edit-profile-modal .delete-account {
-    color: #FF3B30;
-    text-align: center;
-    cursor: pointer;
 }
 #cover-photo-upload {
     display: none;
@@ -932,14 +1141,19 @@ button.finish {
 .update-button:hover {
     opacity: 0.9;
 }
+
+/* Version display improvements - Feature 6 */
 #app-version {
     position: absolute;
     right: 15px;
-    top: 10px;
-    font-size: 0.6em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.45em;
     color: var(--text-muted);
     z-index: 1;
+    font-weight: 400;
 }
+
 .community-sub-tabs {
     display: flex;
     justify-content: space-around;
@@ -1126,4 +1340,165 @@ button,
     justify-content: space-between;
     padding: 0;
     background: transparent;
+}
+
+/* Safari-specific fixes - Bug 6 */
+@supports (-webkit-touch-callout: none) {
+    /* Safari only */
+    #workout-modal .modal-content {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .workout-header {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        background: var(--bg-dark);
+        z-index: 10;
+        padding-bottom: 10px;
+    }
+    
+    button.finish {
+        position: relative;
+        z-index: 10;
+    }
+    
+    #workout-modal .drag-handle {
+        position: relative;
+        z-index: 11;
+    }
+}
+
+/* Drop set styling - Feature 2 */
+.set-row.drop-set {
+    margin-left: 20px;
+    background: rgba(59, 130, 246, 0.05);
+    border-left: 3px solid var(--accent-primary);
+    padding-left: 8px;
+}
+
+/* Set type indicator improvements - Feature 3 */
+.set-type-indicator {
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.set-type-indicator:hover {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Settings modal modern design - Bug 14 */
+#settings-modal .modal-content {
+    background: var(--bg-dark);
+    padding: 0;
+    overflow: hidden;
+}
+
+.settings-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-light);
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+.settings-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+}
+
+.settings-item {
+    margin-bottom: 20px;
+}
+
+.settings-item:last-child {
+    margin-bottom: 0;
+}
+
+.settings-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+.settings-options {
+    display: flex;
+    gap: 10px;
+}
+
+.settings-option {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.settings-option.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+.settings-footer {
+    padding: 20px;
+    background: var(--bg-light);
+}
+
+/* Delete account button moved to settings - Bug 15 */
+.delete-account-btn {
+    width: 100%;
+    background: transparent;
+    color: #FF3B30;
+    border: 1px solid #FF3B30;
+    margin-top: 20px;
+}
+
+.delete-account-btn:hover {
+    background: rgba(255, 59, 48, 0.1);
+}
+
+/* Previous set ghost fix - Bug 16 */
+.previous-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.65em;
+    color: var(--text-muted);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Muscle group header styling */
+.muscle-group-header {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: var(--subtle-gradient);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-primary);
+}
+
+.muscle-group-header:first-child {
+    margin-top: 0;
 }
