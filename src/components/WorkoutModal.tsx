@@ -566,8 +566,6 @@ const toggleSetType = (setIdx: number) => {
     newType = 'W';
   } else if (currentSet.type === 'W') {
     newType = 'D';
-    // Feature 2: Add drop set automatically when D is selected
-    addDropSet(idx, setIdx);
   } else {
     newType = 'S';
   }
@@ -784,16 +782,18 @@ const isDropSet = (setIdx: number): boolean => {
     border: '1px solid',
     borderColor: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--border)',
   }}
-  onClick={() => {
-    if (s.type === 'D' && !isDropSet(sIdx)) {
-      // Clicking on a D set adds another drop set
-      addDropSet(idx, sIdx);
-    } else if (!isDropSet(sIdx)) {
-      // Regular cycling for non-drop sets
-      toggleSetType(sIdx);
-    }
-  }}
-  title={dropSet ? 'Drop set' : 'Click to change set type'}
+onClick={() => {
+  if (dropSet) {
+    // If this is a drop set (DS), clicking it creates another drop set after it
+    addDropSet(idx, sIdx);
+  } else if (s.type === 'D') {
+    // If this is a D type, just cycle it (don't create new drop sets)
+    toggleSetType(sIdx);
+  } else {
+    // Regular cycling for other types
+    toggleSetType(sIdx);
+  }
+}}  title={dropSet ? 'Drop set' : 'Click to change set type'}
 >
   {dropSet ? 'DS' : getSetLabel(s, sIdx, ex.sets)}
 </div>
