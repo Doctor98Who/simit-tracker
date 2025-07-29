@@ -586,8 +586,8 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     return regularSetNumber.toString();
   };
 
-const isDropSet = (setIdx: number) => {
-  if (setIdx === 0) return false;
+const isDropSet = (setIdx: number): boolean => {
+    if (setIdx === 0) return false;
   
   // Check if the previous set is a 'D' type
   if (ex.sets[setIdx - 1].type === 'D') return true;
