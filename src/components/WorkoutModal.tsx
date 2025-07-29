@@ -589,14 +589,8 @@ const toggleSetType = (setIdx: number) => {
 const isDropSet = (setIdx: number): boolean => {
   if (setIdx === 0) return false;
   
-  // Check if previous set is 'D' type
-  if (ex.sets[setIdx - 1].type === 'D') return true;
-  
-  // Check if previous set is also a drop set (for chained drop sets)
-  // but only if current set doesn't have its own type
-  if (!ex.sets[setIdx].type && isDropSet(setIdx - 1)) return true;
-  
-  return false;
+  // Check if this set has the isDropSet flag
+  return !!(ex.sets[setIdx] as any).isDropSet;
 };
 // Collapsed state when any exercise is being dragged
   const isCollapsed = isGlobalDragging && !isDragging;
@@ -1233,12 +1227,13 @@ const addDropSet = useCallback((exIdx: number, afterSetIdx: number) => {
   // Remove the check that prevents adding drop sets - we want to allow multiple drop sets
   
   // Insert a new drop set after the specified set
-  const dropSet = {
+const dropSet = {
     weight: '',
     reps: '',
     rpe: '',
     completed: false,
-    type: undefined
+    type: undefined,
+    isDropSet: true  // Add this flag
   };
   
   exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
