@@ -2214,78 +2214,89 @@ onClick={() => {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  input.capture = 'environment'; // Help mobile browsers
+  // Remove capture attribute to allow gallery selection
   
   input.onchange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     if (target.files && target.files[0]) {
       const file = target.files[0];
       
-      // Check file size (limit to 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('Image is too large. Please choose an image under 10MB.');
-        return;
-      }
-      
       const reader = new FileReader();
       
       reader.onload = (event: ProgressEvent<FileReader>) => {
         const base64 = event.target?.result as string;
         
-        // Try to get EXIF data, but don't fail if it doesn't work
+        // Create image to resize if needed
         const img = new Image();
         img.src = base64;
         
         img.onload = () => {
-          let timestamp = Date.now();
+          // Resize image if it's too large
+          const maxWidth = 1080;
+          const maxHeight = 1920;
+          let width = img.width;
+          let height = img.height;
           
-          try {
-            EXIF.getData(img as any, function() {
-              try {
-                let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
-                if (exifDate) {
-                  const parts = exifDate.split(' ');
-                  if (parts.length === 2) {
-                    const datePart = parts[0].replace(/:/g, '-');
-                    const timePart = parts[1];
-                    const dt = new Date(`${datePart}T${timePart}`);
-                    if (!isNaN(dt.getTime())) {
-                      timestamp = dt.getTime();
+          // Calculate new dimensions maintaining aspect ratio
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          
+          // Create canvas to resize image
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Try to get EXIF data for timestamp
+            let timestamp = Date.now();
+            try {
+              EXIF.getData(img as any, function() {
+                try {
+                  const exifDate = EXIF.getTag(img, 'DateTimeOriginal');
+                  if (exifDate) {
+                    const parts = exifDate.split(' ');
+                    if (parts.length === 2) {
+                      const datePart = parts[0].replace(/:/g, '-');
+                      const timePart = parts[1];
+                      const dt = new Date(`${datePart}T${timePart}`);
+                      if (!isNaN(dt.getTime())) {
+                        timestamp = dt.getTime();
+                      }
                     }
                   }
+                } catch (e) {
+                  console.log('EXIF date parsing failed');
                 }
-              } catch (exifError) {
-                console.log('EXIF parsing failed, using current time');
-              }
-              
-              // Set the data regardless of EXIF success
+                
+                // Set data with resized image
+                setData((prev: DataType) => ({
+                  ...prev,
+                  tempBase64: resizedBase64,
+                  tempTimestamp: timestamp,
+                  activeModal: 'progress-upload-modal'
+                }));
+              });
+            } catch (error) {
+              // If EXIF fails, still upload
               setData((prev: DataType) => ({
                 ...prev,
-                tempBase64: base64,
+                tempBase64: resizedBase64,
                 tempTimestamp: timestamp,
                 activeModal: 'progress-upload-modal'
               }));
-            });
-          } catch (error) {
-            // If EXIF completely fails, still upload the image
-            console.log('EXIF extraction failed, proceeding without it');
-            setData((prev: DataType) => ({
-              ...prev,
-              tempBase64: base64,
-              tempTimestamp: timestamp,
-              activeModal: 'progress-upload-modal'
-            }));
+            }
           }
         };
         
         img.onerror = () => {
-          // If image fails to load, still try to save it
-          setData((prev: DataType) => ({
-            ...prev,
-            tempBase64: base64,
-            tempTimestamp: Date.now(),
-            activeModal: 'progress-upload-modal'
-          }));
+          alert('Failed to process image. Please try another photo.');
         };
       };
       

@@ -116,15 +116,16 @@ const uploadProgressPic = () => {
         e.currentTarget.style.transform = 'scale(1)';
       }}
     >
-      <img 
-        src={pic.base64} 
-        alt="Progress" 
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-        }}
-      />
+<img 
+  src={pic.base64} 
+  alt="Progress" 
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center',
+  }}
+/>
       {pic.pump && (
         <div style={{
           position: 'absolute',
