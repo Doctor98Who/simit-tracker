@@ -175,25 +175,14 @@ return (
       fontWeight: '600',
       color: 'var(--text)',
     }}>Exercises</h2>
-    <input
-      type="text"
-      className="search-bar"
-      id="exercise-search"
-      placeholder="Search exercises..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      style={{
-  background: 'var(--bg-lighter)',
-  border: '1px solid var(--border)',
-  borderRadius: '8px',
-  padding: '12px 16px',
-  marginBottom: '8px',
-  fontSize: '16px',
-  color: 'var(--text)',
-  width: 'calc(100% - 32px)',
-  boxSizing: 'border-box',
-}}
-    />
+<input
+  type="text"
+  className="search-bar"
+  id="exercise-search"
+  placeholder="Search exercises..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
 <div 
   className="add-custom-exercise" 
   onClick={openCustomExerciseModal}
