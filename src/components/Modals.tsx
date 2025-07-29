@@ -1258,7 +1258,7 @@ const Modals = () => {
                 cursor: 'pointer',
                 width: '100%',
               }}            >
-              + Create Custom Exercise
+              + Exercise
             </button>
           </div>
           <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>

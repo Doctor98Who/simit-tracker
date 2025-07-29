@@ -194,7 +194,7 @@ return (
   boxSizing: 'border-box',
 }}
     />
-    <button
+<button
   onClick={openCustomExerciseModal}
   style={{
     width: '100%',
@@ -209,8 +209,8 @@ return (
     fontWeight: '500',
   }}
 >
-  + Create Custom Exercise
-</button>      
+  + Exercise
+</button>   
 <div id="exercise-list">{renderedExercises}</div>
     </div>
   );
