@@ -64,9 +64,13 @@ const ProfileTab = () => {
     setData((prev: DataType) => ({ ...prev, activeModal: 'edit-profile-modal' }));
   };
 
-  const openHistoryMenu = useCallback((index: number) => {
-    setData((prev: DataType) => ({ ...prev, currentHistoryIdx: index, activeModal: 'history-menu-modal' }));
-  }, [setData]);
+  const openHistoryMenu = useCallback((sortedIndex: number) => {
+  // Find the actual index in the unsorted history array
+  const sortedHistory = [...data.history].sort((a: Workout, b: Workout) => b.startTime - a.startTime);
+  const workout = sortedHistory[sortedIndex];
+  const actualIndex = data.history.findIndex((w: Workout) => w.startTime === workout.startTime);
+  setData((prev: DataType) => ({ ...prev, currentHistoryIdx: actualIndex, activeModal: 'history-menu-modal' }));
+}, [setData, data.history]);
 
   // Calculate total volume lifted
   const totalVolume = useMemo(() => {
