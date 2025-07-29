@@ -1347,15 +1347,22 @@ button,
     /* Safari only */
     #workout-modal .modal-content {
         padding-bottom: env(safe-area-inset-bottom);
+        /* Fix for Safari header visibility */
+        padding-top: 0;
     }
     
-    .workout-header {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
+    /* Remove sticky positioning on Safari iOS */
+    #workout-modal .drag-handle,
+    #workout-modal .workout-header {
+        position: relative !important;
+        top: 0 !important;
+    }
+    
+    /* Ensure proper stacking */
+    #workout-modal .workout-header {
         background: var(--bg-dark);
         z-index: 10;
-        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
     }
     
     button.finish {
@@ -1367,8 +1374,12 @@ button,
         position: relative;
         z-index: 11;
     }
+    
+    /* Fix for scroll container */
+    #workout-modal .modal-content > div:last-child {
+        padding-top: 0;
+    }
 }
-
 /* Drop set styling - Feature 2 */
 .set-row.drop-set {
     margin-left: 20px;
