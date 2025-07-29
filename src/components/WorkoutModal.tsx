@@ -554,24 +554,26 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
 
-  const toggleSetType = (setIdx: number) => {
-    const currentSet = ex.sets[setIdx];
-    
-    // Cycle through: S (undefined) -> W -> D -> S
-    let newType: 'W' | 'D' | 'S' | undefined;
-    if (!currentSet.type || currentSet.type === 'S') {
-      newType = 'W';
-    } else if (currentSet.type === 'W') {
-      newType = 'D';
-      // Feature 2: Add drop set automatically when D is selected
-      addDropSet(idx, setIdx);
-    } else {
-      newType = 'S';
-    }
-    
-    updateSet(idx, setIdx, 'type', newType);
-  };
-
+const toggleSetType = (setIdx: number) => {
+  const currentSet = ex.sets[setIdx];
+  
+  // Don't allow changing type of auto-generated drop sets
+  if (isDropSet(setIdx)) return;
+  
+  // Cycle through: S (undefined) -> W -> D -> S
+  let newType: 'W' | 'D' | 'S' | undefined;
+  if (!currentSet.type || currentSet.type === 'S') {
+    newType = 'W';
+  } else if (currentSet.type === 'W') {
+    newType = 'D';
+    // Feature 2: Add drop set automatically when D is selected
+    addDropSet(idx, setIdx);
+  } else {
+    newType = 'S';
+  }
+  
+  updateSet(idx, setIdx, 'type', newType);
+};
   const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
     if (set.type === 'W') return 'W';
     if (set.type === 'D') return 'D';
@@ -587,24 +589,12 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   };
 
 const isDropSet = (setIdx: number): boolean => {
-    if (setIdx === 0) return false;
+  if (setIdx === 0) return false;
   
-  // Check if the previous set is a 'D' type
-  if (ex.sets[setIdx - 1].type === 'D') return true;
-  
-  // Check if the previous set is also a drop set (for chained drop sets)
-  return isDropSet(setIdx - 1);
+  // A set is a drop set only if it was added right after a 'D' type set
+  // and doesn't have its own type yet
+  return ex.sets[setIdx - 1].type === 'D' && !ex.sets[setIdx].type;
 };
-
-   // Feature 1: Handle clicking on drop set "D" to add another drop set
-  const handleDropSetClick = (setIdx: number) => {
-    const currentSet = ex.sets[setIdx];
-    if (currentSet.type === 'D') {
-      // Add another drop set after this one
-      addDropSet(idx, setIdx);
-    }
-  };
-
   // Collapsed state when any exercise is being dragged
   const isCollapsed = isGlobalDragging && !isDragging;
 
@@ -777,62 +767,69 @@ const isDropSet = (setIdx: number): boolean => {
                 transition: 'all 0.2s ease',
                 position: 'relative',
               }}>
-                <div 
-                  className="set-type-indicator"
-                  style={{ 
-                    fontWeight: '600',
-                    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text-muted)',
-                    fontSize: '0.7em',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    WebkitUserSelect: 'none',
-                    padding: '4px',
-                    borderRadius: '4px',
-                    transition: 'all 0.2s ease',
-                    background: 'var(--bg-dark)',
-                    border: '1px solid',
-                    borderColor: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--border)',
-                  }}
-                  onClick={() => !dropSet && toggleSetType(sIdx)}
-                  title={dropSet ? 'Drop set' : 'Click to change set type'}
-                >
-                  {dropSet ? 'DS' : getSetLabel(s, sIdx, ex.sets)}
-                </div>
-                <div style={{ 
-                  textAlign: 'center',
-                  fontSize: '0.65em', 
-                  color: 'var(--text-muted)',
-                  fontWeight: '500',
-                  position: 'relative',
-                }}>
-                  {ex.previousSets?.[sIdx]?.weight && ex.previousSets?.[sIdx]?.reps 
-                    ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}` 
-                    : '—'}
-                </div>
-                <input 
-                  value={s.weight} 
-                  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
-                  type="number"
-                  inputMode="decimal"
-                  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
-                  style={{
-                    background: 'var(--bg-dark)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    textAlign: 'center',
-                    fontSize: '0.75em',
-                    fontWeight: '600',
-                    color: s.completed ? '#22C55E' : 'var(--text)',
-                    padding: '5px 2px',
-                    height: '28px',
-                    width: '100%',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'textfield',
-                    transition: 'all 0.2s ease',
-                    outline: 'none',
-                  }}
-                  onFocus={(e) => {
+<div 
+  className="set-type-indicator"
+  style={{
+    fontWeight: '600',
+    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text-muted)',
+    fontSize: '0.7em',
+    textAlign: 'center',
+    cursor: 'pointer',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    padding: '4px',
+    borderRadius: '4px',
+    transition: 'all 0.2s ease',
+    background: 'var(--bg-dark)',
+    border: '1px solid',
+    borderColor: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--border)',
+  }}
+  onClick={() => {
+    if (s.type === 'D' && !isDropSet(sIdx)) {
+      // Clicking on a D set adds another drop set
+      addDropSet(idx, sIdx);
+    } else if (!isDropSet(sIdx)) {
+      // Regular cycling for non-drop sets
+      toggleSetType(sIdx);
+    }
+  }}
+  title={dropSet ? 'Drop set' : 'Click to change set type'}
+>
+  {dropSet ? 'DS' : getSetLabel(s, sIdx, ex.sets)}
+</div>
+<div style={{
+  textAlign: 'center',
+  fontSize: '0.65em',
+  color: 'var(--text-muted)',
+  fontWeight: '500',
+  position: 'relative',
+}}>
+  {ex.previousSets?.[sIdx]?.weight && ex.previousSets?.[sIdx]?.reps
+    ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}`
+    : '—'}
+</div>
+<input
+  value={s.weight}
+  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
+  type="number"
+  inputMode="decimal"
+  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
+  style={{
+    background: 'var(--bg-dark)',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    textAlign: 'center',
+    fontSize: '0.75em',
+    fontWeight: '600',
+    color: s.completed ? '#22C55E' : 'var(--text)',
+    padding: '5px 2px',
+    height: '28px',
+    width: '100%',
+    WebkitAppearance: 'none',
+    MozAppearance: 'textfield',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  }}                  onFocus={(e) => {
                     e.target.style.borderColor = 'var(--accent-primary)';
                     e.target.style.background = 'rgba(59, 130, 246, 0.08)';
                     // Bug 17 fix: Auto-populate weight from previous if empty
