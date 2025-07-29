@@ -122,8 +122,9 @@ const uploadProgressPic = () => {
   style={{
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
     objectPosition: 'center',
+    backgroundColor: 'var(--bg-dark)',
   }}
 />
       {pic.pump && (
@@ -292,16 +293,17 @@ const uploadProgressPic = () => {
                 </button>
               )}
               
-              <img 
-                src={selectedPhoto.base64} 
-                alt="Progress"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                }}
-              />
-              
+<img 
+  src={selectedPhoto.base64} 
+  alt="Progress"
+  style={{
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain',
+    objectPosition: 'center',
+    backgroundColor: 'black',
+  }}
+/>              
               {selectedPhotoIndex < sortedProgressPics.length - 1 && (
                 <button
                   onClick={() => navigatePhoto('next')}
