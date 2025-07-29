@@ -2168,46 +2168,46 @@ const Modals = () => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}               
-                 onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*';
-                  input.onchange = (e: Event) => {
-                    const target = e.target as HTMLInputElement;
-                    if (target.files && target.files[0]) {
-                      const file = target.files[0];
-                      const reader = new FileReader();
-                      reader.onload = (event: ProgressEvent<FileReader>) => {
-                        const base64 = event.target?.result as string;
-                        const img = new Image();
-                        img.src = base64;
-                        img.onload = () => {
-                          EXIF.getData(img as any, function () {
-                            let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
-                            let timestamp = Date.now();
-                            if (exifDate) {
-                              const parts = exifDate.split(' ');
-                              const datePart = parts[0].replace(/:/g, '-');
-                              const timePart = parts[1];
-                              const dt = new Date(`${datePart}T${timePart}`);
-                              if (!isNaN(dt.getTime())) {
-                                timestamp = dt.getTime();
-                              }
-                            }
-                            setData((prev: DataType) => ({
-                              ...prev,
-                              tempBase64: base64,
-                              tempTimestamp: timestamp
-                            }));
-                          });
-                        };
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  };
-                  input.click();
-                }}
-                onMouseEnter={(e) => {
+onClick={() => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+      const file = target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const base64 = event.target?.result as string;
+        const img = new Image();
+        img.src = base64;
+        img.onload = () => {
+          EXIF.getData(img as any, function () {
+            let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
+            let timestamp = Date.now();
+            if (exifDate) {
+              const parts = exifDate.split(' ');
+              const datePart = parts[0].replace(/:/g, '-');
+              const timePart = parts[1];
+              const dt = new Date(`${datePart}T${timePart}`);
+              if (!isNaN(dt.getTime())) {
+                timestamp = dt.getTime();
+              }
+            }
+            setData((prev: DataType) => ({
+              ...prev,
+              tempBase64: base64,
+              tempTimestamp: timestamp,
+              activeModal: 'progress-upload-modal' // Keep the modal open
+            }));
+          });
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  input.click();
+}}                onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'var(--accent-primary)';
                   e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
                 }}
@@ -2224,23 +2224,23 @@ const Modals = () => {
                   Tap to select from your gallery
                 </div>
               </div>
-<button 
+<button
   onClick={closeModal}
   style={{
     width: '100%',
     padding: '10px',
     background: 'transparent',
-    color: 'var(--text-muted)',
-    border: 'none',
+    color: 'rgba(239, 68, 68, 0.8)',
+    border: '1px dashed rgba(239, 68, 68, 0.4)',
     borderRadius: '8px',
     fontSize: '0.85em',
     fontWeight: '500',
     cursor: 'pointer',
-    marginTop: '8px',
   }}
 >
   Cancel
-</button>            </>
+</button>           
+</>
           )}
         </div>
       </div>
