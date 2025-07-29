@@ -523,43 +523,52 @@ const Modals = () => {
           key={index}
           className={`program-day-card ${isCompleted ? 'completed' : ''}`}
 onClick={() => {
-  // Start workout directly for both Simit and custom programs
-  const currentDay = day || (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
-  const preFilledExercises: Exercise[] = currentDay.exercises.map((ex: any) => {
-    // Find the full exercise data from exerciseDatabase or custom exercises
-    const fullExercise = exerciseDatabase.find((dbEx: any) => 
-      dbEx.name === ex.name && dbEx.subtype === ex.subtype
-    ) || data.customExercises.find((customEx: any) =>
-      customEx.name === ex.name && customEx.subtype === ex.subtype
-    ) || { muscles: '', instructions: '', equipment: '' };
-    
-    return {
-      name: ex.name,
-      subtype: ex.subtype,
-      muscles: fullExercise.muscles || ex.muscles || '',
-      instructions: fullExercise.instructions || ex.instructions || '',
-      equipment: fullExercise.equipment || ex.equipment || '',
-      sets: Array.from({ length: ex.numSets || 3 }, () => ({
-        weight: '',
-        reps: '',
-        rpe: '',
-        completed: false,
-      })),
+  if (data.isEditingProgram && !isSimitProgram) {
+    // In edit mode for custom programs, open day modal for editing
+    setData((prev: DataType) => ({
+      ...prev,
+      currentDayIndex: index,
+      currentDayExercises: day.exercises || [],
+      activeModal: 'day-modal',
+    }));
+  } else {
+    // In view mode (or for Simit programs), start the workout directly
+    const currentDay = day || (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
+    const preFilledExercises: Exercise[] = currentDay.exercises.map((ex: any) => {
+      const fullExercise = exerciseDatabase.find((dbEx: any) => 
+        dbEx.name === ex.name && dbEx.subtype === ex.subtype
+      ) || data.customExercises.find((customEx: any) =>
+        customEx.name === ex.name && customEx.subtype === ex.subtype
+      ) || { muscles: '', instructions: '', equipment: '' };
+      
+      return {
+        name: ex.name,
+        subtype: ex.subtype,
+        muscles: fullExercise.muscles || ex.muscles || '',
+        instructions: fullExercise.instructions || ex.instructions || '',
+        equipment: fullExercise.equipment || ex.equipment || '',
+        sets: Array.from({ length: ex.numSets || 3 }, () => ({
+          weight: '',
+          reps: '',
+          rpe: '',
+          completed: false,
+        })),
+      };
+    });
+    const newWorkout = {
+      name: currentDay.name,
+      exercises: preFilledExercises,
+      startTime: Date.now(),
+      duration: 0,
     };
-  });
-  const newWorkout = {
-    name: currentDay.name,
-    exercises: preFilledExercises,
-    startTime: Date.now(),
-    duration: 0,
-  };
-  setData((prev: DataType) => ({
-    ...prev,
-    currentWorkout: newWorkout,
-    activeModal: 'workout-modal',
-  }));
-}}          
-  style={{
+    setData((prev: DataType) => ({
+      ...prev,
+      currentWorkout: newWorkout,
+      activeModal: 'workout-modal',
+    }));
+  }
+}}  
+    style={{
             background: isCompleted 
               ? 'linear-gradient(135deg, #22c55e, #16a34a)'
               : 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
@@ -1121,9 +1130,35 @@ onClick={() => {
         margin: 0,
         flex: 1,
         fontSize: '1.6em',
-      }}>Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
+      }}>{data.isEditingProgram ? 'Edit' : 'View'} Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
     </div>
+    {!isSimitProgram && data.isEditingProgram && (
+      <button onClick={addDayToWeek} style={{
+        background: 'var(--bg-lighter)',
+        color: 'var(--text)',
+        width: '100%',
+        marginBottom: '16px',
+        borderRadius: '12px',
+        padding: '14px',
+        border: '1px solid var(--border)',
+      }}>
+        + Add Day
+      </button>
+    )}
     <div id="week-days">{renderWeekDays}</div>
+    {!isSimitProgram && data.isEditingProgram && (
+      <button onClick={saveWeek} style={{
+        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+        width: '100%',
+        borderRadius: '12px',
+        padding: '14px',
+        fontWeight: '600',
+        fontSize: '1em',
+        marginTop: '16px',
+      }}>
+        Save Week
+      </button>
+    )}
     <button className="secondary" onClick={closeModal} style={{
       background: 'transparent',
       border: '1px solid var(--border)',
@@ -1133,7 +1168,7 @@ onClick={() => {
     }}>Cancel</button>
   </div>
 </div>      
-      <div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
+<div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <span className="back-button" onClick={goBack}>←</span>
           <h2>Edit Day</h2>
@@ -1711,16 +1746,17 @@ onClick={() => {
           }))
         }))
       };
-      setData((prev: DataType) => ({
-        ...prev,
-        currentProgram: programCopy,
-        activeModal: 'program-modal',
-      }));
+setData((prev) => ({
+  ...prev,
+  currentProgram: programCopy,
+  activeModal: 'program-modal',
+  isEditingProgram: true as boolean,
+}));
     }
   }
 }}            
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             Edit Program
           </div>

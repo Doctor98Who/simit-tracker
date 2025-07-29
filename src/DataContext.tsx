@@ -60,6 +60,7 @@ export interface DataType {
   currentCustomName: string | null;
   currentCustomSubtype: string | null;
   currentCustomIdx: number | null;
+  isEditingProgram: boolean,
   activeModal: string | null;
   activeTab: string;
   isWorkoutSelect: boolean;
@@ -116,6 +117,7 @@ const initialData: DataType = {
   activeTab: 'start-workout-tab',
   weightUnit: 'lbs',
   distanceUnit: 'miles',
+  isEditingProgram: false,
 };
 export const DataContext = createContext<DataContextType>({
   data: initialData,
