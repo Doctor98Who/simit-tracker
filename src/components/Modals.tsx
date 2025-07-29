@@ -1312,6 +1312,7 @@ const Modals = () => {
             color: 'var(--text)',
             textAlign: 'center',
             letterSpacing: '0.3px',
+            width: '100%',
           }}>
             {data.currentWorkout?.name || 'Workout in Progress'}
           </div>
