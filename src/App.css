@@ -1347,27 +1347,15 @@ button,
     /* Safari only */
     #workout-modal .modal-content {
         padding-bottom: env(safe-area-inset-bottom);
-        /* Fix for Safari header visibility */
-        padding-top: 0;
-    }
-     #workout-modal .modal-content {
-        margin-top: 0 !important;
-        height: calc(100vh - env(safe-area-inset-top)) !important;
-        max-height: calc(100vh - env(safe-area-inset-top)) !important;
     }
     
-    /* Remove sticky positioning on Safari iOS */
-    #workout-modal .drag-handle,
-    #workout-modal .workout-header {
-        position: relative !important;
-        top: 0 !important;
-    }
-    
-    /* Ensure proper stacking */
-    #workout-modal .workout-header {
+    .workout-header {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
         background: var(--bg-dark);
         z-index: 10;
-        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
     }
     
     button.finish {
@@ -1379,13 +1367,8 @@ button,
         position: relative;
         z-index: 11;
     }
-    
-    /* Fix for scroll container */
-    #workout-modal .modal-content > div:last-child {
-        padding-top: 0;
-    
-    }
 }
+
 /* Drop set styling - Feature 2 */
 .set-row.drop-set {
     margin-left: 20px;
