@@ -3,6 +3,9 @@ import { useDrag, useDrop, DragSourceMonitor } from 'react-dnd';
 import { DataContext, type Set } from '../DataContext';
 
 const ItemType = 'EXERCISE';
+// Detect Safari iOS
+const isSafariIOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && 
+                    /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 interface Exercise {
   name: string;
@@ -1313,21 +1316,24 @@ const WorkoutModal: React.FC = () => {
         className="modal-content workout-modal-content" 
         ref={modalContentRef}
         style={{ 
-          position: 'relative',
-          transform: `translateY(${modalTransform}px)`,
-          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-          maxWidth: '100%',
-          width: '100%',
-          height: '100%',  // Changed from 100vh
-          background: 'var(--bg-dark)',
-          padding: '0',
-          borderRadius: '20px 20px 0 0',
-          overflow: 'visible',  // Changed from hidden
-          display: 'flex',
-          flexDirection: 'column',
-          // Safari-specific fixes
-          WebkitOverflowScrolling: 'touch',
-          WebkitTransform: `translateY(${modalTransform}px)`,
+  position: 'relative',
+  transform: `translateY(${modalTransform}px)`,
+  transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+  maxWidth: '100%',
+  width: '100%',
+  height: '100vh',
+  maxHeight: '100vh',
+  background: 'var(--bg-dark)',
+  padding: '0',
+  borderRadius: '20px 20px 0 0',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  // Safari-specific fixes
+  WebkitOverflowScrolling: 'touch',
+  WebkitTransform: `translateY(${modalTransform}px)`,
+  // Add padding top only for Safari iOS to account for status bar
+  paddingTop: isSafariIOS ? '20px' : '0',
 }}
       >
          <div style={{
@@ -1340,8 +1346,7 @@ const WorkoutModal: React.FC = () => {
           borderBottom: '1px solid var(--border)',
           borderRadius: '20px 20px 0 0',
         }}>
-          <div 
-            className="drag-handle"
+          <div className="drag-handle"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -1353,12 +1358,12 @@ const WorkoutModal: React.FC = () => {
             padding: '6px',
             cursor: 'grab',
             background: 'var(--bg-dark)',
-            position: 'relative',
-            top: 0,
+            position: isSafariIOS ? 'relative' : 'sticky',
+            top: isSafariIOS ? undefined : 0,
             zIndex: 10,
             flexShrink: 0,
-          }}
-        >
+  }}
+>
           <div className="drag-indicator" style={{
             width: '32px',
             height: '3px',
@@ -1369,18 +1374,19 @@ const WorkoutModal: React.FC = () => {
         </div>
         
         <div className="workout-header" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '8px',
-          padding: '10px 14px',
-          background: 'var(--bg-dark)',
-          position: 'relative',
-          borderBottom: '1px solid var(--border)',
-          zIndex: 5,
-          flexShrink: 0,
-          minHeight: '60px',
-        }}>
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+  padding: '10px 14px',
+  background: 'var(--bg-dark)',
+  position: isSafariIOS ? 'relative' : 'sticky',
+  top: isSafariIOS ? undefined : '15px',
+  zIndex: 5,
+  flexShrink: 0,
+  minHeight: '60px',
+  borderBottom: isSafariIOS ? '1px solid var(--border)' : undefined,
+}}>
           <div 
             className="timer-button" 
             onClick={() => setShowRestTimer(true)}
