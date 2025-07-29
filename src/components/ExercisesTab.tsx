@@ -129,60 +129,19 @@ exercises.forEach((ex: Exercise) => {
           showExerciseDetail(ex);
         }
       }}
-      style={{
-        background: 'var(--bg-dark)',
-        borderRadius: '12px',
-        padding: '16px',
-        marginBottom: '8px',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
     >
-      <div className="exercise-name" style={{
-        fontWeight: '600',
-        fontSize: '1.1em',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        color: 'var(--text)',
-      }}>              
-      <span>{ex.name}</span>
-              {isCustom && <span className="exercise-menu" onClick={() => openCustomMenu(ex.name, ex.subtype || '', data.customExercises.findIndex((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype))}>⋯</span>}
-            </div>
-            {ex.subtype && (
-              <div className="exercise-subtype" style={{
-                color: 'var(--accent-primary)',
-                fontSize: '0.9em',
-                fontWeight: '500',
-              }}>{ex.subtype}</div>
-            )}
-            <div className="exercise-muscles" style={{
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              display: 'flex',
-              gap: '6px',
-              flexWrap: 'wrap',
-            }}>
-              {ex.muscles.split(',').map((muscle, idx) => (
-                <span key={idx} style={{
-                  background: 'var(--bg-lighter)',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  fontSize: '0.8em',
-                }}>
-                  {muscle.trim()}
-                </span>
-              ))}
-            </div>
-          </div>
-        );
-      });
-    });
-    
+      <div className="exercise-name">
+        <span>{ex.name}</span>
+        {isCustom && <span className="exercise-menu" onClick={() => openCustomMenu(ex.name, ex.subtype || '', data.customExercises.findIndex((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype))}>⋯</span>}
+      </div>
+      {ex.subtype && (
+        <div className="exercise-subtype">{ex.subtype}</div>
+      )}
+      <div className="exercise-muscles">{ex.muscles}</div>
+    </div>
+  );
+});    
+});  
     if (filtered.length === 0 && query) {
       list.push(<div key="no-results" className="feed-placeholder">No exercises found matching "{query}"</div>);
     }
