@@ -1314,25 +1314,25 @@ return (
     <div
       className="modal-content workout-modal-content"
       ref={modalContentRef}
-      style={{
-        position: 'relative',
-        transform: `translateY(${modalTransform}px)`,
-        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-        maxWidth: '100%',
-        width: '100%',
-        height: '100vh',
-        maxHeight: '100vh',
-        background: 'var(--bg-dark)',
-        padding: '0',
-        borderRadius: '20px 20px 0 0',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        // Safari-specific fixes
-        WebkitOverflowScrolling: 'touch',
-        WebkitTransform: `translateY(${modalTransform}px)`,
-      }}
-    >
+style={{
+  position: 'relative',
+  transform: `translateY(${modalTransform}px)`,
+  transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+  maxWidth: '100%',
+  width: '100%',
+  height: '-webkit-fill-available',
+  maxHeight: '-webkit-fill-available',
+  background: 'var(--bg-dark)',
+  padding: '0',
+  paddingBottom: 'env(safe-area-inset-bottom)',
+  borderRadius: '20px 20px 0 0',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  WebkitOverflowScrolling: 'touch',
+  WebkitTransform: `translateY(${modalTransform}px)`,
+} as React.CSSProperties}
+>
       <div 
         className="drag-handle"
         onTouchStart={handleTouchStart}
@@ -1361,20 +1361,22 @@ return (
         }}></div>
       </div>
       
-      <div className="workout-header" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '8px',
-        padding: '10px 14px',
-        background: 'var(--bg-dark)',
-        position: 'sticky',
-        top: '15px',
-        zIndex: 5,
-        flexShrink: 0,
-        minHeight: '60px',
-      }}>
-        <div
+<div className="workout-header" style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+  padding: '10px 14px 10px 14px',
+  paddingTop: 'max(10px, env(safe-area-inset-top))',
+  background: 'var(--bg-dark)',
+  position: 'sticky',
+  top: '0',
+  zIndex: 5,
+  flexShrink: 0,
+  minHeight: '60px',
+  width: '100%',
+  boxSizing: 'border-box',
+}}>        <div
           className="timer-button"
           onClick={() => setShowRestTimer(true)}
           style={{

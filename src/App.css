@@ -1745,3 +1745,35 @@ button:active::before {
 .content.hidden {
   display: none !important;
 }
+/* iOS Safari fixes */
+@supports (-webkit-touch-callout: none) {
+  .workout-modal-content {
+    height: -webkit-fill-available !important;
+    max-height: -webkit-fill-available !important;
+  }
+  
+  .workout-header {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+  }
+}
+
+/* Fallback for non-webkit browsers */
+@supports not (-webkit-touch-callout: none) {
+  .workout-modal-content {
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}
+
+/* Landscape mode fixes */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  .workout-header {
+    position: relative !important;
+    top: 0 !important;
+  }
+  
+  .workout-modal-content {
+    height: 100vh !important;
+  }
+}
