@@ -589,16 +589,10 @@ const toggleSetType = (setIdx: number) => {
 const isDropSet = (setIdx: number): boolean => {
   if (setIdx === 0) return false;
   
-  // A set is a drop set if the previous set is type 'D'
-  // This works for chained drop sets too
-  let checkIdx = setIdx - 1;
-  while (checkIdx >= 0) {
-    if (ex.sets[checkIdx].type === 'D') return true;
-    if (ex.sets[checkIdx].type === 'W' || ex.sets[checkIdx].type === 'S') return false;
-    checkIdx--;
-  }
-  return false;
-};  
+  // A set is a drop set only if the immediately previous set is type 'D'
+  // and the current set doesn't have its own type
+  return ex.sets[setIdx - 1].type === 'D' && !ex.sets[setIdx].type;
+};
 // Collapsed state when any exercise is being dragged
   const isCollapsed = isGlobalDragging && !isDragging;
 
