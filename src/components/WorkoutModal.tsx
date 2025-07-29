@@ -1318,19 +1318,17 @@ const WorkoutModal: React.FC = () => {
           transition: isDragging ? 'none' : 'transform 0.3s ease-out',
           maxWidth: '100%',
           width: '100%',
-          height:'calc(100vh - env(safe-area-inset-top))',
-          maxHeight: 'calc(100vh - env(safe-area-inset-top))',
-          paddingTop: 'env(safe-area-inset-top)',
+          height: '100%',  // Changed from 100vh
           background: 'var(--bg-dark)',
           padding: '0',
           borderRadius: '20px 20px 0 0',
-          overflow: 'hidden',
+          overflow: 'visible',  // Changed from hidden
           display: 'flex',
           flexDirection: 'column',
           // Safari-specific fixes
           WebkitOverflowScrolling: 'touch',
           WebkitTransform: `translateY(${modalTransform}px)`,
-        }}
+}}
       >
          <div style={{
           position: 'fixed',
@@ -1448,15 +1446,15 @@ const WorkoutModal: React.FC = () => {
         <div 
           ref={scrollContainerRef}
           style={{ 
-            flex: 1,
-            overflow: 'auto',
-            WebkitOverflowScrolling: 'touch',
-            padding: '0 10px 80px',
-            overscrollBehavior: 'contain',
-            minHeight: '0',
-            marginTop: '120px',
-          }}
-        >
+          flex: '1 1 auto',
+          overflow: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          padding: '0 10px 80px',
+          overscrollBehavior: 'contain',
+          minHeight: '0',
+          maxHeight: 'calc(100% - 140px)',  // Add this
+  }}
+>
           <div className="workout-info" style={{
             display: 'flex',
             gap: '14px',
