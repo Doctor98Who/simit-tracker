@@ -209,14 +209,14 @@ const ProfileTab = () => {
     setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }));
   };
 
-  return (
+return (
     <div>
-<div className="profile-header" id="profile-cover" style={{ 
-        backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none', 
+      <div className="profile-header" id="profile-cover" style={{
+        backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none',
         position: 'relative',
         overflow: 'visible',
       }}>
-        <div 
+        <div
           className="settings-icon"
           onClick={openSettingsModal}
           style={{
@@ -264,105 +264,68 @@ const ProfileTab = () => {
           <div className="stat-label">Friends</div>
         </div>
       </div>
-      <div className="profile-actions">
+      <div className="profile-actions" style={{
+        display: 'flex',
+        gap: '8px',
+        padding: '0 20px',
+        marginBottom: '20px',
+      }}>
         <button
-          className="profile-action-btn"
           onClick={openEditProfileModal}
           style={{
-            background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-light))',
-            color: 'var(--text)',
-            borderRadius: '12px',
-            padding: '14px 20px',
+            background: 'transparent',
+            color: 'var(--text-muted)',
+            borderRadius: '6px',
+            padding: '8px 16px',
             cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            fontSize: '0.9em',
-            fontWeight: '600',
+            fontSize: '0.85em',
+            fontWeight: '500',
             flex: 1,
             textAlign: 'center',
             border: '1px solid var(--border)',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            transition: 'all 0.2s ease',
           }}
         >
-          <span style={{ fontSize: '1.1em' }}>✏️</span>
-          Edit Profile
+          Edit
         </button>
         
-        <div 
-          id="total-volume-btn"
-          className="profile-action-btn"
+        <div
           style={{
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-            color: 'white',
-            borderRadius: '12px',
-            padding: '14px 20px',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-            fontSize: '0.9em',
-            fontWeight: '600',
+            background: 'transparent',
+            color: 'var(--text)',
+            borderRadius: '6px',
+            padding: '8px 16px',
+            fontSize: '0.85em',
+            fontWeight: '500',
             flex: 1,
             textAlign: 'center',
+            border: '1px solid var(--border)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '4px',
-            transition: 'all 0.3s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.2)';
+            gap: '2px',
           }}
         >
-          <div className="volume-label" style={{ fontSize: '0.8em', opacity: 0.9 }}>Total {data.weightUnit || 'lbs'}</div>
-          <div className="volume-number" style={{ fontSize: '1.3em', fontWeight: '700' }}>{totalVolume.toLocaleString()}</div>
+          <div style={{ fontSize: '0.75em', color: 'var(--text-muted)' }}>{data.weightUnit || 'lbs'}</div>
+          <div style={{ fontWeight: '600' }}>{totalVolume.toLocaleString()}</div>
         </div>
         
         <button
-          className="profile-action-btn"
           onClick={toggleHistorySection}
           style={{
-            background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-light))',
-            color: 'var(--text)',
-            borderRadius: '12px',
-            padding: '14px 20px',
+            background: 'transparent',
+            color: 'var(--text-muted)',
+            borderRadius: '6px',
+            padding: '8px 16px',
             cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            fontSize: '0.9em',
-            fontWeight: '600',
+            fontSize: '0.85em',
+            fontWeight: '500',
             flex: 1,
             textAlign: 'center',
             border: '1px solid var(--border)',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            transition: 'all 0.2s ease',
           }}
         >
-          <span style={{ fontSize: '1.1em' }}>📊</span>
           History
         </button>
       </div>
