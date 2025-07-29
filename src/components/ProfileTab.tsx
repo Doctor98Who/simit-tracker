@@ -306,7 +306,7 @@ return (
             gap: '2px',
           }}
         >
-          <div style={{ fontSize: '0.75em', color: 'var(--text-muted)' }}>{data.weightUnit || 'Total lbs lifted'}</div>
+          <div style={{ fontSize: '0.75em', color: 'var(--text-muted)' }}>Total {data.weightUnit || 'lbs'}</div>
           <div style={{ fontWeight: '600' }}>{totalVolume.toLocaleString()}</div>
         </div>
         
