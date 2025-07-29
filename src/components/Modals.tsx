@@ -1102,64 +1102,37 @@ onClick={() => {
         </div>
       </div>
       
-      <div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          background: 'var(--bg-dark)',
-          borderRadius: '20px',
-          padding: '24px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-            <span className="back-button" onClick={goBack} style={{
-              marginRight: '16px',
-              fontSize: '1.4em',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-              transition: 'color 0.2s ease',
-            }}>←</span>
-            <h2 style={{
-              margin: 0,
-              flex: 1,
-              fontSize: '1.6em',
-            }}>{isSimitProgram ? 'View Week' : 'Edit Week'} {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
-          </div>
-          {!isSimitProgram && (
-            <button onClick={addDayToWeek} style={{
-              background: 'var(--bg-lighter)',
-              color: 'var(--text)',
-              width: '100%',
-              marginBottom: '16px',
-              borderRadius: '12px',
-              padding: '14px',
-              border: '1px solid var(--border)',
-            }}>
-              + Add Day
-            </button>
-          )}
-          <div id="week-days">{renderWeekDays}</div>
-          {!isSimitProgram && (
-            <button onClick={saveWeek} style={{
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-              width: '100%',
-              borderRadius: '12px',
-              padding: '14px',
-              fontWeight: '600',
-              fontSize: '1em',
-              marginTop: '16px',
-            }}>
-              Save Week
-            </button>
-          )}
-          <button className="secondary" onClick={closeModal} style={{
-            background: 'transparent',
-            border: '1px solid var(--border)',
-            color: 'var(--text-muted)',
-            width: '100%',
-            marginTop: '8px',
-          }}>Cancel</button>
-        </div>
-      </div>
-      
+<div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    background: 'var(--bg-dark)',
+    borderRadius: '20px',
+    padding: '24px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+  }}>
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+      <span className="back-button" onClick={goBack} style={{
+        marginRight: '16px',
+        fontSize: '1.4em',
+        cursor: 'pointer',
+        color: 'var(--text-muted)',
+        transition: 'color 0.2s ease',
+      }}>←</span>
+      <h2 style={{
+        margin: 0,
+        flex: 1,
+        fontSize: '1.6em',
+      }}>Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
+    </div>
+    <div id="week-days">{renderWeekDays}</div>
+    <button className="secondary" onClick={closeModal} style={{
+      background: 'transparent',
+      border: '1px solid var(--border)',
+      color: 'var(--text-muted)',
+      width: '100%',
+      marginTop: '8px',
+    }}>Cancel</button>
+  </div>
+</div>      
       <div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <span className="back-button" onClick={goBack}>←</span>
