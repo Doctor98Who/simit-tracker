@@ -65,6 +65,11 @@ const ProgressTab = () => {
   };
 
 const uploadProgressPic = () => {
+  // Reset body styles just in case
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  
   setData(prev => ({ 
     ...prev, 
     activeModal: 'progress-upload-modal',

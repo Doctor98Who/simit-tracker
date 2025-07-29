@@ -2111,24 +2111,18 @@ onClick={() => {
       comments: [],
     };
     
-    // First, update the progress pics and clear the modal
+    // Update everything at once
     setData((prev: DataType) => ({
       ...prev,
       progressPics: [...prev.progressPics, newPic],
       tempBase64: null,
       tempTimestamp: null,
       activeModal: null,
+      activeTab: 'progress-tab'  // This will trigger the useEffect in App.tsx
     }));
-    
-    // Then trigger the tab change through the BottomNav
-    setTimeout(() => {
-      const progressNavItem = document.querySelector('.nav-item:nth-child(5)') as HTMLElement;
-      if (progressNavItem) {
-        progressNavItem.click();
-      }
-    }, 50);
   }
-}}                  style={{
+}}               
+                style={{
                     width: '100%',
                     padding: '12px',
                     background: 'var(--accent-primary)',
