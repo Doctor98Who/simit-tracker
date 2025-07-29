@@ -184,7 +184,6 @@ return (
   onChange={(e) => setSearchQuery(e.target.value)}
 />
 <div 
-  className="add-custom-exercise" 
   onClick={openCustomExerciseModal}
   style={{
     color: 'var(--accent-primary)',
@@ -193,6 +192,9 @@ return (
     textAlign: 'right',
     marginBottom: '16px',
     fontWeight: '500',
+    background: 'transparent',
+    border: 'none',
+    padding: '0',
   }}
 >
   + Exercise
