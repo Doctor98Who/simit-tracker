@@ -58,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.25' }) => {
           alt="Pump Inc Logo" 
           className="logo" 
           style={{
-            height: '30px',
+            height: '40px',
             width: 'auto',
             objectFit: 'contain',
             backgroundColor: 'transparent',

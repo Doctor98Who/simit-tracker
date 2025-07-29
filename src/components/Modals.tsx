@@ -20,7 +20,6 @@ interface SimitProgram {
       name: string;
       exercises: {
         name: string;
-        subtype: string;
         numSets: number;
       }[];
     }[];

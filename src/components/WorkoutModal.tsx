@@ -626,7 +626,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
             }}>({ex.subtype})</span>}
           </div>
         </div>
-       {!isCollapsed && (
+{!isCollapsed && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={(e) => {
@@ -674,8 +674,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
               cursor: 'pointer',
             }}>⋯</span>
           </div>
-        )}
-      </div>
+        )}      </div>
       {!isCollapsed && (
         <div style={{ padding: '0 12px 10px' }}>
           <div className="set-table-header" style={{ 
