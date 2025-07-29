@@ -3,9 +3,7 @@ import { useDrag, useDrop, DragSourceMonitor } from 'react-dnd';
 import { DataContext, type Set } from '../DataContext';
 
 const ItemType = 'EXERCISE';
-// Detect Safari iOS
-const isSafariIOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && 
-                    /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 
 interface Exercise {
   name: string;
@@ -1305,145 +1303,134 @@ const WorkoutModal: React.FC = () => {
     }
   };
   
-  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
-  const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
-
-  if (!currentWorkout) return null;
-
-  return (
-    <>
+const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
+const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
+if (!currentWorkout) return null;
+return (
+  <>
+    <div
+      className="modal-content workout-modal-content"
+      ref={modalContentRef}
+      style={{
+        position: 'relative',
+        transform: `translateY(${modalTransform}px)`,
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        maxWidth: '100%',
+        width: '100%',
+        height: '100vh',
+        maxHeight: '100vh',
+        background: 'var(--bg-dark)',
+        padding: '0',
+        borderRadius: '20px 20px 0 0',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        // Safari-specific fixes
+        WebkitOverflowScrolling: 'touch',
+        WebkitTransform: `translateY(${modalTransform}px)`,
+      }}
+    >
       <div 
-        className="modal-content workout-modal-content" 
-        ref={modalContentRef}
-        style={{ 
-  position: 'relative',
-  transform: `translateY(${modalTransform}px)`,
-  transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-  maxWidth: '100%',
-  width: '100%',
-  height: '100vh',
-  maxHeight: '100vh',
-  background: 'var(--bg-dark)',
-  padding: '0',
-  borderRadius: '20px 20px 0 0',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  // Safari-specific fixes
-  WebkitOverflowScrolling: 'touch',
-  WebkitTransform: `translateY(${modalTransform}px)`,
-}}
-      >
-         <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
+        className="drag-handle"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart}
+        onMouseMove={handleTouchMove}
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
+        style={{
+          padding: '6px',
+          cursor: 'grab',
           background: 'var(--bg-dark)',
-          zIndex: 100,
-          borderBottom: '1px solid var(--border)',
-          borderRadius: '20px 20px 0 0',
-        }}>
-          <div className="workout-header" 
-          style={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '8px',
-  padding: '10px 14px',
-  background: 'var(--bg-dark)',
-  position: 'sticky',
-  top: '15px',
-  zIndex: 5,
-  flexShrink: 0,
-  minHeight: '60px',
-}}
->
-          <div className="drag-indicator" style={{
-            width: '32px',
-            height: '3px',
-            background: 'var(--border)',
-            borderRadius: '2px',
-            margin: '0 auto',
-          }}></div>
-        </div>
-        
-        <div className="workout-header" style={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '8px',
-  padding: '10px 14px',
-  background: 'var(--bg-dark)',
-  position: isSafariIOS ? 'relative' : 'sticky',
-  top: isSafariIOS ? undefined : '15px',
-  zIndex: 5,
-  flexShrink: 0,
-  minHeight: '60px',
-  borderBottom: isSafariIOS ? '1px solid var(--border)' : undefined,
-}}>
-          <div 
-            className="timer-button" 
-            onClick={() => setShowRestTimer(true)}
-            style={{
-              fontSize: '18px',
-              padding: '6px',
-              borderRadius: '50%',
-              background: 'var(--bg-lighter)',
-              width: '34px',
-              height: '34px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              border: 'none',
-              color: 'var(--text)',
-              minWidth: '34px',
-              flexShrink: 0,
-            }}
-          >
-            ⏱
-          </div>
-          <input
-            type="text"
-            id="workout-name-input"
-            value={currentWorkout?.name || ''}
-            onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '1.5em',
-              fontWeight: '700',
-              textAlign: 'center',
-              flex: 1,
-              padding: '0 8px',
-              color: 'var(--text)',
-              letterSpacing: '-0.3px',
-              minWidth: '0',
-            }}
-          />
-          <button 
-            className="finish" 
-            onClick={finishWorkout}
-            style={{
-              background: '#22C55E',
-              color: 'white',
-              border: 'none',
-              borderRadius: '14px',
-              padding: '6px 14px',
-              fontSize: '0.8em',
-              fontWeight: '600',
-              cursor: 'pointer',
-              minWidth: '60px',
-              letterSpacing: '-0.2px',
-              flexShrink: 0,
-            }}
-          >
-            Finish
-          </button>
-        </div>
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          flexShrink: 0,
+        }}
+      >
+        <div className="drag-indicator" style={{
+          width: '32px',
+          height: '3px',
+          background: 'var(--border)',
+          borderRadius: '2px',
+          margin: '0 auto',
+        }}></div>
       </div>
-        
+      
+      <div className="workout-header" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '8px',
+        padding: '10px 14px',
+        background: 'var(--bg-dark)',
+        position: 'sticky',
+        top: '15px',
+        zIndex: 5,
+        flexShrink: 0,
+        minHeight: '60px',
+      }}>
+        <div
+          className="timer-button"
+          onClick={() => setShowRestTimer(true)}
+          style={{
+            fontSize: '18px',
+            padding: '6px',
+            borderRadius: '50%',
+            background: 'var(--bg-lighter)',
+            width: '34px',
+            height: '34px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            border: 'none',
+            color: 'var(--text)',
+            minWidth: '34px',
+            flexShrink: 0,
+          }}
+        >
+          ⏱
+        </div>
+        <input
+          type="text"
+          id="workout-name-input"
+          value={currentWorkout?.name || ''}
+          onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            fontSize: '1.5em',
+            fontWeight: '700',
+            textAlign: 'center',
+            flex: 1,
+            padding: '0 8px',
+            color: 'var(--text)',
+            letterSpacing: '-0.3px',
+            minWidth: '0',
+          }}
+        />
+        <button
+          className="finish"
+          onClick={finishWorkout}
+          style={{
+            background: '#22C55E',
+            color: 'white',
+            border: 'none',
+            borderRadius: '14px',
+            padding: '6px 14px',
+            fontSize: '0.8em',
+            fontWeight: '600',
+            cursor: 'pointer',
+            minWidth: '60px',
+            letterSpacing: '-0.2px',
+            flexShrink: 0,
+          }}
+        >
+          Finish
+        </button>
+      </div>        
         <div 
           ref={scrollContainerRef}
           style={{ 
