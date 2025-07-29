@@ -203,28 +203,26 @@ const renderedExercises = useMemo(() => {
 
   return (
     <div>
-      <h1 className="section-title" style={{
-        fontSize: '1.8em',
-        fontWeight: '700',
-        marginBottom: '20px',
-        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }}>Exercises</h1>
-      <input 
-        type="text" 
-        className="search-bar" 
-        id="exercise-search" 
-        placeholder="Search exercises..." 
-        value={searchQuery} 
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{
-          background: 'var(--bg-dark)',
-          border: '1px solid var(--border)',
-          borderRadius: '12px',
-          padding: '14px 16px',
-          marginBottom: '16px',
-          fontSize: '16px',
+<h2 style={{
+  margin: '0 0 20px 0',
+  fontSize: '1.3em',
+  textAlign: 'center',
+  fontWeight: '600',
+  color: 'var(--text)',
+}}>Exercises</h2>
+<input 
+  type="text" 
+  className="search-bar" 
+  id="exercise-search" 
+  placeholder="Search exercises..." 
+  value={searchQuery} 
+  onChange={(e) => setSearchQuery(e.target.value)}
+  style={{
+    background: 'var(--bg-lighter)',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: '14px 16px',
+    marginBottom: '8px',          fontSize: '16px',
           color: 'var(--text)',
           transition: 'all 0.3s ease',
         }}
@@ -237,38 +235,24 @@ const renderedExercises = useMemo(() => {
           e.target.style.boxShadow = 'none';
         }}
       />
-      <div 
-        className="add-custom-exercise" 
-        onClick={openCustomExerciseModal}
-        style={{
-          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-          color: 'white',
-          borderRadius: '12px',
-          padding: '14px',
-          textAlign: 'center',
-          cursor: 'pointer',
-          marginBottom: '24px',
-          fontWeight: '600',
-          fontSize: '0.95em',
-          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-          transition: 'all 0.3s ease',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.2)';
-        }}
-      >
-        <span style={{ fontSize: '1.2em' }}>+</span> Create Custom Exercise
-      </div>
-      <div id="exercise-list">{renderedExercises}</div>
+<button
+  onClick={openCustomExerciseModal}
+  style={{
+    width: '100%',
+    padding: '8px',
+    fontSize: '0.85em',
+    background: 'var(--bg-lighter)',
+    color: 'var(--text)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    cursor: 'pointer',
+    fontWeight: '500',
+  }}
+>
+  + Create Custom Exercise
+</button>      
+<div id="exercise-list">{renderedExercises}</div>
     </div>
   );
 };

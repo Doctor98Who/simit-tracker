@@ -137,57 +137,32 @@ const ProgressTab = () => {
 
   return (
     <div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '24px',
-        background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-        borderBottom: '1px solid var(--border)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        backdropFilter: 'blur(10px)',
-      }}>
-        <h1 style={{ 
-          margin: 0, 
-          fontSize: '1.8em',
-          fontWeight: '700',
-          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>Progress Gallery</h1>
-        <button 
-          onClick={uploadProgressPic}
-          style={{
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-            border: 'none',
-            borderRadius: '12px',
-            color: 'white',
-            padding: '12px 20px',
-            fontSize: '0.9em',
-            fontWeight: '600',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.2)';
-          }}
-        >
-          <span style={{ fontSize: '1.1em' }}>📸</span>
-          Add Photo
-        </button>
-      </div>
-      
+<div style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '20px',
+  background: 'transparent',
+  marginBottom: '20px',
+}}>
+  <h2 style={{ 
+    margin: 0, 
+    fontSize: '1.2em',
+    fontWeight: '600',
+    color: 'var(--text)',
+  }}>Progress</h2>
+  <div 
+    onClick={uploadProgressPic}
+    style={{
+      color: 'var(--accent-primary)',
+      fontSize: '1em',
+      cursor: 'pointer',
+      fontWeight: '500',
+    }}
+  >
+    + Add
+  </div>
+</div>      
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
