@@ -156,7 +156,7 @@ const Modals = () => {
   };
 
   const saveWeek = () => {
-    closeModal();
+    openModal('program-modal');
   };
 
   const addExerciseToDay = () => {

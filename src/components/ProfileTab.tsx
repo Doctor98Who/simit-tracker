@@ -143,17 +143,17 @@ const ProfileTab = () => {
 
   return (
     <div>
-      <div className="profile-header" id="profile-cover" style={{ 
+<div className="profile-header" id="profile-cover" style={{ 
         backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none', 
         position: 'relative',
-        zIndex: 0 
+        overflow: 'visible',
       }}>
         <div 
           className="settings-icon"
           onClick={openSettingsModal}
           style={{
             position: 'absolute',
-            top: '20px',
+            top: '80px',
             right: '20px',
             width: '36px',
             height: '36px',
@@ -167,7 +167,8 @@ const ProfileTab = () => {
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             fontSize: '18px',
-            zIndex: 10,
+            zIndex: 100,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
@@ -179,7 +180,7 @@ const ProfileTab = () => {
           }}
         >
           ⚙️
-        </div>
+        </div>        
         <div className="profile-pic" style={{ backgroundImage: `url('${data.profilePic}')` }} onClick={editProfilePic}></div>
         <div className="profile-name" id="profile-fullname">{data.firstName} {data.lastName}</div>
         <div className="profile-username">@{data.username}</div>
