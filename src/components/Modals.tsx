@@ -522,52 +522,44 @@ const Modals = () => {
         <div
           key={index}
           className={`program-day-card ${isCompleted ? 'completed' : ''}`}
-          onClick={() => {
-            if (isSimitProgram) {
-              // For Simit programs, start the workout directly
-              const simitDay = (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
-              const preFilledExercises: Exercise[] = simitDay.exercises.map((ex: any) => {
-                // Find the full exercise data from exerciseDatabase
-                const fullExercise = exerciseDatabase.find((dbEx: any) => 
-                  dbEx.name === ex.name && dbEx.subtype === ex.subtype
-                ) || { muscles: '', instructions: '', equipment: '' };
-                
-                return {
-                  name: ex.name,
-                  subtype: ex.subtype,
-                  muscles: fullExercise.muscles,
-                  instructions: fullExercise.instructions,
-                  equipment: fullExercise.equipment,
-                  sets: Array.from({ length: ex.numSets || 3 }, () => ({
-                    weight: '',
-                    reps: '',
-                    rpe: '',
-                    completed: false,
-                  })),
-                };
-              });
-              const newWorkout = {
-                name: simitDay.name,
-                exercises: preFilledExercises,
-                startTime: Date.now(),
-                duration: 0,
-              };
-              setData((prev: DataType) => ({
-                ...prev,
-                currentWorkout: newWorkout,
-                activeModal: 'workout-modal',
-              }));
-            } else {
-              // For custom programs, open day modal for editing
-              setData((prev: DataType) => ({
-                ...prev,
-                currentDayIndex: index,
-                currentDayExercises: day.exercises || [],
-                activeModal: 'day-modal',
-              }));
-            }
-          }}
-          style={{
+onClick={() => {
+  // Start workout directly for both Simit and custom programs
+  const currentDay = day || (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
+  const preFilledExercises: Exercise[] = currentDay.exercises.map((ex: any) => {
+    // Find the full exercise data from exerciseDatabase or custom exercises
+    const fullExercise = exerciseDatabase.find((dbEx: any) => 
+      dbEx.name === ex.name && dbEx.subtype === ex.subtype
+    ) || data.customExercises.find((customEx: any) =>
+      customEx.name === ex.name && customEx.subtype === ex.subtype
+    ) || { muscles: '', instructions: '', equipment: '' };
+    
+    return {
+      name: ex.name,
+      subtype: ex.subtype,
+      muscles: fullExercise.muscles || ex.muscles || '',
+      instructions: fullExercise.instructions || ex.instructions || '',
+      equipment: fullExercise.equipment || ex.equipment || '',
+      sets: Array.from({ length: ex.numSets || 3 }, () => ({
+        weight: '',
+        reps: '',
+        rpe: '',
+        completed: false,
+      })),
+    };
+  });
+  const newWorkout = {
+    name: currentDay.name,
+    exercises: preFilledExercises,
+    startTime: Date.now(),
+    duration: 0,
+  };
+  setData((prev: DataType) => ({
+    ...prev,
+    currentWorkout: newWorkout,
+    activeModal: 'workout-modal',
+  }));
+}}          
+  style={{
             background: isCompleted 
               ? 'linear-gradient(135deg, #22c55e, #16a34a)'
               : 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
