@@ -2111,20 +2111,27 @@ onClick={() => {
       comments: [],
     };
     
-    // Save the photo
+    // Save the photo first
     const newProgressPics = [...data.progressPics, newPic];
     
-    // Reset all modal-related state and switch tab
+    // Close modal first
     setData((prev: DataType) => ({
       ...prev,
       progressPics: newProgressPics,
       tempBase64: null,
       tempTimestamp: null,
-      activeModal: null,
-      activeTab: 'progress-tab'
+      activeModal: null
     }));
+    
+    // Use requestAnimationFrame for Firefox compatibility
+    requestAnimationFrame(() => {
+      setData((prev: DataType) => ({
+        ...prev,
+        activeTab: 'progress-tab'
+      }));
+    });
   }
-}}            
+}}
                 style={{
                     width: '100%',
                     padding: '12px',
