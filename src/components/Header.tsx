@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.25' }) => {
           color: 'var(--text-muted)',
           fontWeight: '400',
         }}>
-          Beta {version}
+          Alpha {version}
         </span>
       </div>
 
