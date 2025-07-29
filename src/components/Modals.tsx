@@ -471,14 +471,14 @@ const Modals = () => {
       <div
         key={index}
         className="program-day-card"
-        onClick={() =>
-          setData((prev: DataType) => ({
-            ...prev,
-            currentWeekIndex: index,
-            activeModal: 'week-modal',
-          }))
-        }
-        style={{
+onClick={() =>
+  setData((prev: DataType) => ({
+    ...prev,
+    currentWeekIndex: index,
+    activeModal: 'week-modal',
+    isEditingProgram: prev.isEditingProgram || false,
+  }))
+}        style={{
           background: 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
           borderRadius: '16px',
           padding: '20px',
@@ -629,14 +629,14 @@ onClick={() => {
       <div
         key={index}
         className="program-day-card"
-        onClick={() =>
-          setData((prev: DataType) => ({
-            ...prev,
-            currentWeekIndex: index,
-            activeModal: 'week-modal',
-          }))
-        }
-        style={{
+onClick={() =>
+  setData((prev: DataType) => ({
+    ...prev,
+    currentWeekIndex: index,
+    activeModal: 'week-modal',
+    isEditingProgram: false,  // Simit programs are never editable
+  }))
+}        style={{
           background: 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
           borderRadius: '16px',
           padding: '20px',
