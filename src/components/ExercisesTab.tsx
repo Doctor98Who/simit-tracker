@@ -29,125 +29,142 @@ const ExercisesTab = () => {
   }, [setData]);
 
 const renderedExercises = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    const combinedDatabase: Exercise[] = [...(exerciseDatabase as Exercise[]), ...data.customExercises];
+  const query = searchQuery.toLowerCase().trim();
+  const combinedDatabase: Exercise[] = [...(exerciseDatabase as Exercise[]), ...data.customExercises];
+  
+  let filtered = combinedDatabase;
+  
+  if (query) {
+    filtered = combinedDatabase.filter(ex => {
+      const name = ex.name.toLowerCase();
+      const subtype = (ex.subtype || '').toLowerCase();
+      const muscles = ex.muscles.toLowerCase();
+      
+      return name.includes(query) || subtype.includes(query) || muscles.includes(query);
+    });
+  }
+  
+  // Group by primary muscle group
+  const muscleGroups: Record<string, Exercise[]> = {};
+  
+  filtered.forEach((ex: Exercise) => {
+    let primaryMuscle = ex.muscles.split(',')[0].trim();
     
-    let filtered = combinedDatabase;
-    
-    // If there's a search query, filter by name OR subtype starting with the query
-    if (query) {
-      filtered = combinedDatabase.filter((ex: Exercise) => {
-        const name = ex.name.toLowerCase();
-        const subtype = (ex.subtype || '').toLowerCase();
-        const muscles = ex.muscles.toLowerCase();
-        
-        // Check if name, subtype, or muscles contain the query
-        return name.includes(query) || subtype.includes(query) || muscles.includes(query);
-      });
+    // Normalize muscle groups
+    if (primaryMuscle.toLowerCase().includes('chest')) {
+      primaryMuscle = 'Chest';
+    } else if (primaryMuscle.toLowerCase().includes('shoulder') || primaryMuscle.toLowerCase().includes('delt')) {
+      primaryMuscle = 'Shoulders';
+    } else if (primaryMuscle.toLowerCase().includes('back') || primaryMuscle === 'Lats' || primaryMuscle === 'Traps') {
+      primaryMuscle = 'Back';
+    } else if (primaryMuscle === 'Biceps' || primaryMuscle === 'Triceps' || primaryMuscle === 'Forearms') {
+      primaryMuscle = 'Arms';
+    } else if (primaryMuscle.toLowerCase().includes('quad') || primaryMuscle.toLowerCase().includes('hamstring') || 
+               primaryMuscle.toLowerCase().includes('glute') || primaryMuscle.toLowerCase().includes('calf') || 
+               primaryMuscle === 'Calves') {
+      primaryMuscle = 'Legs';
+    } else if (primaryMuscle.toLowerCase().includes('abs') || primaryMuscle.toLowerCase().includes('oblique') || 
+               primaryMuscle.toLowerCase().includes('core')) {
+      primaryMuscle = 'Core';
     }
     
-    // Group by primary muscle group
-    const muscleGroups: Record<string, Exercise[]> = {};
+    if (!muscleGroups[primaryMuscle]) {
+      muscleGroups[primaryMuscle] = [];
+    }
+    muscleGroups[primaryMuscle].push(ex);
+  });
+  
+  const muscleGroupOrder = ['Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Full Body'];
+  
+  const sortedMuscleGroups = Object.keys(muscleGroups).sort((a, b) => {
+    const indexA = muscleGroupOrder.findIndex(m => a === m);
+    const indexB = muscleGroupOrder.findIndex(m => b === m);
     
-    filtered.forEach((ex: Exercise) => {
-      // Get the primary muscle group (first muscle listed)
-      let primaryMuscle = ex.muscles.split(',')[0].trim();
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
+  const list: React.ReactNode[] = [];
+  
+  sortedMuscleGroups.forEach((muscleGroup) => {
+    list.push(
+      <div key={`muscle-${muscleGroup}`} className="muscle-group-header" style={{
+        fontSize: '1.2em',
+        fontWeight: '600',
+        color: 'var(--accent-primary)',
+        marginTop: list.length > 0 ? '20px' : '0',
+        marginBottom: '10px',
+        padding: '10px 16px',
+        background: 'linear-gradient(to right, var(--bg-dark), var(--bg-light))',
+        borderRadius: '8px',
+      }}>
+        {muscleGroup}
+      </div>
+    );
+    
+    const exercises = muscleGroups[muscleGroup].sort((a, b) => a.name.localeCompare(b.name));
+    
+    exercises.forEach((ex: Exercise) => {
+      const isCustom = data.customExercises.some((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype);
       
-      // Normalize muscle groups
-      if (primaryMuscle.toLowerCase().includes('chest')) {
-        primaryMuscle = 'Chest';
-      } else if (primaryMuscle.toLowerCase().includes('shoulder') || primaryMuscle.toLowerCase().includes('delt')) {
-        primaryMuscle = 'Shoulders';
-      } else if (primaryMuscle.toLowerCase().includes('back') || primaryMuscle === 'Lats' || primaryMuscle === 'Traps') {
-        primaryMuscle = 'Back';
-      } else if (primaryMuscle === 'Biceps' || primaryMuscle === 'Triceps' || primaryMuscle === 'Forearms') {
-        primaryMuscle = 'Arms';
-      } else if (primaryMuscle.toLowerCase().includes('quad') || primaryMuscle.toLowerCase().includes('hamstring') || 
-                 primaryMuscle.toLowerCase().includes('glute') || primaryMuscle.toLowerCase().includes('calf') || 
-                 primaryMuscle === 'Calves') {
-        primaryMuscle = 'Legs';
-      } else if (primaryMuscle.toLowerCase().includes('abs') || primaryMuscle.toLowerCase().includes('oblique') || 
-                 primaryMuscle.toLowerCase().includes('core')) {
-        primaryMuscle = 'Core';
-      }
-      
-      if (!muscleGroups[primaryMuscle]) {
-        muscleGroups[primaryMuscle] = [];
-      }
-      muscleGroups[primaryMuscle].push(ex);
-    });
-    
-    // Sort muscle groups with most common ones first
-    const muscleGroupOrder = [
-      'Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Full Body'
-    ];
-    
-    const sortedMuscleGroups = Object.keys(muscleGroups).sort((a, b) => {
-      const indexA = muscleGroupOrder.findIndex(m => a === m);
-      const indexB = muscleGroupOrder.findIndex(m => b === m);
-      
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB;
-      }
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-      return a.localeCompare(b);
-    });
-    const list: React.ReactNode[] = [];
-    
-    sortedMuscleGroups.forEach((muscleGroup) => {
-      // Add muscle group header
       list.push(
-        <div key={`muscle-${muscleGroup}`} className="muscle-group-header" style={{
-          fontSize: '1.1em',
-          fontWeight: '700',
-          color: 'var(--text)',
-          marginTop: list.length > 0 ? '24px' : '0',
-          marginBottom: '16px',
-          padding: '12px 16px',
-          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-          borderRadius: '12px',
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase',
-          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-        }}>
-          {muscleGroup}
+        <div
+          key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
+          className="exercise-item"
+          onClick={(e) => {
+            if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
+              showExerciseDetail(ex);
+            }
+          }}
+          style={{ 
+            cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            background: 'var(--bg-dark)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '8px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            transition: 'all 0.2s ease',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          }}
+        >
+          <div className="exercise-name" style={{ 
+            pointerEvents: 'none',
+            fontWeight: '600',
+            fontSize: '1.1em',
+            marginBottom: '4px'
+          }}>
+            {ex.name}
+            {isCustom && <span className="exercise-menu" onClick={() => openCustomMenu(ex.name, ex.subtype || '', data.customExercises.findIndex((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype))} style={{ pointerEvents: 'auto', float: 'right' }}>⋯</span>}
+          </div>
+          {ex.subtype && <div className="exercise-subtype" style={{ 
+            pointerEvents: 'none',
+            color: 'var(--accent-blue)',
+            fontSize: '0.9em',
+            marginBottom: '4px'
+          }}>{ex.subtype}</div>}
+          <div className="exercise-muscles" style={{ 
+            pointerEvents: 'none',
+            color: 'var(--text-muted)',
+            fontSize: '0.85em'
+          }}>{ex.muscles}</div>
         </div>
       );
-      
-// Sort exercises alphabetically within muscle group
-const exercises = muscleGroups[muscleGroup].sort((a, b) => a.name.localeCompare(b.name));
+    });
+  });
 
-exercises.forEach((ex: Exercise) => {
-  const isCustom = data.customExercises.some((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype);
-  
-  list.push(
-    <div key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
-      className="exercise-item"
-      onClick={(e: React.MouseEvent) => {
-        if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
-          showExerciseDetail(ex);
-        }
-      }}
-    >
-      <div className="exercise-name">
-        <span>{ex.name}</span>
-        {isCustom && <span className="exercise-menu" onClick={() => openCustomMenu(ex.name, ex.subtype || '', data.customExercises.findIndex((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype))}>⋯</span>}
-      </div>
-      {ex.subtype && (
-        <div className="exercise-subtype">{ex.subtype}</div>
-      )}
-      <div className="exercise-muscles">{ex.muscles}</div>
-    </div>
-  );
-});    
-});  
-    if (filtered.length === 0 && query) {
-      list.push(<div key="no-results" className="feed-placeholder">No exercises found matching "{query}"</div>);
-    }
-    
-    return list;
-  }, [searchQuery, exerciseDatabase, data.customExercises, showExerciseDetail, openCustomMenu]);
+  if (filtered.length === 0 && query) {
+    list.push(<div key="no-results" className="feed-placeholder" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No exercises found containing "{query}"</div>);
+  }
+
+  return list;
+}, [searchQuery, exerciseDatabase, data.customExercises, showExerciseDetail, openCustomMenu]);
 
 return (
   <div>
