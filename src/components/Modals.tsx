@@ -2122,7 +2122,7 @@ const Modals = () => {
                   Post
                 </button>
 
-                <button
+<button
                   onClick={() => setData((prev: DataType) => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
                   style={{
                     width: '100%',
@@ -2138,7 +2138,6 @@ const Modals = () => {
                 >
                   Choose Different Photo
                 </button>
-
                 <button
                   onClick={closeModal}
                   style={{
@@ -2156,12 +2155,6 @@ const Modals = () => {
                   Cancel
                 </button>
               </div>
-              <button
-                className="secondary"
-                onClick={() => setData((prev: DataType) => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
-              >
-                Choose Different Photo
-              </button>
             </>
           ) : (
             <>
@@ -2174,8 +2167,8 @@ const Modals = () => {
                   marginBottom: '20px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                }}
-                onClick={() => {
+                }}               
+                 onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
                   input.accept = 'image/*';
@@ -2231,8 +2224,23 @@ const Modals = () => {
                   Tap to select from your gallery
                 </div>
               </div>
-              <button className="secondary" onClick={closeModal}>Cancel</button>
-            </>
+<button 
+  onClick={closeModal}
+  style={{
+    width: '100%',
+    padding: '10px',
+    background: 'transparent',
+    color: 'var(--text-muted)',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '0.85em',
+    fontWeight: '500',
+    cursor: 'pointer',
+    marginTop: '8px',
+  }}
+>
+  Cancel
+</button>            </>
           )}
         </div>
       </div>
