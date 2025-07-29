@@ -150,7 +150,7 @@ const ProgressTab = () => {
     fontSize: '1.2em',
     fontWeight: '600',
     color: 'var(--text)',
-  }}>Progress</h2>
+  }}>Progress Feed</h2>
   <div 
     onClick={uploadProgressPic}
     style={{
@@ -160,7 +160,7 @@ const ProgressTab = () => {
       fontWeight: '500',
     }}
   >
-    + Add
+    + Add Photo
   </div>
 </div>      
       <div style={{
