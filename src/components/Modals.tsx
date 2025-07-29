@@ -113,16 +113,25 @@ const Modals = () => {
     }));
   };
 
-  const saveProgram = () => {
-    const input = document.getElementById('program-name') as HTMLInputElement | null;
-    if (input) {
-      const name = input.value;
-      const weeksLength = data.currentProgram.weeks.length;
-      if (!name || weeksLength === 0) return;
-      const programData: Template = {
-        name,
-        mesocycleLength: weeksLength,
-        weeks: data.currentProgram.weeks,
+ const saveProgram = () => {
+  const input = document.getElementById('program-name') as HTMLInputElement | null;
+  if (input) {
+    const name = input.value;
+    const weeksLength = data.currentProgram.weeks.length;
+    if (!name || weeksLength === 0) return;
+    
+    // Deep copy the weeks to avoid reference issues
+    const weeksCopy = data.currentProgram.weeks.map((week: any) => ({
+      days: week.days.map((day: any) => ({
+        ...day,
+        exercises: day.exercises.map((ex: any) => ({ ...ex }))
+      }))
+    }));
+    
+    const programData: Template = {
+      name,
+      mesocycleLength: weeksLength,
+      weeks: weeksCopy,
         lastUsed: Date.now(),
       };
       const existingIndex = data.templates.findIndex((t: Template) => t.name === name);
@@ -1722,19 +1731,29 @@ const Modals = () => {
               fontSize: '0.9em',
               color: 'white',
             }}
-            onClick={() => {
-              // Edit program
-              if (data.currentProgName) {
-                const program = data.templates.find((t: Template) => t.name === data.currentProgName);
-                if (program) {
-                  setData((prev: DataType) => ({
-                    ...prev,
-                    currentProgram: program,
-                    activeModal: 'program-modal',
-                  }));
-                }
-              }
-            }}
+onClick={() => {
+  // Edit program
+  if (data.currentProgName) {
+    const program = data.templates.find((t: Template) => t.name === data.currentProgName);
+    if (program) {
+      // Create a deep copy of the program for editing
+      const programCopy = {
+        ...program,
+        weeks: program.weeks.map((week: any) => ({
+          days: week.days.map((day: any) => ({
+            ...day,
+            exercises: day.exercises.map((ex: any) => ({ ...ex }))
+          }))
+        }))
+      };
+      setData((prev: DataType) => ({
+        ...prev,
+        currentProgram: programCopy,
+        activeModal: 'program-modal',
+      }));
+    }
+  }
+}}            
             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
