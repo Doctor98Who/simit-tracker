@@ -1350,6 +1350,11 @@ button,
         /* Fix for Safari header visibility */
         padding-top: 0;
     }
+     #workout-modal .modal-content {
+        margin-top: 0 !important;
+        height: calc(100vh - env(safe-area-inset-top)) !important;
+        max-height: calc(100vh - env(safe-area-inset-top)) !important;
+    }
     
     /* Remove sticky positioning on Safari iOS */
     #workout-modal .drag-handle,
@@ -1378,6 +1383,7 @@ button,
     /* Fix for scroll container */
     #workout-modal .modal-content > div:last-child {
         padding-top: 0;
+    
     }
 }
 /* Drop set styling - Feature 2 */
