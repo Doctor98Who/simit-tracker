@@ -113,42 +113,42 @@ const Modals = () => {
     }));
   };
 
-const saveProgram = () => {
-  const input = document.getElementById('program-name') as HTMLInputElement | null;
-  if (input) {
-    const name = input.value;
-    const weeksLength = data.currentProgram.weeks.length;
-    if (!name || weeksLength === 0) return;
-   
-    // Deep copy the weeks to avoid reference issues
-    const weeksCopy = data.currentProgram.weeks.map((week: any) => ({
-      days: week.days.map((day: any) => ({
-        ...day,
-        exercises: day.exercises.map((ex: any) => ({ ...ex }))
-      }))
-    }));
-   
-    const programData: Template = {
-      name,
-      mesocycleLength: weeksLength,
-      weeks: weeksCopy,
-      lastUsed: Date.now(),
-    };
-    const existingIndex = data.templates.findIndex((t: Template) => t.name === name);
-    const newTemplates = [...data.templates];
-    if (existingIndex > -1) {
-      newTemplates[existingIndex] = programData;
-    } else {
-      newTemplates.push(programData);
+  const saveProgram = () => {
+    const input = document.getElementById('program-name') as HTMLInputElement | null;
+    if (input) {
+      const name = input.value;
+      const weeksLength = data.currentProgram.weeks.length;
+      if (!name || weeksLength === 0) return;
+
+      // Deep copy the weeks to avoid reference issues
+      const weeksCopy = data.currentProgram.weeks.map((week: any) => ({
+        days: week.days.map((day: any) => ({
+          ...day,
+          exercises: day.exercises.map((ex: any) => ({ ...ex }))
+        }))
+      }));
+
+      const programData: Template = {
+        name,
+        mesocycleLength: weeksLength,
+        weeks: weeksCopy,
+        lastUsed: Date.now(),
+      };
+      const existingIndex = data.templates.findIndex((t: Template) => t.name === name);
+      const newTemplates = [...data.templates];
+      if (existingIndex > -1) {
+        newTemplates[existingIndex] = programData;
+      } else {
+        newTemplates.push(programData);
+      }
+      setData((prev: DataType) => ({
+        ...prev,
+        templates: newTemplates,
+        isEditingProgram: false  // Add this line
+      }));
+      closeModal();
     }
-    setData((prev: DataType) => ({ 
-      ...prev, 
-      templates: newTemplates,
-      isEditingProgram: false  // Add this line
-    }));
-    closeModal();
-  }
-};
+  };
   const addDayToWeek = () => {
     if (data.currentWeekIndex === null) return;
     setData((prev: DataType) => {
@@ -270,19 +270,19 @@ const saveProgram = () => {
   const selectExercise = (ex: Exercise | ExerciseFromDatabase) => {
     // Prevent selection while scrolling
     if (isScrolling) return;
-    
+
     // Prevent double-tap issues on mobile
     if (!ex) return;
-    
+
     // Convert ExerciseFromDatabase to Exercise if needed
     const exercise: Exercise = 'sets' in ex ? ex : {
       ...ex,
       sets: []
     };
-    
+
     // Clear search
     setSelectSearchQuery('');
-    
+
     // Create the new exercise with sets
     const newExercise = {
       ...exercise,
@@ -293,14 +293,14 @@ const saveProgram = () => {
         completed: false,
       })),
     };
-    
+
     if (exerciseSelectMode === 'workout') {
       // Adding to workout
       if (!data.currentWorkout) {
         console.error('No current workout found');
         return;
       }
-      
+
       setData((prev: DataType) => ({
         ...prev,
         currentWorkout: {
@@ -325,26 +325,26 @@ const saveProgram = () => {
   const renderExerciseSelectList = useMemo(() => {
     const query = selectSearchQuery.toLowerCase().trim();
     const combinedDatabase: (Exercise | ExerciseFromDatabase)[] = [...exerciseDatabase as ExerciseFromDatabase[], ...data.customExercises];
-    
+
     let filtered = combinedDatabase;
-    
+
     if (query) {
       filtered = combinedDatabase.filter(ex => {
         const name = ex.name.toLowerCase();
         const subtype = (ex.subtype || '').toLowerCase();
-        
+
         // Check if query appears anywhere in name or subtype
         return name.includes(query) || subtype.includes(query);
       });
     }
-    
+
     // Group by primary muscle group
     const muscleGroups: Record<string, (Exercise | ExerciseFromDatabase)[]> = {};
-    
+
     filtered.forEach((ex: Exercise | ExerciseFromDatabase) => {
       // Get the primary muscle group (first muscle listed)
       let primaryMuscle = ex.muscles.split(',')[0].trim();
-      
+
       // Normalize muscle groups
       if (primaryMuscle.toLowerCase().includes('chest')) {
         primaryMuscle = 'Chest';
@@ -354,30 +354,30 @@ const saveProgram = () => {
         primaryMuscle = 'Back';
       } else if (primaryMuscle === 'Biceps' || primaryMuscle === 'Triceps' || primaryMuscle === 'Forearms') {
         primaryMuscle = 'Arms';
-      } else if (primaryMuscle.toLowerCase().includes('quad') || primaryMuscle.toLowerCase().includes('hamstring') || 
-                 primaryMuscle.toLowerCase().includes('glute') || primaryMuscle.toLowerCase().includes('calf') || 
-                 primaryMuscle === 'Calves') {
+      } else if (primaryMuscle.toLowerCase().includes('quad') || primaryMuscle.toLowerCase().includes('hamstring') ||
+        primaryMuscle.toLowerCase().includes('glute') || primaryMuscle.toLowerCase().includes('calf') ||
+        primaryMuscle === 'Calves') {
         primaryMuscle = 'Legs';
-      } else if (primaryMuscle.toLowerCase().includes('abs') || primaryMuscle.toLowerCase().includes('oblique') || 
-                 primaryMuscle.toLowerCase().includes('core')) {
+      } else if (primaryMuscle.toLowerCase().includes('abs') || primaryMuscle.toLowerCase().includes('oblique') ||
+        primaryMuscle.toLowerCase().includes('core')) {
         primaryMuscle = 'Core';
       }
-      
+
       if (!muscleGroups[primaryMuscle]) {
         muscleGroups[primaryMuscle] = [];
       }
       muscleGroups[primaryMuscle].push(ex);
     });
-    
+
     // Sort muscle groups with most common ones first
     const muscleGroupOrder = [
       'Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Full Body'
     ];
-    
+
     const sortedMuscleGroups = Object.keys(muscleGroups).sort((a, b) => {
       const indexA = muscleGroupOrder.findIndex(m => a === m);
       const indexB = muscleGroupOrder.findIndex(m => b === m);
-      
+
       if (indexA !== -1 && indexB !== -1) {
         return indexA - indexB;
       }
@@ -391,7 +391,7 @@ const saveProgram = () => {
     }
 
     const list: React.ReactNode[] = [];
-    
+
     sortedMuscleGroups.forEach((muscleGroup) => {
       // Add muscle group header
       list.push(
@@ -408,10 +408,10 @@ const saveProgram = () => {
           {muscleGroup}
         </div>
       );
-      
+
       // Sort exercises alphabetically within muscle group
       const exercises = muscleGroups[muscleGroup].sort((a, b) => a.name.localeCompare(b.name));
-      
+
       exercises.forEach((ex: Exercise | ExerciseFromDatabase) => {
         list.push(
           <div
@@ -430,7 +430,7 @@ const saveProgram = () => {
                 setTimeout(() => selectExercise(ex), 50);
               }
             }}
-            style={{ 
+            style={{
               cursor: 'pointer',
               WebkitTapHighlightColor: 'transparent',
               touchAction: 'manipulation',
@@ -444,19 +444,19 @@ const saveProgram = () => {
               WebkitUserSelect: 'none',
             }}
           >
-            <div className="exercise-name" style={{ 
+            <div className="exercise-name" style={{
               pointerEvents: 'none',
               fontWeight: '600',
               fontSize: '1.1em',
               marginBottom: '4px'
             }}>{ex.name}</div>
-            {ex.subtype && <div className="exercise-subtype" style={{ 
+            {ex.subtype && <div className="exercise-subtype" style={{
               pointerEvents: 'none',
               color: 'var(--accent-blue)',
               fontSize: '0.9em',
               marginBottom: '4px'
             }}>{ex.subtype}</div>}
-            <div className="exercise-muscles" style={{ 
+            <div className="exercise-muscles" style={{
               pointerEvents: 'none',
               color: 'var(--text-muted)',
               fontSize: '0.85em'
@@ -474,14 +474,14 @@ const saveProgram = () => {
       <div
         key={index}
         className="program-day-card"
-onClick={() =>
-  setData((prev: DataType) => ({
-    ...prev,
-    currentWeekIndex: index,
-    activeModal: 'week-modal',
-    isEditingProgram: prev.isEditingProgram || false,
-  }))
-}        style={{
+        onClick={() =>
+          setData((prev: DataType) => ({
+            ...prev,
+            currentWeekIndex: index,
+            activeModal: 'week-modal',
+            isEditingProgram: prev.isEditingProgram || false,
+          }))
+        } style={{
           background: 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
           borderRadius: '16px',
           padding: '20px',
@@ -514,65 +514,65 @@ onClick={() =>
     if (data.currentWeekIndex === null) return null;
     const week = data.currentProgram.weeks[data.currentWeekIndex];
     if (!week) return null;
-    
+
     const programName = (data.currentProgram as any).name || '';
-    
+
     return week.days.map((day: Day, index: number) => {
       // Check if this day is completed
       const isCompleted = programName && data.completedPrograms[programName]?.[`${data.currentWeekIndex}-${index}`];
-      
+
       return (
         <div
           key={index}
           className={`program-day-card ${isCompleted ? 'completed' : ''}`}
-onClick={() => {
-  if (data.isEditingProgram && !isSimitProgram) {
-    // In edit mode for custom programs, open day modal for editing
-    setData((prev: DataType) => ({
-      ...prev,
-      currentDayIndex: index,
-      currentDayExercises: day.exercises || [],
-      activeModal: 'day-modal',
-    }));
-  } else {
-    // In view mode (or for Simit programs), start the workout directly
-    const currentDay = day || (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
-    const preFilledExercises: Exercise[] = currentDay.exercises.map((ex: any) => {
-      const fullExercise = exerciseDatabase.find((dbEx: any) => 
-        dbEx.name === ex.name && dbEx.subtype === ex.subtype
-      ) || data.customExercises.find((customEx: any) =>
-        customEx.name === ex.name && customEx.subtype === ex.subtype
-      ) || { muscles: '', instructions: '', equipment: '' };
-      
-      return {
-        name: ex.name,
-        subtype: ex.subtype,
-        muscles: fullExercise.muscles || ex.muscles || '',
-        instructions: fullExercise.instructions || ex.instructions || '',
-        equipment: fullExercise.equipment || ex.equipment || '',
-        sets: Array.from({ length: ex.numSets || 3 }, () => ({
-          weight: '',
-          reps: '',
-          rpe: '',
-          completed: false,
-        })),
-      };
-    });
-    const newWorkout = {
-      name: currentDay.name,
-      exercises: preFilledExercises,
-      startTime: Date.now(),
-      duration: 0,
-    };
-    setData((prev: DataType) => ({
-      ...prev,
-      currentWorkout: newWorkout,
-      activeModal: 'workout-modal',
-    }));
-  }
-}}  
-    style={{
-            background: isCompleted 
+          onClick={() => {
+            if (data.isEditingProgram && !isSimitProgram) {
+              // In edit mode for custom programs, open day modal for editing
+              setData((prev: DataType) => ({
+                ...prev,
+                currentDayIndex: index,
+                currentDayExercises: day.exercises || [],
+                activeModal: 'day-modal',
+              }));
+            } else {
+              // In view mode (or for Simit programs), start the workout directly
+              const currentDay = day || (data.currentProgram as any).weeks[data.currentWeekIndex!].days[index];
+              const preFilledExercises: Exercise[] = currentDay.exercises.map((ex: any) => {
+                const fullExercise = exerciseDatabase.find((dbEx: any) =>
+                  dbEx.name === ex.name && dbEx.subtype === ex.subtype
+                ) || data.customExercises.find((customEx: any) =>
+                  customEx.name === ex.name && customEx.subtype === ex.subtype
+                ) || { muscles: '', instructions: '', equipment: '' };
+
+                return {
+                  name: ex.name,
+                  subtype: ex.subtype,
+                  muscles: fullExercise.muscles || ex.muscles || '',
+                  instructions: fullExercise.instructions || ex.instructions || '',
+                  equipment: fullExercise.equipment || ex.equipment || '',
+                  sets: Array.from({ length: ex.numSets || 3 }, () => ({
+                    weight: '',
+                    reps: '',
+                    rpe: '',
+                    completed: false,
+                  })),
+                };
+              });
+              const newWorkout = {
+                name: currentDay.name,
+                exercises: preFilledExercises,
+                startTime: Date.now(),
+                duration: 0,
+              };
+              setData((prev: DataType) => ({
+                ...prev,
+                currentWorkout: newWorkout,
+                activeModal: 'workout-modal',
+              }));
+            }
+          }}
+          style={{
+            background: isCompleted
               ? 'linear-gradient(135deg, #22c55e, #16a34a)'
               : 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
             borderRadius: '16px',
@@ -632,14 +632,14 @@ onClick={() => {
       <div
         key={index}
         className="program-day-card"
-onClick={() =>
-  setData((prev: DataType) => ({
-    ...prev,
-    currentWeekIndex: index,
-    activeModal: 'week-modal',
-    isEditingProgram: false,  // Simit programs are never editable
-  }))
-}        style={{
+        onClick={() =>
+          setData((prev: DataType) => ({
+            ...prev,
+            currentWeekIndex: index,
+            activeModal: 'week-modal',
+            isEditingProgram: false,  // Simit programs are never editable
+          }))
+        } style={{
           background: 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
           borderRadius: '16px',
           padding: '20px',
@@ -789,10 +789,10 @@ onClick={() =>
         equipment: equipment || '',
         sets: []
       };
-      
+
       // Add to custom exercises database
       const updatedCustomExercises = [...data.customExercises, newExercise];
-      
+
       // If we came from exercise select modal during workout, add to workout too
       if (data.returnModal === 'exercise-select-modal' && data.isWorkoutSelect && data.currentWorkout) {
         const workoutExercise = {
@@ -804,7 +804,7 @@ onClick={() =>
             completed: false,
           })),
         };
-        
+
         setData((prev: DataType) => ({
           ...prev,
           customExercises: updatedCustomExercises,
@@ -856,13 +856,13 @@ onClick={() =>
         workload,
         suggestion,
       };
-      
+
       // Track program progress if this workout is from a program
       let updatedCompletedPrograms = { ...data.completedPrograms };
-      
+
       // Check if this workout is from a program by checking the workout name
       const workoutName = data.currentWorkout.name;
-      
+
       // Find matching program
       const allPrograms = [...data.templates, ...simitPrograms];
       for (const program of allPrograms) {
@@ -880,7 +880,7 @@ onClick={() =>
           }
         }
       }
-      
+
       setData((prev: DataType) => ({
         ...prev,
         history: [...prev.history, finishedWorkout],
@@ -931,7 +931,7 @@ onClick={() =>
     if (!isDraggingMinimized) return;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const deltaY = clientY - minimizedStartY.current;
-    
+
     // Only allow upward drag (negative deltaY)
     if (deltaY < 0) {
       setMinimizedDragY(deltaY);
@@ -943,19 +943,19 @@ onClick={() =>
     e.stopPropagation();
     if (!isDraggingMinimized) return;
     setIsDraggingMinimized(false);
-    
+
     // Unlock body scroll
     document.body.style.overflow = '';
     document.body.style.position = '';
     document.body.style.width = '';
-    
+
     const deltaY = minimizedDragY;
-    
+
     // If dragged up more than 50px, maximize
     if (deltaY < -50) {
       setData((prev: DataType) => ({ ...prev, activeModal: 'workout-modal' }));
     }
-    
+
     // Reset transform
     setMinimizedDragY(0);
   };
@@ -964,7 +964,7 @@ onClick={() =>
   const getMinimizedStyle = () => {
     const baseHeight = 50; // Reduced to half the height
     const maxPreviewHeight = window.innerHeight * 0.8; // Max 80% of viewport
-    
+
     if (isDraggingMinimized && minimizedDragY < 0) {
       // Calculate expansion based on drag distance
       const expansion = Math.min(Math.abs(minimizedDragY) * 2.5, maxPreviewHeight - baseHeight);
@@ -975,7 +975,7 @@ onClick={() =>
         borderRadius: Math.abs(minimizedDragY) > 50 ? '20px 20px 0 0' : '0',
       };
     }
-    
+
     return {
       height: `${baseHeight}px`,
       transform: 'none',
@@ -987,8 +987,8 @@ onClick={() =>
   return (
     <>
       <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{ 
-          maxHeight: '80vh', 
+        <div className="modal-content" style={{
+          maxHeight: '80vh',
           overflow: 'auto',
           background: 'var(--bg-dark)',
           borderRadius: '20px',
@@ -996,15 +996,15 @@ onClick={() =>
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-            <span className="back-button" onClick={goBack} style={{ 
+            <span className="back-button" onClick={goBack} style={{
               marginRight: '16px',
               fontSize: '1.4em',
               cursor: 'pointer',
               color: 'var(--text-muted)',
               transition: 'color 0.2s ease',
             }}>←</span>
-            <h2 style={{ 
-              margin: 0, 
+            <h2 style={{
+              margin: 0,
               flex: 1,
               fontSize: '1.8em',
               background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
@@ -1012,58 +1012,58 @@ onClick={() =>
               WebkitTextFillColor: 'transparent',
             }}>Create Program</h2>
           </div>
-<input 
-  type="text" 
-  id="program-name" 
-  placeholder="Program Name (e.g., PUSH PULL LEGS)" 
-  style={{ 
-    marginBottom: '24px',
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '12px',
-    padding: '14px 16px',
-    fontSize: '1em',
-    width: 'calc(100% - 32px)',
-    boxSizing: 'border-box',
-  }}
-/>
-<div style={{ marginBottom: '24px' }}>
-  <label style={{ 
-    color: 'var(--text-muted)', 
-    fontSize: '0.9em', 
-    marginBottom: '12px', 
-    display: 'block',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    fontWeight: '600',
-  }}>
-    Number of Weeks
-  </label>
-  <input
-    type="number"
-    id="mesocycle-length"
-    placeholder="# weeks"
-    min="1"
-    max="52"
-    onInput={generateWeeks}
-    style={{ 
-      marginBottom: '12px',
-      background: 'var(--bg-lighter)',
-      border: '1px solid var(--border)',
-      borderRadius: '12px',
-      padding: '14px 16px',
-      fontSize: '1em',
-      width: '120px',
-      boxSizing: 'border-box',
-    }}
-  />
-  </div>
+          <input
+            type="text"
+            id="program-name"
+            placeholder="Program Name (e.g., PUSH PULL LEGS)"
+            style={{
+              marginBottom: '24px',
+              background: 'var(--bg-lighter)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '14px 16px',
+              fontSize: '1em',
+              width: 'calc(100% - 32px)',
+              boxSizing: 'border-box',
+            }}
+          />
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.9em',
+              marginBottom: '12px',
+              display: 'block',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+            }}>
+              Number of Weeks
+            </label>
+            <input
+              type="number"
+              id="mesocycle-length"
+              placeholder="# weeks"
+              min="1"
+              max="52"
+              onInput={generateWeeks}
+              style={{
+                marginBottom: '12px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                fontSize: '1em',
+                width: '120px',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
           <div id="program-weeks" style={{ marginBottom: '20px' }}>
             {renderProgramWeeks}
           </div>
-          <button onClick={addWeek} style={{ 
-            background: 'var(--bg-lighter)', 
-            color: 'var(--text)', 
+          <button onClick={addWeek} style={{
+            background: 'var(--bg-lighter)',
+            color: 'var(--text)',
             marginBottom: '12px',
             width: '100%',
             borderRadius: '12px',
@@ -1073,7 +1073,7 @@ onClick={() =>
           }}>
             + Add Week
           </button>
-          <button onClick={saveProgram} style={{ 
+          <button onClick={saveProgram} style={{
             background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
             width: '100%',
             borderRadius: '12px',
@@ -1092,7 +1092,7 @@ onClick={() =>
           }}>Cancel</button>
         </div>
       </div>
-      
+
       <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           background: 'var(--bg-dark)',
@@ -1117,72 +1117,72 @@ onClick={() =>
           }}>Cancel</button>
         </div>
       </div>
-      
-<div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    background: 'var(--bg-dark)',
-    borderRadius: '20px',
-    padding: '24px',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-  }}>
-    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-      <span className="back-button" onClick={goBack} style={{
-        marginRight: '16px',
-        fontSize: '1.4em',
-        cursor: 'pointer',
-        color: 'var(--text-muted)',
-        transition: 'color 0.2s ease',
-      }}>←</span>
-      <h2 style={{
-        margin: 0,
-        flex: 1,
-        fontSize: '1.6em',
-      }}>{data.isEditingProgram ? 'Edit' : 'View'} Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
-    </div>
-    {!isSimitProgram && data.isEditingProgram && (
-      <button onClick={addDayToWeek} style={{
-        background: 'var(--bg-lighter)',
-        color: 'var(--text)',
-        width: '100%',
-        marginBottom: '16px',
-        borderRadius: '12px',
-        padding: '14px',
-        border: '1px solid var(--border)',
-      }}>
-        + Add Day
-      </button>
-    )}
-    <div id="week-days">{renderWeekDays}</div>
-    {!isSimitProgram && data.isEditingProgram && (
-      <button onClick={saveWeek} style={{
-        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-        width: '100%',
-        borderRadius: '12px',
-        padding: '14px',
-        fontWeight: '600',
-        fontSize: '1em',
-        marginTop: '16px',
-      }}>
-        Save Week
-      </button>
-    )}
-    <button className="secondary" onClick={closeModal} style={{
-      background: 'transparent',
-      border: '1px solid var(--border)',
-      color: 'var(--text-muted)',
-      width: '100%',
-      marginTop: '8px',
-    }}>Cancel</button>
-  </div>
-</div>      
-<div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
+
+      <div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+            <span className="back-button" onClick={goBack} style={{
+              marginRight: '16px',
+              fontSize: '1.4em',
+              cursor: 'pointer',
+              color: 'var(--text-muted)',
+              transition: 'color 0.2s ease',
+            }}>←</span>
+            <h2 style={{
+              margin: 0,
+              flex: 1,
+              fontSize: '1.6em',
+            }}>{data.isEditingProgram ? 'Edit' : 'View'} Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
+          </div>
+          {!isSimitProgram && data.isEditingProgram && (
+            <button onClick={addDayToWeek} style={{
+              background: 'var(--bg-lighter)',
+              color: 'var(--text)',
+              width: '100%',
+              marginBottom: '16px',
+              borderRadius: '12px',
+              padding: '14px',
+              border: '1px solid var(--border)',
+            }}>
+              + Add Day
+            </button>
+          )}
+          <div id="week-days">{renderWeekDays}</div>
+          {!isSimitProgram && data.isEditingProgram && (
+            <button onClick={saveWeek} style={{
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+              width: '100%',
+              borderRadius: '12px',
+              padding: '14px',
+              fontWeight: '600',
+              fontSize: '1em',
+              marginTop: '16px',
+            }}>
+              Save Week
+            </button>
+          )}
+          <button className="secondary" onClick={closeModal} style={{
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            width: '100%',
+            marginTop: '8px',
+          }}>Cancel</button>
+        </div>
+      </div>
+      <div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <span className="back-button" onClick={goBack}>←</span>
           <h2>Edit Day</h2>
-          <input 
-            type="text" 
-            id="day-name" 
-            placeholder="Day Name (e.g., Push Day)" 
+          <input
+            type="text"
+            id="day-name"
+            placeholder="Day Name (e.g., Push Day)"
             onBlur={(e) => {
               // Save day name on blur to prevent losing it
               if (data.currentWeekIndex !== null && data.currentDayIndex !== null) {
@@ -1206,7 +1206,7 @@ onClick={() =>
           <button className="secondary" onClick={closeModal}>Cancel</button>
         </div>
       </div>
-      
+
       <div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`} style={{ alignItems: 'stretch' }}>
         <div className="modal-content exercise-select-content" style={{
           height: '100vh',
@@ -1230,8 +1230,8 @@ onClick={() =>
             />
             <button
               onClick={() => {
-                setData((prev: DataType) => ({ 
-                  ...prev, 
+                setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'custom-exercise-modal',
                   returnModal: 'exercise-select-modal'
                 }));
@@ -1258,16 +1258,16 @@ onClick={() =>
             <button className="secondary" onClick={() => {
               setSelectSearchQuery('');
               setExerciseSelectMode(null);
-              
+
               if (exerciseSelectMode === 'workout') {
-                setData((prev: DataType) => ({ 
-                  ...prev, 
+                setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'workout-modal',
                   isWorkoutSelect: false
                 }));
               } else if (exerciseSelectMode === 'program') {
-                setData((prev: DataType) => ({ 
-                  ...prev, 
+                setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'day-modal'
                 }));
               } else {
@@ -1277,13 +1277,13 @@ onClick={() =>
           </div>
         </div>
       </div>
-      
+
       <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
         {data.currentWorkout && <WorkoutModal />}
       </div>
-      
+
       {data.currentWorkout && activeModal !== 'workout-modal' && (
-        <div id="minimized-workout" 
+        <div id="minimized-workout"
           className="minimized-workout"
           style={{
             position: 'fixed',
@@ -1315,12 +1315,12 @@ onClick={() =>
           onMouseUp={handleMinimizedTouchEnd}
           onMouseLeave={handleMinimizedTouchEnd}
         >
-          <div className="drag-indicator" style={{ 
-            margin: '2px auto 4px', 
-            width: '36px', 
-            height: '4px', 
-            background: 'rgba(255,255,255,0.4)', 
-            borderRadius: '2px' 
+          <div className="drag-indicator" style={{
+            margin: '2px auto 4px',
+            width: '36px',
+            height: '4px',
+            background: 'rgba(255,255,255,0.4)',
+            borderRadius: '2px'
           }}></div>
           <div style={{
             fontSize: '0.95em',
@@ -1332,7 +1332,7 @@ onClick={() =>
           }}>
             {data.currentWorkout?.name || 'Workout in Progress'}
           </div>
-          
+
           {/* Preview content that expands when dragging */}
           {isDraggingMinimized && minimizedDragY < -20 && (
             <div style={{
@@ -1389,7 +1389,7 @@ onClick={() =>
           )}
         </div>
       )}
-      
+
       <div id="exercise-menu-modal" className={`modal ${activeModal === 'exercise-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>Exercise Options</h2>
@@ -1398,7 +1398,7 @@ onClick={() =>
           <button className="secondary" onClick={() => openModal('workout-modal')}>Cancel</button>
         </div>
       </div>
-      
+
       <div id="history-menu-modal" className={`modal ${activeModal === 'history-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '300px',
@@ -1406,7 +1406,7 @@ onClick={() =>
           borderRadius: '16px',
           padding: '8px',
         }}>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1421,7 +1421,7 @@ onClick={() =>
           >
             Start Workout
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1436,7 +1436,7 @@ onClick={() =>
           >
             Delete
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1453,7 +1453,7 @@ onClick={() =>
           </div>
         </div>
       </div>
-      
+
       <div id="custom-menu-modal" className={`modal ${activeModal === 'custom-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '300px',
@@ -1461,7 +1461,7 @@ onClick={() =>
           borderRadius: '16px',
           padding: '8px',
         }}>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1476,7 +1476,7 @@ onClick={() =>
           >
             Delete Exercise
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1493,7 +1493,7 @@ onClick={() =>
           </div>
         </div>
       </div>
-      
+
       <div id="exercise-detail-modal" className={`modal ${activeModal === 'exercise-detail-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>{data.currentExercise?.name} {data.currentExercise?.subtype ? `(${data.currentExercise.subtype})` : ''}</h2>
@@ -1513,7 +1513,7 @@ onClick={() =>
           <button onClick={closeModal}>Close</button>
         </div>
       </div>
-      
+
       <div id="custom-exercise-modal" className={`modal ${activeModal === 'custom-exercise-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>Create Custom Exercise</h2>
@@ -1530,244 +1530,244 @@ onClick={() =>
               <option key={muscle} value={muscle}>{muscle}</option>
             ))}
           </select>
-          <input 
-            type="text" 
-            id="custom-muscle-input" 
-            placeholder="Enter muscle group" 
+          <input
+            type="text"
+            id="custom-muscle-input"
+            placeholder="Enter muscle group"
             style={{ display: 'none' }}
           />
           <textarea id="custom-exercise-instructions" placeholder="Instructions (optional)" />
           <input type="text" id="custom-exercise-equipment" placeholder="Equipment (optional)" />
           <button onClick={saveCustomExercise}>Save Exercise</button>
           <button className="secondary" onClick={() => {
-            setData((prev: DataType) => ({ 
-              ...prev, 
+            setData((prev: DataType) => ({
+              ...prev,
               activeModal: prev.returnModal || null,
               returnModal: null
             }));
           }}>Cancel</button>
         </div>
       </div>
-      
-<div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
-<div className="modal-content" style={{
-  maxWidth: '400px',
-  maxHeight: '90vh',
-  background: 'var(--bg-dark)',
-  borderRadius: '20px',
-  padding: '0',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-}}>    
-<div style={{
-      padding: '20px',
-      borderBottom: '1px solid var(--border)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}>
-      <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Edit Profile</h2>
-      <button
-        onClick={closeModal}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text-muted)',
-          fontSize: '1.2em',
-          cursor: 'pointer',
+
+      <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          maxHeight: '90vh',
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
           padding: '0',
-          minHeight: 'auto',
-          width: '24px',
-          height: '24px',
-        }}
-      >
-        ×
-      </button>
-    </div>
-    
-<div style={{ 
-  padding: '20px',
-  flex: 1,
-  overflowY: 'auto',
-  WebkitOverflowScrolling: 'touch',
-}}>      
-<div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <input 
-          type="text" 
-          id="edit-first-name" 
-          placeholder="First Name" 
-          defaultValue={data.firstName}
-          style={{
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Edit Profile</h2>
+            <button
+              onClick={closeModal}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+                width: '24px',
+                height: '24px',
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={{
+            padding: '20px',
             flex: 1,
-            padding: '10px 12px',
-            background: 'var(--bg-lighter)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            color: 'var(--text)',
-            fontSize: '16px',
-          }}
-        />
-        <input 
-          type="text" 
-          id="edit-last-name" 
-          placeholder="Last Name" 
-          defaultValue={data.lastName}
-          style={{
-            flex: 1,
-            padding: '10px 12px',
-            background: 'var(--bg-lighter)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            color: 'var(--text)',
-            fontSize: '16px',
-          }}
-        />
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <input
+                type="text"
+                id="edit-first-name"
+                placeholder="First Name"
+                defaultValue={data.firstName}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                }}
+              />
+              <input
+                type="text"
+                id="edit-last-name"
+                placeholder="Last Name"
+                defaultValue={data.lastName}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                }}
+              />
+            </div>
+
+            <input
+              type="text"
+              id="edit-username"
+              placeholder="Username"
+              defaultValue={data.username}
+              style={{
+                width: 'calc(100% - 24px)',
+                padding: '10px 12px',
+                marginBottom: '16px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                color: 'var(--text)',
+                fontSize: '16px',
+                boxSizing: 'border-box',
+              }}
+            />
+            <textarea
+              id="edit-bio"
+              placeholder="Bio (optional)"
+              defaultValue={data.bio}
+              style={{
+                width: 'calc(100% - 24px)',
+                padding: '10px 12px',
+                marginBottom: '16px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                color: 'var(--text)',
+                fontSize: '16px',
+                minHeight: '80px',
+                resize: 'vertical',
+                boxSizing: 'border-box',
+              }}
+            />
+            <input
+              type="email"
+              id="edit-email"
+              placeholder="Email (optional)"
+              defaultValue={data.email}
+              style={{
+                width: 'calc(100% - 24px)',
+                padding: '10px 12px',
+                marginBottom: '16px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                color: 'var(--text)',
+                fontSize: '16px',
+                boxSizing: 'border-box',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <select
+                id="edit-country"
+                defaultValue={data.country}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                }}
+              >
+                <option value="United States">United States</option>
+                <option value="Canada">Canada</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Australia">Australia</option>
+                <option value="Germany">Germany</option>
+                <option value="France">France</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <input
+                type="text"
+                id="edit-state"
+                placeholder="State/Province"
+                defaultValue={data.state}
+                style={{
+                  flex: 1,
+                  padding: '10px 12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                }}
+              />
+            </div>
+
+            <label style={{
+              display: 'block',
+              padding: '10px 12px',
+              marginBottom: '20px',
+              background: 'var(--bg-lighter)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}>
+              <input
+                type="file"
+                id="cover-photo-upload"
+                accept="image/*"
+                onChange={handleCoverPhotoUpload}
+                style={{ display: 'none' }}
+              />
+              Upload Cover Photo
+            </label>
+
+            <button
+              onClick={saveProfile}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.9em',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
       </div>
-      
-<input 
-  type="text" 
-  id="edit-username" 
-  placeholder="Username" 
-  defaultValue={data.username}
-  style={{
-    width: 'calc(100% - 24px)',
-    padding: '10px 12px',
-    marginBottom: '16px',
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    color: 'var(--text)',
-    fontSize: '16px',
-    boxSizing: 'border-box',
-  }}
-/>      
-<textarea 
-  id="edit-bio" 
-  placeholder="Bio (optional)" 
-  defaultValue={data.bio}
-  style={{
-    width: 'calc(100% - 24px)',
-    padding: '10px 12px',
-    marginBottom: '16px',
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    color: 'var(--text)',
-    fontSize: '16px',
-    minHeight: '80px',
-    resize: 'vertical',
-    boxSizing: 'border-box',
-  }}
-/>      
-<input 
-  type="email" 
-  id="edit-email" 
-  placeholder="Email (optional)" 
-  defaultValue={data.email}
-  style={{
-    width: 'calc(100% - 24px)',
-    padding: '10px 12px',
-    marginBottom: '16px',
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    color: 'var(--text)',
-    fontSize: '16px',
-    boxSizing: 'border-box',
-  }}
-/>      
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-        <select 
-          id="edit-country" 
-          defaultValue={data.country}
-          style={{
-            flex: 1,
-            padding: '10px 12px',
-            background: 'var(--bg-lighter)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            color: 'var(--text)',
-            fontSize: '16px',
-          }}
-        >
-          <option value="United States">United States</option>
-          <option value="Canada">Canada</option>
-          <option value="United Kingdom">United Kingdom</option>
-          <option value="Australia">Australia</option>
-          <option value="Germany">Germany</option>
-          <option value="France">France</option>
-          <option value="Other">Other</option>
-        </select>
-        
-        <input 
-          type="text" 
-          id="edit-state" 
-          placeholder="State/Province" 
-          defaultValue={data.state}
-          style={{
-            flex: 1,
-            padding: '10px 12px',
-            background: 'var(--bg-lighter)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            color: 'var(--text)',
-            fontSize: '16px',
-          }}
-        />
-      </div>
-      
-      <label style={{
-        display: 'block',
-        padding: '10px 12px',
-        marginBottom: '20px',
-        background: 'var(--bg-lighter)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        textAlign: 'center',
-        cursor: 'pointer',
-        fontSize: '0.9em',
-        color: 'var(--text-muted)',
-      }}>
-        <input 
-          type="file" 
-          id="cover-photo-upload" 
-          accept="image/*" 
-          onChange={handleCoverPhotoUpload}
-          style={{ display: 'none' }}
-        />
-        Upload Cover Photo
-      </label>
-      
-      <button 
-        onClick={saveProfile}
-        style={{
-          width: '100%',
-          padding: '10px',
-          background: 'var(--accent-primary)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '0.9em',
-          fontWeight: '600',
-          cursor: 'pointer',
-        }}
-      >
-        Save Changes
-      </button>
-    </div>
-  </div>
-</div>      
       <div id="feedback-modal" className={`modal ${activeModal === 'feedback-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>How was your workout?</h2>
-          
+
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
               Pump Quality (1-100)
             </label>
-            <input 
-              type="range" 
+            <input
+              type="range"
               id="pump-select"
               min="1"
               max="100"
@@ -1786,7 +1786,7 @@ onClick={() =>
               <span id="pump-feedback-value">50</span>/100
             </div>
           </div>
-          
+
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
               Recovery Status
@@ -1799,7 +1799,7 @@ onClick={() =>
               <option value="not-recovered">Not Recovered - Very sore</option>
             </select>
           </div>
-          
+
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
               Workout Difficulty
@@ -1813,16 +1813,16 @@ onClick={() =>
               <option value="too-hard">Too Hard - Couldn't complete properly</option>
             </select>
           </div>
-          
+
           <button onClick={() => {
             const pump = (document.getElementById('pump-select') as HTMLInputElement)?.value || '50';
             const soreness = (document.getElementById('soreness-select') as HTMLSelectElement)?.value || '';
             const workload = (document.getElementById('workload-select') as HTMLSelectElement)?.value || '';
-            
+
             // Calculate suggestion based on feedback
             let suggestion = 'maintain';
             const pumpValue = parseInt(pump);
-            
+
             if (workload === 'too-easy' && pumpValue < 70) {
               suggestion = 'increase';
             } else if (workload === 'easy' && soreness === 'fully-recovered') {
@@ -1832,7 +1832,7 @@ onClick={() =>
             } else if (pumpValue > 80 && workload === 'just-right') {
               suggestion = 'maintain';
             }
-            
+
             if (data.currentWorkout) {
               const finishedWorkout = {
                 ...data.currentWorkout,
@@ -1842,13 +1842,13 @@ onClick={() =>
                 workload,
                 suggestion,
               };
-              
+
               // Track program progress if this workout is from a program
               let updatedCompletedPrograms = { ...data.completedPrograms };
-              
+
               // Check if this workout is from a program by checking the workout name
               const workoutName = data.currentWorkout.name;
-              
+
               // Find matching program
               const allPrograms = [...data.templates, ...simitPrograms];
               for (const program of allPrograms) {
@@ -1866,7 +1866,7 @@ onClick={() =>
                   }
                 }
               }
-              
+
               setData((prev: DataType) => ({
                 ...prev,
                 history: [...prev.history, finishedWorkout],
@@ -1883,16 +1883,16 @@ onClick={() =>
           <button className="secondary" onClick={() => openModal('workout-modal')}>Cancel</button>
         </div>
       </div>
-      
+
       <div id="weight-prompt-modal" className={`modal ${activeModal === 'weight-prompt-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{ zIndex: 1200, position: 'relative' }}>
           <h2>Enter Your Weight</h2>
           <input type="number" id="progress-weight" placeholder="Weight (lbs)" style={{ fontSize: '16px' }} />
-          <button 
-            onClick={saveProgressPic} 
-            style={{ 
-              position: 'relative', 
-              zIndex: 10, 
+          <button
+            onClick={saveProgressPic}
+            style={{
+              position: 'relative',
+              zIndex: 10,
               pointerEvents: 'auto',
               WebkitTapHighlightColor: 'transparent',
               touchAction: 'manipulation'
@@ -1903,7 +1903,7 @@ onClick={() =>
           <button className="secondary" onClick={closeModal}>Cancel</button>
         </div>
       </div>
-      
+
       <div id="program-menu-modal" className={`modal ${activeModal === 'program-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '300px',
@@ -1911,7 +1911,7 @@ onClick={() =>
           borderRadius: '16px',
           padding: '8px',
         }}>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1920,36 +1920,36 @@ onClick={() =>
               fontSize: '0.9em',
               color: 'white',
             }}
-onClick={() => {
-  // Edit program
-  if (data.currentProgName) {
-    const program = data.templates.find((t: Template) => t.name === data.currentProgName);
-    if (program) {
-      // Create a deep copy of the program for editing
-      const programCopy = {
-        ...program,
-        weeks: program.weeks.map((week: any) => ({
-          days: week.days.map((day: any) => ({
-            ...day,
-            exercises: day.exercises.map((ex: any) => ({ ...ex }))
-          }))
-        }))
-      };
-setData((prev) => ({
-  ...prev,
-  currentProgram: programCopy,
-  activeModal: 'program-modal',
-  isEditingProgram: true as boolean,
-}));
-    }
-  }
-}}            
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            onClick={() => {
+              // Edit program
+              if (data.currentProgName) {
+                const program = data.templates.find((t: Template) => t.name === data.currentProgName);
+                if (program) {
+                  // Create a deep copy of the program for editing
+                  const programCopy = {
+                    ...program,
+                    weeks: program.weeks.map((week: any) => ({
+                      days: week.days.map((day: any) => ({
+                        ...day,
+                        exercises: day.exercises.map((ex: any) => ({ ...ex }))
+                      }))
+                    }))
+                  };
+                  setData((prev) => ({
+                    ...prev,
+                    currentProgram: programCopy,
+                    activeModal: 'program-modal',
+                    isEditingProgram: true as boolean,
+                  }));
+                }
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             Edit Program
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1973,7 +1973,7 @@ setData((prev) => ({
           >
             Delete Program
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -1990,11 +1990,11 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{ maxWidth: '400px' }}>
           <h2>New Progress Photo</h2>
-          
+
           {data.tempBase64 ? (
             <>
               <div style={{
@@ -2005,8 +2005,8 @@ setData((prev) => ({
                 overflow: 'hidden',
                 background: 'var(--bg-lighter)',
               }}>
-                <img 
-                  src={data.tempBase64} 
+                <img
+                  src={data.tempBase64}
                   alt="Preview"
                   style={{
                     width: '100%',
@@ -2015,58 +2015,58 @@ setData((prev) => ({
                   }}
                 />
               </div>
-              
-<textarea
-  id="progress-caption"
-  placeholder="Write a caption..."
-  style={{
-    width: 'calc(100% - 24px)',
-    minHeight: '80px',
-    padding: '12px',
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    color: 'var(--text)',
-    fontSize: '16px',
-    resize: 'vertical',
-    marginBottom: '16px',
-    boxSizing: 'border-box',
-  }}
-/>              
+
+              <textarea
+                id="progress-caption"
+                placeholder="Write a caption..."
+                style={{
+                  width: 'calc(100% - 24px)',
+                  minHeight: '80px',
+                  padding: '12px',
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  resize: 'vertical',
+                  marginBottom: '16px',
+                  boxSizing: 'border-box',
+                }}
+              />
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
                   Weight (optional)
                 </label>
-<input 
-  type="number" 
-  id="progress-weight" 
-  placeholder="Weight"
-  style={{ 
-    fontSize: '16px',
-    width: '120px',
-    padding: '10px 12px',
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    color: 'var(--text)',
-    boxSizing: 'border-box',
-  }}
-/>              </div>
-              
+                <input
+                  type="number"
+                  id="progress-weight"
+                  placeholder="Weight"
+                  style={{
+                    fontSize: '16px',
+                    width: '120px',
+                    padding: '10px 12px',
+                    background: 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    color: 'var(--text)',
+                    boxSizing: 'border-box',
+                  }}
+                />              </div>
+
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>
                   Pump Rating
                 </label>
-<input 
-  type="range" 
-  id="progress-pump"
-  min="0"
-  max="100"
-  defaultValue="50"
-  style={{
-    width: 'calc(100% - 24px)',
-    marginBottom: '8px',
-  }}                  onChange={(e) => {
+                <input
+                  type="range"
+                  id="progress-pump"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  style={{
+                    width: 'calc(100% - 24px)',
+                    marginBottom: '8px',
+                  }} onChange={(e) => {
                     const value = e.target.value;
                     const label = document.getElementById('pump-value');
                     if (label) label.textContent = value;
@@ -2076,36 +2076,88 @@ setData((prev) => ({
                   <span id="pump-value">50</span>/100
                 </div>
               </div>
-              
-              <button onClick={() => {
-                const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-                const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-                const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
-                
-                if (data.tempBase64 && data.tempTimestamp) {
-                  const newPic = {
-                    base64: data.tempBase64,
-                    timestamp: data.tempTimestamp,
-                    caption,
-                    weight,
-                    pump,
-                    likes: 0,
-                    comments: [],
-                  };
-                  setData((prev: DataType) => ({
-                    ...prev,
-                    progressPics: [...prev.progressPics, newPic],
-                    tempBase64: null,
-                    tempTimestamp: null,
-                    activeModal: null,
-                    activeTab: 'progress-tab', // Ensure we're on the progress tab
-                  }));
-                }
+
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                marginTop: '20px'
               }}>
-                Share
-              </button>              
-              <button 
-                className="secondary" 
+                <button onClick={() => {
+                  const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                  const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                  const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+
+                  if (data.tempBase64 && data.tempTimestamp) {
+                    const newPic = {
+                      base64: data.tempBase64,
+                      timestamp: data.tempTimestamp,
+                      caption,
+                      weight,
+                      pump,
+                      likes: 0,
+                      comments: [],
+                    };
+                    setData((prev: DataType) => ({
+                      ...prev,
+                      progressPics: [...prev.progressPics, newPic],
+                      tempBase64: null,
+                      tempTimestamp: null,
+                      activeModal: null,
+                      activeTab: 'progress-tab',
+                    }));
+                  }
+                }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'var(--accent-primary)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.9em',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}>
+                  Post
+                </button>
+
+                <button
+                  onClick={() => setData((prev: DataType) => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: 'transparent',
+                    color: 'var(--text)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Choose Different Photo
+                </button>
+
+                <button
+                  onClick={closeModal}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: 'transparent',
+                    color: 'var(--text-muted)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+              <button
+                className="secondary"
                 onClick={() => setData((prev: DataType) => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
               >
                 Choose Different Photo
@@ -2113,7 +2165,7 @@ setData((prev) => ({
             </>
           ) : (
             <>
-              <div 
+              <div
                 style={{
                   border: '2px dashed var(--border)',
                   borderRadius: '12px',
@@ -2137,7 +2189,7 @@ setData((prev) => ({
                         const img = new Image();
                         img.src = base64;
                         img.onload = () => {
-                          EXIF.getData(img as any, function() {
+                          EXIF.getData(img as any, function () {
                             let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
                             let timestamp = Date.now();
                             if (exifDate) {
@@ -2149,10 +2201,10 @@ setData((prev) => ({
                                 timestamp = dt.getTime();
                               }
                             }
-                            setData((prev: DataType) => ({ 
-                              ...prev, 
-                              tempBase64: base64, 
-                              tempTimestamp: timestamp 
+                            setData((prev: DataType) => ({
+                              ...prev,
+                              tempBase64: base64,
+                              tempTimestamp: timestamp
                             }));
                           });
                         };
@@ -2222,23 +2274,23 @@ setData((prev) => ({
             <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Settings</h2>
             <div style={{ width: '30px' }}></div>
           </div>
-          
+
           <div style={{ flex: 1, overflow: 'auto' }}>
             {/* APPEARANCE Section */}
             <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{ 
-                margin: '0 0 15px 0', 
-                fontSize: '0.8em', 
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
                 color: 'var(--text-muted)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }}>
                 APPEARANCE
               </h3>
-              
-              <div 
-                onClick={() => setData((prev: DataType) => ({ 
-                  ...prev, 
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'theme-select-modal',
                   previousModal: 'settings-modal'
                 }))}
@@ -2259,22 +2311,22 @@ setData((prev) => ({
                 </div>
               </div>
             </div>
-            
+
             {/* UNITS Section */}
             <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{ 
-                margin: '0 0 15px 0', 
-                fontSize: '0.8em', 
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
                 color: 'var(--text-muted)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }}>
                 UNITS
               </h3>
-              
-              <div 
-                onClick={() => setData((prev: DataType) => ({ 
-                  ...prev, 
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'weight-unit-modal',
                   previousModal: 'settings-modal'
                 }))}
@@ -2294,10 +2346,10 @@ setData((prev) => ({
                   <span style={{ color: 'var(--text-muted)' }}>›</span>
                 </div>
               </div>
-              
-              <div 
-                onClick={() => setData((prev: DataType) => ({ 
-                  ...prev, 
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'distance-unit-modal',
                   previousModal: 'settings-modal'
                 }))}
@@ -2317,10 +2369,10 @@ setData((prev) => ({
                   <span style={{ color: 'var(--text-muted)' }}>›</span>
                 </div>
               </div>
-              
-              <div 
-                onClick={() => setData((prev: DataType) => ({ 
-                  ...prev, 
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
                   activeModal: 'intensity-metric-modal',
                   previousModal: 'settings-modal'
                 }))}
@@ -2341,10 +2393,10 @@ setData((prev) => ({
                 </div>
               </div>
             </div>
-            
+
             {/* Account Section */}
             <div style={{ padding: '20px' }}>
-              <button 
+              <button
                 className="delete-account-btn"
                 onClick={() => {
                   if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
@@ -2373,7 +2425,7 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       {/* Theme Selection Modal */}
       <div id="theme-select-modal" className={`modal ${activeModal === 'theme-select-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -2407,7 +2459,7 @@ setData((prev) => ({
             <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Theme</h2>
             <div style={{ width: '30px' }}></div>
           </div>
-          
+
           <div style={{ padding: '10px' }}>
             <div
               onClick={() => {
@@ -2426,7 +2478,7 @@ setData((prev) => ({
               <span>🌙 Dark</span>
               {data.theme === 'dark' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
             </div>
-            
+
             <div
               onClick={() => {
                 setData((prev: DataType) => ({ ...prev, theme: 'light', activeModal: 'settings-modal' }));
@@ -2447,7 +2499,7 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       {/* Weight Unit Modal */}
       <div id="weight-unit-modal" className={`modal ${activeModal === 'weight-unit-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -2481,7 +2533,7 @@ setData((prev) => ({
             <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Weight Unit</h2>
             <div style={{ width: '30px' }}></div>
           </div>
-          
+
           <div style={{ padding: '10px' }}>
             <div
               onClick={() => {
@@ -2500,7 +2552,7 @@ setData((prev) => ({
               <span>Metric (kg)</span>
               {data.weightUnit === 'kg' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
             </div>
-            
+
             <div
               onClick={() => {
                 setData((prev: DataType) => ({ ...prev, weightUnit: 'lbs', activeModal: 'settings-modal' }));
@@ -2521,7 +2573,7 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       {/* Distance Unit Modal */}
       <div id="distance-unit-modal" className={`modal ${activeModal === 'distance-unit-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -2555,7 +2607,7 @@ setData((prev) => ({
             <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Distance Unit</h2>
             <div style={{ width: '30px' }}></div>
           </div>
-          
+
           <div style={{ padding: '10px' }}>
             <div
               onClick={() => {
@@ -2574,7 +2626,7 @@ setData((prev) => ({
               <span>Metric (m/km)</span>
               {data.distanceUnit === 'km' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
             </div>
-            
+
             <div
               onClick={() => {
                 setData((prev: DataType) => ({ ...prev, distanceUnit: 'miles', activeModal: 'settings-modal' }));
@@ -2595,7 +2647,7 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       {/* Intensity Metric Modal */}
       <div id="intensity-metric-modal" className={`modal ${activeModal === 'intensity-metric-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -2629,7 +2681,7 @@ setData((prev) => ({
             <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Intensity Metric</h2>
             <div style={{ width: '30px' }}></div>
           </div>
-          
+
           <div style={{ padding: '10px' }}>
             <div
               onClick={() => {
@@ -2648,7 +2700,7 @@ setData((prev) => ({
               <span>RPE (Rate of Perceived Exertion)</span>
               {data.intensityMetric === 'rpe' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
             </div>
-            
+
             <div
               onClick={() => {
                 setData((prev: DataType) => ({ ...prev, intensityMetric: 'rir', activeModal: 'settings-modal' }));
@@ -2669,7 +2721,7 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       <div id="photo-menu-modal" className={`modal ${activeModal === 'photo-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '300px',
@@ -2677,7 +2729,7 @@ setData((prev) => ({
           borderRadius: '16px',
           padding: '8px',
         }}>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -2695,7 +2747,7 @@ setData((prev) => ({
           >
             Edit
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -2725,7 +2777,7 @@ setData((prev) => ({
           >
             Delete
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -2750,7 +2802,7 @@ setData((prev) => ({
           borderRadius: '16px',
           padding: '8px',
         }}>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -2775,7 +2827,7 @@ setData((prev) => ({
           >
             Remove from Progress
           </div>
-          <div 
+          <div
             style={{
               padding: '12px 16px',
               cursor: 'pointer',
@@ -2792,7 +2844,7 @@ setData((prev) => ({
           </div>
         </div>
       </div>
-      
+
       <div id="update-modal" className={`modal ${activeModal === 'update-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>Update Available</h2>
