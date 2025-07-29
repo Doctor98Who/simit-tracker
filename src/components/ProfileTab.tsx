@@ -19,7 +19,7 @@ interface Exercise {
   muscles: string;
   instructions?: string;
   equipment?: string;
-  sets?: { weight: string; reps: string; rpe: string; rir?: string; completed: boolean }[];
+  sets?: { weight: string; reps: string; rpe: string; rir?: string; completed: boolean; type?: 'W' | 'D' | 'S' }[];
 }
 
 const ProfileTab = () => {
@@ -85,6 +85,21 @@ const ProfileTab = () => {
 
   const sortedHistory = useMemo(() => [...data.history].sort((a: Workout, b: Workout) => b.startTime - a.startTime), [data.history]);
 
+  // Function to get the display label for a set
+  const getSetLabel = (set: any, setIdx: number, allSets: any[]) => {
+    if (set.type === 'W') return 'W';
+    if (set.type === 'D') return 'D';
+    
+    // Count only regular sets before this one
+    let regularSetNumber = 1;
+    for (let i = 0; i < setIdx; i++) {
+      if (!allSets[i].type || allSets[i].type === 'S') {
+        regularSetNumber++;
+      }
+    }
+    return regularSetNumber;
+  };
+
   const renderedHistory = useMemo(() => {
     if (sortedHistory.length === 0) {
       return <div className="feed-placeholder">No workouts completed yet.</div>;
@@ -101,41 +116,90 @@ const ProfileTab = () => {
       const isExpanded = expandedHistoryItems.includes(index);
       
       return (
-        <div key={index} className={`history-item ${isExpanded ? 'expanded' : ''}`}>
+        <div key={index} className={`history-item ${isExpanded ? 'expanded' : ''}`} style={{
+          background: 'var(--bg-dark)',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          border: '1px solid var(--border)',
+          transition: 'all 0.3s ease',
+        }}>
           <div className="history-summary" onClick={(e: React.MouseEvent) => {
             if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
               toggleHistoryItem(index);
             }
+          }} style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'pointer',
           }}>
-            <span>{entry.name} - {new Date(entry.startTime).toLocaleString()} - {volume.toFixed(0)} lbs</span>
+            <div>
+              <div style={{ fontWeight: '600', fontSize: '1.1em', marginBottom: '4px' }}>{entry.name}</div>
+              <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                {new Date(entry.startTime).toLocaleDateString()} • {volume.toFixed(0)} {data.weightUnit || 'lbs'}
+              </div>
+            </div>
             <span className="exercise-menu" onClick={() => openHistoryMenu(index)}>⋯</span>
           </div>
-          <div className="history-details">
-            {entry.exercises.map((ex, exIdx) => (
-              <div key={exIdx} className="exercise-row">
-                <div className="exercise-name">{ex.name} {ex.subtype ? `(${ex.subtype})` : ''}</div>
-                <div className="set-table">
-                  <header>Set</header>
-                  <header>lbs</header>
-                  <header>Reps</header>
-                  <header>{ex.sets?.[0]?.rir !== undefined ? 'RIR' : 'RPE'}</header>
-                </div>
-                {ex.sets?.map((s: { weight?: string; reps?: string; rpe?: string; rir?: string }, sIdx: number) => (
-                  <div key={sIdx} className="set-row">
-                    <div>{sIdx + 1}</div>
-                    <div>{s.weight}</div>
-                    <div>{s.reps}</div>
-                    <div>{s.rir !== undefined ? s.rir : s.rpe}</div>
+          {isExpanded && (
+            <div className="history-details" style={{ marginTop: '20px' }}>
+              {entry.exercises.map((ex, exIdx) => (
+                <div key={exIdx} className="exercise-row" style={{
+                  background: 'var(--bg-lighter)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '12px',
+                }}>
+                  <div className="exercise-name" style={{ 
+                    fontWeight: '600', 
+                    fontSize: '1em', 
+                    marginBottom: '12px',
+                    color: 'var(--accent-blue)'
+                  }}>{ex.name} {ex.subtype ? `(${ex.subtype})` : ''}</div>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '40px 60px 60px 60px',
+                    gap: '12px',
+                    fontSize: '0.85em',
+                  }}>
+                    <div style={{ fontWeight: '600', color: 'var(--text-muted)' }}>Set</div>
+                    <div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>{data.weightUnit || 'lbs'}</div>
+                    <div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>Reps</div>
+                    <div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>{ex.sets?.[0]?.rir !== undefined ? 'RIR' : 'RPE'}</div>
+                    {ex.sets?.map((s: any, sIdx: number) => (
+                      <React.Fragment key={sIdx}>
+                        <div style={{ 
+                          fontWeight: '500',
+                          color: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text)'
+                        }}>{getSetLabel(s, sIdx, ex.sets || [])}</div>
+                        <div style={{ textAlign: 'center' }}>{s.weight}</div>
+                        <div style={{ textAlign: 'center' }}>{s.reps}</div>
+                        <div style={{ textAlign: 'center' }}>{s.rir !== undefined ? s.rir : s.rpe}</div>
+                      </React.Fragment>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ))}
-            {entry.suggestion && <div><strong>Suggestion:</strong> {entry.suggestion}</div>}
-          </div>
+                </div>
+              ))}
+              {entry.suggestion && (
+                <div style={{
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  marginTop: '16px',
+                  color: 'white',
+                  fontSize: '0.9em',
+                }}>
+                  <strong>Recommendation:</strong> {entry.suggestion === 'increase' ? 'Increase volume next time' : entry.suggestion === 'decrease' ? 'Reduce volume next time' : 'Maintain current volume'}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     });
-  }, [sortedHistory, expandedHistoryItems, openHistoryMenu]);
+  }, [sortedHistory, expandedHistoryItems, openHistoryMenu, data.weightUnit]);
 
   const openSettingsModal = () => {
     setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }));
@@ -197,14 +261,108 @@ const ProfileTab = () => {
         </div>
       </div>
       <div className="profile-actions">
-        <div className="profile-action-btn" onClick={openEditProfileModal}>Edit</div>
-        <div className="profile-action-btn" id="total-volume-btn">
-          <div className="volume-number">{totalVolume.toLocaleString()}</div>
-          <div className="volume-label">Total lbs</div>
+        <button
+          className="profile-action-btn"
+          onClick={openEditProfileModal}
+          style={{
+            background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-light))',
+            color: 'var(--text)',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            fontSize: '0.9em',
+            fontWeight: '600',
+            flex: 1,
+            textAlign: 'center',
+            border: '1px solid var(--border)',
+            transition: 'all 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+          }}
+        >
+          <span style={{ fontSize: '1.1em' }}>✏️</span>
+          Edit Profile
+        </button>
+        
+        <div 
+          id="total-volume-btn"
+          className="profile-action-btn"
+          style={{
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            color: 'white',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+            fontSize: '0.9em',
+            fontWeight: '600',
+            flex: 1,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            transition: 'all 0.3s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.2)';
+          }}
+        >
+          <div className="volume-label" style={{ fontSize: '0.8em', opacity: 0.9 }}>Total {data.weightUnit || 'lbs'}</div>
+          <div className="volume-number" style={{ fontSize: '1.3em', fontWeight: '700' }}>{totalVolume.toLocaleString()}</div>
         </div>
-        <div className="profile-action-btn" onClick={toggleHistorySection}>History</div>
+        
+        <button
+          className="profile-action-btn"
+          onClick={toggleHistorySection}
+          style={{
+            background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-light))',
+            color: 'var(--text)',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            fontSize: '0.9em',
+            fontWeight: '600',
+            flex: 1,
+            textAlign: 'center',
+            border: '1px solid var(--border)',
+            transition: 'all 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+          }}
+        >
+          <span style={{ fontSize: '1.1em' }}>📊</span>
+          History
+        </button>
       </div>
-      <div id="profile-history-section" className={showHistory ? '' : 'hidden'}>
+      <div id="profile-history-section" className={showHistory ? '' : 'hidden'} style={{ padding: '0 20px' }}>
         <div id="history-list">{renderedHistory}</div>
       </div>
     </div>

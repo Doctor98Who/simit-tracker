@@ -167,7 +167,7 @@ const Modals = () => {
     const input = document.getElementById('day-name') as HTMLInputElement | null;
     if (input && data.currentWeekIndex !== null && data.currentDayIndex !== null) {
       const name = input.value;
-      if (name && data.currentDayExercises.length > 0) {
+      if (name) {
         const newDays = [...data.currentProgram.weeks[data.currentWeekIndex].days];
         newDays[data.currentDayIndex] = {
           name,

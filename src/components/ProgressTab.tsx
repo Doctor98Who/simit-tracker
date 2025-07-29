@@ -16,12 +16,16 @@ const ProgressTab = () => {
   const { data, setData } = useContext(DataContext);
   const [selectedPhoto, setSelectedPhoto] = useState<ProgressPic | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
+  const [isEditingCaption, setIsEditingCaption] = useState(false);
+  const [editCaption, setEditCaption] = useState('');
 
   const sortedProgressPics = useMemo(() => [...data.progressPics].sort((a: ProgressPic, b: ProgressPic) => b.timestamp - a.timestamp), [data.progressPics]);
 
   const openPhotoModal = (pic: ProgressPic, index: number) => {
     setSelectedPhoto(pic);
     setSelectedPhotoIndex(index);
+    setEditCaption(pic.caption || '');
+    setIsEditingCaption(false);
     setData(prev => ({ 
       ...prev, 
       activeModal: 'progress-photo-modal',
@@ -40,6 +44,8 @@ const ProgressTab = () => {
     setSelectedPhotoIndex(newIndex);
     const newPhoto = sortedProgressPics[newIndex];
     setSelectedPhoto(newPhoto);
+    setEditCaption(newPhoto.caption || '');
+    setIsEditingCaption(false);
     setData(prev => ({ 
       ...prev, 
       tempBase64: newPhoto.base64,
@@ -49,6 +55,7 @@ const ProgressTab = () => {
 
   const closePhotoModal = () => {
     setSelectedPhoto(null);
+    setIsEditingCaption(false);
     setData(prev => ({ 
       ...prev, 
       activeModal: null,
@@ -59,6 +66,21 @@ const ProgressTab = () => {
 
   const uploadProgressPic = () => {
     setData(prev => ({ ...prev, activeModal: 'progress-upload-modal' }));
+  };
+
+  const saveEditedCaption = () => {
+    if (selectedPhoto) {
+      const newPics = [...data.progressPics];
+      const index = data.progressPics.findIndex((p: ProgressPic) => 
+        p.base64 === selectedPhoto.base64 && p.timestamp === selectedPhoto.timestamp
+      );
+      if (index !== -1) {
+        newPics[index] = { ...newPics[index], caption: editCaption };
+        setData(prev => ({ ...prev, progressPics: newPics }));
+        setSelectedPhoto({ ...selectedPhoto, caption: editCaption });
+      }
+    }
+    setIsEditingCaption(false);
   };
 
   const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: ProgressPic, index: number) => (
@@ -72,6 +94,14 @@ const ProgressTab = () => {
         aspectRatio: '1',
         overflow: 'hidden',
         background: 'var(--bg-lighter)',
+        borderRadius: '2px',
+        transition: 'all 0.3s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(0.95)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
       }}
     >
       <img 
@@ -83,6 +113,25 @@ const ProgressTab = () => {
           objectFit: 'cover',
         }}
       />
+      {pic.pump && (
+        <div style={{
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          padding: '4px 8px',
+          fontSize: '0.7em',
+          color: 'white',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}>
+          💪 {pic.pump}
+        </div>
+      )}
     </div>
   )), [sortedProgressPics]);
 
@@ -92,24 +141,50 @@ const ProgressTab = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '20px',
+        padding: '24px',
+        background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
         borderBottom: '1px solid var(--border)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        backdropFilter: 'blur(10px)',
       }}>
-        <h1 style={{ margin: 0, fontSize: '1.5em' }}>Progress</h1>
+        <h1 style={{ 
+          margin: 0, 
+          fontSize: '1.8em',
+          fontWeight: '700',
+          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>Progress Gallery</h1>
         <button 
           onClick={uploadProgressPic}
           style={{
-            background: 'var(--accent-primary)',
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: '12px',
             color: 'white',
-            padding: '8px 16px',
+            padding: '12px 20px',
             fontSize: '0.9em',
             fontWeight: '600',
             cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+            transition: 'all 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.2)';
           }}
         >
-          + Add Photo
+          <span style={{ fontSize: '1.1em' }}>📸</span>
+          Add Photo
         </button>
       </div>
       
@@ -118,6 +193,7 @@ const ProgressTab = () => {
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '2px',
         padding: '2px',
+        background: 'var(--bg-dark)',
       }}>
         {renderedProgressPics}
       </div>
@@ -148,8 +224,10 @@ const ProgressTab = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              padding: '16px',
+              padding: '16px 20px',
               borderBottom: '1px solid var(--border)',
+              background: 'var(--bg-dark)',
+              backdropFilter: 'blur(10px)',
             }}>
               <button
                 onClick={closePhotoModal}
@@ -160,6 +238,7 @@ const ProgressTab = () => {
                   fontSize: '1.2em',
                   cursor: 'pointer',
                   padding: '4px',
+                  minHeight: 'auto',
                 }}
               >
                 ✕
@@ -174,6 +253,7 @@ const ProgressTab = () => {
                   fontSize: '1em',
                   cursor: 'pointer',
                   padding: '4px',
+                  minHeight: 'auto',
                 }}
               >
                 ⋯
@@ -198,11 +278,12 @@ const ProgressTab = () => {
                     left: '20px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.2)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
                     border: 'none',
                     borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
+                    width: '44px',
+                    height: '44px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -210,6 +291,13 @@ const ProgressTab = () => {
                     fontSize: '1.2em',
                     color: 'white',
                     zIndex: 10,
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                   }}
                 >
                   ‹
@@ -234,11 +322,12 @@ const ProgressTab = () => {
                     right: '20px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.2)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(10px)',
                     border: 'none',
                     borderRadius: '50%',
-                    width: '40px',
-                    height: '40px',
+                    width: '44px',
+                    height: '44px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -246,6 +335,13 @@ const ProgressTab = () => {
                     fontSize: '1.2em',
                     color: 'white',
                     zIndex: 10,
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                   }}
                 >
                   ›
@@ -255,23 +351,26 @@ const ProgressTab = () => {
 
             {/* Details */}
             <div style={{
-              padding: '16px',
+              padding: '20px',
               borderTop: '1px solid var(--border)',
+              background: 'var(--bg-dark)',
             }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '16px',
-                marginBottom: '12px',
+                marginBottom: '16px',
               }}>
                 <button
                   style={{
                     background: 'none',
                     border: 'none',
                     color: 'var(--text)',
-                    fontSize: '1.5em',
+                    fontSize: '1.8em',
                     cursor: 'pointer',
                     padding: 0,
+                    minHeight: 'auto',
+                    transition: 'all 0.2s ease',
                   }}
                   onClick={() => {
                     const newPics = [...data.progressPics];
@@ -285,27 +384,109 @@ const ProgressTab = () => {
                       setSelectedPhoto({ ...selectedPhoto, likes: (selectedPhoto.likes || 0) + 1 });
                     }
                   }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 >
                   {selectedPhoto.likes ? '❤️' : '🤍'}
                 </button>
-                <span style={{ fontSize: '0.9em' }}>
+                <span style={{ fontSize: '0.95em', fontWeight: '500' }}>
                   {selectedPhoto.likes || 0} likes
                 </span>
               </div>
 
-              {selectedPhoto.caption && (
-                <p style={{ margin: '0 0 8px 0' }}>{selectedPhoto.caption}</p>
+              {isEditingCaption ? (
+                <div style={{ marginBottom: '16px' }}>
+                  <textarea
+                    value={editCaption}
+                    onChange={(e) => setEditCaption(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'var(--bg-lighter)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      color: 'var(--text)',
+                      fontSize: '16px',
+                      resize: 'vertical',
+                      minHeight: '80px',
+                    }}
+                    autoFocus
+                  />
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button
+                      onClick={saveEditedCaption}
+                      style={{
+                        padding: '8px 16px',
+                        background: 'var(--accent-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '0.85em',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingCaption(false);
+                        setEditCaption(selectedPhoto.caption || '');
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        background: 'transparent',
+                        color: 'var(--text-muted)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        fontSize: '0.85em',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                selectedPhoto.caption && (
+                  <p style={{ 
+                    margin: '0 0 16px 0',
+                    fontSize: '0.95em',
+                    lineHeight: '1.5',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setIsEditingCaption(true)}
+                  >
+                    {selectedPhoto.caption}
+                  </p>
+                )
               )}
 
               <div style={{
                 display: 'flex',
-                gap: '16px',
+                gap: '20px',
                 fontSize: '0.85em',
                 color: 'var(--text-muted)',
+                flexWrap: 'wrap',
               }}>
-                <span>📅 {new Date(selectedPhoto.timestamp).toLocaleDateString()}</span>
-                {selectedPhoto.weight && <span>⚖️ {selectedPhoto.weight} lbs</span>}
-                {selectedPhoto.pump && <span>💪 Pump: {selectedPhoto.pump}/100</span>}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📅 {new Date(selectedPhoto.timestamp).toLocaleDateString()}
+                </span>
+                {selectedPhoto.weight && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    ⚖️ {selectedPhoto.weight} {data.weightUnit || 'lbs'}
+                  </span>
+                )}
+                {selectedPhoto.pump && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    💪 Pump: {selectedPhoto.pump}/100
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -1502,3 +1502,236 @@ button,
 .muscle-group-header:first-child {
     margin-top: 0;
 }
+
+/* Modern exercise list styling */
+.exercise-item {
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.exercise-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* Exercise select modal improvements */
+.exercise-select-modal .exercise-item {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+}
+
+.exercise-select-modal .muscle-group-header {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+    color: white;
+    text-align: center;
+    border-left: none;
+    margin-bottom: 16px;
+}
+
+/* Photo menu modal styling */
+#photo-menu-modal .modal-content > div:first-child {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+/* Edit caption styling */
+.edit-caption-container {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Progress tab enhancements */
+.progress-pic {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-pic::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.3));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.progress-pic:hover::after {
+    opacity: 1;
+}
+
+/* Modern button hover effects */
+button {
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Profile action buttons modern style */
+.profile-action-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.profile-action-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-action-btn:hover::before {
+    opacity: 1;
+}
+
+/* History item modern styling */
+.history-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transition: left 0.5s ease;
+}
+
+.history-item:hover::before {
+    left: 100%;
+}
+
+/* Exercise row in history */
+.history-details .exercise-row {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Settings modal option hover */
+[id$="-modal"] .modal-content > div > div[style*="cursor: pointer"] {
+    position: relative;
+    overflow: hidden;
+}
+
+[id$="-modal"] .modal-content > div > div[style*="cursor: pointer"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background: var(--accent-primary);
+    transition: height 0.3s ease;
+    transform: translateY(-50%);
+}
+
+[id$="-modal"] .modal-content > div > div[style*="cursor: pointer"]:hover::before {
+    height: 100%;
+}
+
+/* Modern search bar focus effect */
+.search-bar {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-bar:focus {
+    transform: translateY(-1px);
+}
+
+/* Add custom exercise button animation */
+.add-custom-exercise {
+    position: relative;
+    overflow: hidden;
+}
+
+.add-custom-exercise::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.5s ease;
+}
+
+.add-custom-exercise:hover::after {
+    transform: translate(-50%, -50%) scale(1.5);
+}
+
+/* Exercise muscle tags */
+.exercise-muscles span {
+    transition: all 0.2s ease;
+}
+
+.exercise-item:hover .exercise-muscles span {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Photo menu edit functionality */
+.edit-caption-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--bg-lighter);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-caption-btn:hover {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}

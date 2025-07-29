@@ -99,15 +99,17 @@ const renderedExercises = useMemo(() => {
       // Add muscle group header
       list.push(
         <div key={`muscle-${muscleGroup}`} className="muscle-group-header" style={{
-          fontSize: '1.2em',
-          fontWeight: '600',
-          color: 'var(--accent-primary)',
+          fontSize: '1.1em',
+          fontWeight: '700',
+          color: 'var(--text)',
           marginTop: list.length > 0 ? '24px' : '0',
-          marginBottom: '12px',
-          padding: '8px 12px',
-          background: 'var(--subtle-gradient)',
-          borderRadius: '8px',
-          borderLeft: '4px solid var(--accent-primary)',
+          marginBottom: '16px',
+          padding: '12px 16px',
+          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+          borderRadius: '12px',
+          letterSpacing: '0.5px',
+          textTransform: 'uppercase',
+          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
         }}>
           {muscleGroup}
         </div>
@@ -120,17 +122,73 @@ const renderedExercises = useMemo(() => {
         const isCustom = data.customExercises.some((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype);
         
         list.push(
-          <div key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`} className="exercise-item" onClick={(e: React.MouseEvent) => {
-            if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
-              showExerciseDetail(ex);
-            }
-          }}>
-            <div className="exercise-name">
-              {ex.name}
+          <div key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`} 
+            className="exercise-item" 
+            onClick={(e: React.MouseEvent) => {
+              if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
+                showExerciseDetail(ex);
+              }
+            }}
+            style={{
+              background: 'var(--bg-dark)',
+              borderRadius: '16px',
+              padding: '18px',
+              marginBottom: '12px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              border: '1px solid var(--border)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+              e.currentTarget.style.borderColor = 'var(--border)';
+            }}
+          >
+            <div className="exercise-name" style={{
+              fontWeight: '600',
+              fontSize: '1.1em',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              color: 'var(--text)',
+            }}>
+              <span>{ex.name}</span>
               {isCustom && <span className="exercise-menu" onClick={() => openCustomMenu(ex.name, ex.subtype || '', data.customExercises.findIndex((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype))}>⋯</span>}
             </div>
-            {ex.subtype && <div className="exercise-subtype">{ex.subtype}</div>}
-            <div className="exercise-muscles">{ex.muscles}</div>
+            {ex.subtype && (
+              <div className="exercise-subtype" style={{
+                color: 'var(--accent-primary)',
+                fontSize: '0.9em',
+                fontWeight: '500',
+              }}>{ex.subtype}</div>
+            )}
+            <div className="exercise-muscles" style={{
+              color: 'var(--text-muted)',
+              fontSize: '0.85em',
+              display: 'flex',
+              gap: '6px',
+              flexWrap: 'wrap',
+            }}>
+              {ex.muscles.split(',').map((muscle, idx) => (
+                <span key={idx} style={{
+                  background: 'var(--bg-lighter)',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  fontSize: '0.8em',
+                }}>
+                  {muscle.trim()}
+                </span>
+              ))}
+            </div>
           </div>
         );
       });
@@ -145,16 +203,71 @@ const renderedExercises = useMemo(() => {
 
   return (
     <div>
-      <h1 className="section-title">Exercises</h1>
+      <h1 className="section-title" style={{
+        fontSize: '1.8em',
+        fontWeight: '700',
+        marginBottom: '20px',
+        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      }}>Exercises</h1>
       <input 
         type="text" 
         className="search-bar" 
         id="exercise-search" 
         placeholder="Search exercises..." 
         value={searchQuery} 
-        onChange={(e) => setSearchQuery(e.target.value)} 
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{
+          background: 'var(--bg-dark)',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          padding: '14px 16px',
+          marginBottom: '16px',
+          fontSize: '16px',
+          color: 'var(--text)',
+          transition: 'all 0.3s ease',
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = 'var(--accent-primary)';
+          e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = 'var(--border)';
+          e.target.style.boxShadow = 'none';
+        }}
       />
-      <div className="add-custom-exercise" onClick={openCustomExerciseModal}>+ Exercise</div>
+      <div 
+        className="add-custom-exercise" 
+        onClick={openCustomExerciseModal}
+        style={{
+          background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+          color: 'white',
+          borderRadius: '12px',
+          padding: '14px',
+          textAlign: 'center',
+          cursor: 'pointer',
+          marginBottom: '24px',
+          fontWeight: '600',
+          fontSize: '0.95em',
+          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+          transition: 'all 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.2)';
+        }}
+      >
+        <span style={{ fontSize: '1.2em' }}>+</span> Create Custom Exercise
+      </div>
       <div id="exercise-list">{renderedExercises}</div>
     </div>
   );

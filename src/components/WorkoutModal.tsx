@@ -586,10 +586,23 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     return regularSetNumber.toString();
   };
 
-  // Check if a set is a drop set (follows a D set)
-  const isDropSet = (setIdx: number) => {
-    if (setIdx === 0) return false;
-    return ex.sets[setIdx - 1].type === 'D';
+const isDropSet = (setIdx: number) => {
+  if (setIdx === 0) return false;
+  
+  // Check if the previous set is a 'D' type
+  if (ex.sets[setIdx - 1].type === 'D') return true;
+  
+  // Check if the previous set is also a drop set (for chained drop sets)
+  return isDropSet(setIdx - 1);
+};
+
+   // Feature 1: Handle clicking on drop set "D" to add another drop set
+  const handleDropSetClick = (setIdx: number) => {
+    const currentSet = ex.sets[setIdx];
+    if (currentSet.type === 'D') {
+      // Add another drop set after this one
+      addDropSet(idx, setIdx);
+    }
   };
 
   // Collapsed state when any exercise is being dragged
