@@ -34,41 +34,44 @@ interface Workout {
 }
 
 export interface DataType {
-  templates: any[];
-  history: Workout[];
-  progressPics: any[];
   profilePic: string;
-  username: string;
+  coverPhoto: string;
   firstName: string;
   lastName: string;
+  username: string;
   bio: string;
   email: string;
   country: string;
   state: string;
-  coverPhoto: string;
-  completedPrograms: Record<string, any>;
+  history: any[];
+  progressPics: any[];
   customExercises: Exercise[];
-  currentWorkout: Workout | null;
-  isWorkoutSelect: boolean;
-  currentExerciseIdx: number | null;
-  tempBase64: string | null;
-  tempTimestamp: number | null;
-  currentProgram: { weeks: any[] };
+  templates: any[];
+  completedPrograms: Record<string, any>;
+  currentWorkout: any;
+  currentProgram: any;
   currentWeekIndex: number | null;
   currentDayIndex: number | null;
   currentDayExercises: Exercise[];
+  currentExercise: Exercise | null;
+  currentExerciseIdx: number | null;
   currentHistoryIdx: number | null;
   currentProgName: string | null;
-  currentCustomIdx: number | null;
   currentCustomName: string | null;
   currentCustomSubtype: string | null;
+  currentCustomIdx: number | null;
   activeModal: string | null;
-  currentExercise: Exercise | null;
+  activeTab: string;
+  isWorkoutSelect: boolean;
   returnModal: string | null;
-  theme: 'dark' | 'light';
+  tempBase64: string | null;
+  tempTimestamp: number | null;
   intensityMetric: 'rpe' | 'rir';
+  theme: 'dark' | 'light';
+  weightUnit: 'kg' | 'lbs';
+  distanceUnit: 'km' | 'miles';
+  previousModal?: string;
 }
-
 interface DataContextType {
   data: DataType;
   setData: React.Dispatch<React.SetStateAction<DataType>>;
@@ -110,8 +113,10 @@ const initialData: DataType = {
   returnModal: null,
   theme: 'dark',
   intensityMetric: 'rpe',
+  activeTab: 'start-workout-tab',
+  weightUnit: 'lbs',
+  distanceUnit: 'miles',
 };
-
 export const DataContext = createContext<DataContextType>({
   data: initialData,
   setData: () => {},

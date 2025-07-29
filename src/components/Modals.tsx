@@ -1970,154 +1970,485 @@ const Modals = () => {
 
       <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
+          maxWidth: '400px',
+          background: 'var(--bg-dark)',
+          borderRadius: '0',
+          padding: '0',
+          overflow: 'hidden',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <div className="settings-header" style={{
+            padding: '15px 20px',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--bg-dark)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={closeModal}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+                width: '30px',
+              }}
+            >
+              ✕
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Settings</h2>
+            <div style={{ width: '30px' }}></div>
+          </div>
+          
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            {/* APPEARANCE Section */}
+            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{ 
+                margin: '0 0 15px 0', 
+                fontSize: '0.8em', 
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                APPEARANCE
+              </h3>
+              
+              <div 
+                onClick={() => setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'theme-select-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Theme</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.theme === 'dark' ? 'Dark' : 'Light'}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* UNITS Section */}
+            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{ 
+                margin: '0 0 15px 0', 
+                fontSize: '0.8em', 
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                UNITS
+              </h3>
+              
+              <div 
+                onClick={() => setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'weight-unit-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Weight Unit</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.weightUnit || 'lbs'}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'distance-unit-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Distance Unit</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.distanceUnit || 'miles'}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+              
+              <div 
+                onClick={() => setData((prev: DataType) => ({ 
+                  ...prev, 
+                  activeModal: 'intensity-metric-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Intensity Metric</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.intensityMetric.toUpperCase()}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Account Section */}
+            <div style={{ padding: '20px' }}>
+              <button 
+                className="delete-account-btn"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  color: '#FF3B30',
+                  border: '1px solid #FF3B30',
+                  marginTop: '20px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Theme Selection Modal */}
+      <div id="theme-select-modal" className={`modal ${activeModal === 'theme-select-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
           maxWidth: '350px',
           background: 'var(--bg-dark)',
           borderRadius: '16px',
           padding: '0',
           overflow: 'hidden',
         }}>
-          <div className="settings-header" style={{
+          <div style={{
             padding: '20px',
             borderBottom: '1px solid var(--border)',
-            background: 'var(--bg-light)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}>
-            <h2 style={{ margin: 0, fontSize: '1.3em' }}>Settings</h2>
-          </div>
-          
-          <div className="settings-section" style={{
-            padding: '20px',
-            borderBottom: '1px solid var(--border)',
-          }}>
-            <div className="settings-item">
-              <label className="settings-label" style={{
-                display: 'block',
-                marginBottom: '10px',
-                color: 'var(--text-muted)',
-                fontSize: '0.9em',
-              }}>
-                Intensity Metric
-              </label>
-              <div className="settings-options" style={{ display: 'flex', gap: '10px' }}>
-                <div
-                  className={`settings-option ${data.intensityMetric === 'rpe' ? 'active' : ''}`}
-                  onClick={() => setData((prev: DataType) => ({ ...prev, intensityMetric: 'rpe' }))}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    background: data.intensityMetric === 'rpe' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    color: data.intensityMetric === 'rpe' ? 'white' : 'var(--text)',
-                  }}
-                >
-                  RPE
-                </div>
-                <div
-                  className={`settings-option ${data.intensityMetric === 'rir' ? 'active' : ''}`}
-                  onClick={() => setData((prev: DataType) => ({ ...prev, intensityMetric: 'rir' }))}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    background: data.intensityMetric === 'rir' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    color: data.intensityMetric === 'rir' ? 'white' : 'var(--text)',
-                  }}
-                >
-                  RIR
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="settings-section" style={{
-            padding: '20px',
-            borderBottom: '1px solid var(--border)',
-          }}>
-            <div className="settings-item">
-              <label className="settings-label" style={{
-                display: 'block',
-                marginBottom: '10px',
-                color: 'var(--text-muted)',
-                fontSize: '0.9em',
-              }}>
-                Theme
-              </label>
-              <div className="settings-options" style={{ display: 'flex', gap: '10px' }}>
-                <div
-                  className={`settings-option ${data.theme === 'dark' ? 'active' : ''}`}
-                  onClick={() => setData((prev: DataType) => ({ ...prev, theme: 'dark' }))}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    background: data.theme === 'dark' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    color: data.theme === 'dark' ? 'white' : 'var(--text)',
-                  }}
-                >
-                  🌙 Dark
-                </div>
-                <div
-                  className={`settings-option ${data.theme === 'light' ? 'active' : ''}`}
-                  onClick={() => setData((prev: DataType) => ({ ...prev, theme: 'light' }))}
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    background: data.theme === 'light' ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    color: data.theme === 'light' ? 'white' : 'var(--text)',
-                  }}
-                >
-                  ☀️ Light
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="settings-footer" style={{
-            padding: '20px',
-            background: 'var(--bg-light)',
-          }}>
-            <button onClick={closeModal} style={{ width: '100%', marginTop: 0 }}>Done</button>
-            <button 
-              className="delete-account-btn"
-              onClick={() => {
-                if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  window.location.reload();
-                }
-              }}
+            <button
+              onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }))}
               style={{
-                width: '100%',
                 background: 'transparent',
-                color: '#FF3B30',
-                border: '1px solid #FF3B30',
-                marginTop: '20px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
               }}
             >
-              Delete Account
+              ‹
             </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Theme</h2>
+            <div style={{ width: '30px' }}></div>
+          </div>
+          
+          <div style={{ padding: '10px' }}>
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, theme: 'dark', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: data.theme === 'dark' ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>🌙 Dark</span>
+              {data.theme === 'dark' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+            
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, theme: 'light', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: data.theme === 'light' ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>☀️ Light</span>
+              {data.theme === 'light' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Weight Unit Modal */}
+      <div id="weight-unit-modal" className={`modal ${activeModal === 'weight-unit-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '350px',
+          background: 'var(--bg-dark)',
+          borderRadius: '16px',
+          padding: '0',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+              }}
+            >
+              ‹
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Weight Unit</h2>
+            <div style={{ width: '30px' }}></div>
+          </div>
+          
+          <div style={{ padding: '10px' }}>
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, weightUnit: 'kg', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: data.weightUnit === 'kg' ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>Metric (kg)</span>
+              {data.weightUnit === 'kg' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+            
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, weightUnit: 'lbs', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: (data.weightUnit === 'lbs' || !data.weightUnit) ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>US/Imperial (lbs)</span>
+              {(data.weightUnit === 'lbs' || !data.weightUnit) && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Distance Unit Modal */}
+      <div id="distance-unit-modal" className={`modal ${activeModal === 'distance-unit-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '350px',
+          background: 'var(--bg-dark)',
+          borderRadius: '16px',
+          padding: '0',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+              }}
+            >
+              ‹
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Distance Unit</h2>
+            <div style={{ width: '30px' }}></div>
+          </div>
+          
+          <div style={{ padding: '10px' }}>
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, distanceUnit: 'km', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: data.distanceUnit === 'km' ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>Metric (m/km)</span>
+              {data.distanceUnit === 'km' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+            
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, distanceUnit: 'miles', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: (data.distanceUnit === 'miles' || !data.distanceUnit) ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>US/Imperial (ft/miles)</span>
+              {(data.distanceUnit === 'miles' || !data.distanceUnit) && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Intensity Metric Modal */}
+      <div id="intensity-metric-modal" className={`modal ${activeModal === 'intensity-metric-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '350px',
+          background: 'var(--bg-dark)',
+          borderRadius: '16px',
+          padding: '0',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+              }}
+            >
+              ‹
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Intensity Metric</h2>
+            <div style={{ width: '30px' }}></div>
+          </div>
+          
+          <div style={{ padding: '10px' }}>
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, intensityMetric: 'rpe', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: data.intensityMetric === 'rpe' ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>RPE (Rate of Perceived Exertion)</span>
+              {data.intensityMetric === 'rpe' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
+            
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({ ...prev, intensityMetric: 'rir', activeModal: 'settings-modal' }));
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                background: data.intensityMetric === 'rir' ? 'var(--bg-lighter)' : 'transparent',
+              }}
+            >
+              <span>RIR (Reps in Reserve)</span>
+              {data.intensityMetric === 'rir' && <span style={{ color: 'var(--accent-primary)' }}>✓</span>}
+            </div>
           </div>
         </div>
       </div>

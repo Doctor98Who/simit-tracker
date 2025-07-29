@@ -305,19 +305,18 @@ const ExerciseHistoryModal: React.FC<{ exercise: Exercise, onClose: () => void }
   const exerciseHistory = useMemo(() => {
     const history: HistoryEntry[] = [];
     
-    data.history.forEach(workout => {
-      const matchingEx = workout.exercises.find(e => 
-        e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
-      );
-      
-      if (matchingEx && matchingEx.sets && matchingEx.sets.length > 0) {
-        history.push({
-          date: workout.startTime,
-          sets: matchingEx.sets.filter(s => s.completed)
-        });
-      }
+data.history.forEach((workout: any) => {
+  const matchingEx = workout.exercises.find((e: any) => 
+    e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
+  );
+  
+  if (matchingEx && matchingEx.sets && matchingEx.sets.length > 0) {
+    history.push({
+      date: workout.startTime,
+      sets: matchingEx.sets.filter((s: any) => s.completed)
     });
-    
+  }
+});    
     return history.sort((a, b) => b.date - a.date);
   }, [data.history, exercise]);
   
@@ -1242,16 +1241,14 @@ const WorkoutModal: React.FC = () => {
     // Bug 17 fix: Look for the most recent workout with this exercise
     for (let i = data.history.length - 1; i >= 0; i--) {
       const workout = data.history[i];
-      const matchingEx = workout.exercises.find(e => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
-      if (matchingEx && matchingEx.sets) {
-        // Only return completed sets with actual values
-        const completedSets = matchingEx.sets
-          .filter(s => s.completed && s.weight && s.reps)
-          .map(s => ({ 
-            weight: s.weight || '0', 
-            reps: s.reps || '0' 
-          }));
-        
+const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
+if (matchingEx && matchingEx.sets) {
+  const completedSets = matchingEx.sets
+    .filter((s: Set) => s.completed && s.weight && s.reps)
+    .map((s: Set) => ({
+      weight: s.weight || '0',
+      reps: s.reps || '0'
+    }));        
         if (completedSets.length > 0) {
           // Pad with empty values if needed
           while (completedSets.length < ex.sets.length) {
@@ -1277,8 +1274,8 @@ const WorkoutModal: React.FC = () => {
 
   const renderedExercises = useMemo(() => {
     if (!currentWorkout) return null;
-    return currentWorkout.exercises.map((ex, idx) => (
-      <WorkoutExerciseItem
+return currentWorkout.exercises.map((ex: Exercise, idx: number) => (      
+<WorkoutExerciseItem
         key={`${ex.name}-${ex.subtype}-${idx}`}
         ex={{ ...ex, previousSets: getPreviousSets(ex) }}
         idx={idx}
