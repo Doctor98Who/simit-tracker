@@ -50,18 +50,18 @@ const StartWorkoutTab = () => {
     }));
   };
 
-  const createProgram = () => {
-    const newProgram = { weeks: [] };
-    setData(prev => ({ 
-      ...prev, 
-      currentProgram: newProgram, 
-      activeModal: 'program-modal',
-      isWorkoutSelect: false,
-      returnModal: null,
-      currentDayExercises: []
-    }));
-  };
-
+const createProgram = () => {
+  const newProgram = { weeks: [] };
+  setData(prev => ({ 
+    ...prev, 
+    currentProgram: newProgram, 
+    activeModal: 'program-modal',
+    isWorkoutSelect: false,
+    returnModal: null,
+    currentDayExercises: [],
+    isEditingProgram: true  // Add this - creating a new program is editing mode
+  }));
+};
   const showProgramWeeks = useCallback((program: Program | SimitProgram) => {
     setData(prev => ({ 
       ...prev, 
