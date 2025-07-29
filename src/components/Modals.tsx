@@ -1239,27 +1239,25 @@ const Modals = () => {
                 boxSizing: 'border-box',
               }}
             />
-            <button
-              onClick={() => {
-                setData((prev: DataType) => ({
-                  ...prev,
-                  activeModal: 'custom-exercise-modal',
-                  returnModal: 'exercise-select-modal'
-                }));
-              }}
-              style={{
-                background: 'var(--bg-lighter)',
-                color: 'var(--text)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                padding: '8px 16px',
-                fontSize: '0.85em',
-                fontWeight: '500',
-                cursor: 'pointer',
-                width: '100%',
-              }}            >
-              + Exercise
-            </button>
+<div
+  onClick={() => {
+    setData((prev: DataType) => ({
+      ...prev,
+      activeModal: 'custom-exercise-modal',
+      returnModal: 'exercise-select-modal'
+    }));
+  }}
+  style={{
+    color: 'var(--accent-primary)',
+    fontSize: '0.9em',
+    cursor: 'pointer',
+    textAlign: 'center',
+    padding: '8px 0',
+    fontWeight: '500',
+  }}
+>
+  + Exercise
+</div>
           </div>
           <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>
             {renderExerciseSelectList}

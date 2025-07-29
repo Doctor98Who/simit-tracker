@@ -194,23 +194,20 @@ return (
   boxSizing: 'border-box',
 }}
     />
-<button
+<div 
+  className="add-custom-exercise" 
   onClick={openCustomExerciseModal}
   style={{
-    width: '100%',
-    padding: '8px',
-    fontSize: '0.85em',
-    background: 'var(--bg-lighter)',
-    color: 'var(--text)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    marginBottom: '16px',
+    color: 'var(--accent-primary)',
+    fontSize: '1em',
     cursor: 'pointer',
+    textAlign: 'right',
+    marginBottom: '16px',
     fontWeight: '500',
   }}
 >
   + Exercise
-</button>   
+</div>
 <div id="exercise-list">{renderedExercises}</div>
     </div>
   );
