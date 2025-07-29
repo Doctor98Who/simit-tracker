@@ -115,53 +115,42 @@ const renderedExercises = useMemo(() => {
         </div>
       );
       
-      // Sort exercises alphabetically within muscle group
-      const exercises = muscleGroups[muscleGroup].sort((a, b) => a.name.localeCompare(b.name));
-      
-      exercises.forEach((ex: Exercise) => {
-        const isCustom = data.customExercises.some((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype);
-        
-        list.push(
-          <div key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`} 
-            className="exercise-item" 
-            onClick={(e: React.MouseEvent) => {
-              if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
-                showExerciseDetail(ex);
-              }
-            }}
-            style={{
-              background: 'var(--bg-dark)',
-              borderRadius: '16px',
-              padding: '18px',
-              marginBottom: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              border: '1px solid var(--border)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-              e.currentTarget.style.borderColor = 'var(--border)';
-            }}
-          >
-            <div className="exercise-name" style={{
-              fontWeight: '600',
-              fontSize: '1.1em',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              color: 'var(--text)',
-            }}>
-              <span>{ex.name}</span>
+// Sort exercises alphabetically within muscle group
+const exercises = muscleGroups[muscleGroup].sort((a, b) => a.name.localeCompare(b.name));
+
+exercises.forEach((ex: Exercise) => {
+  const isCustom = data.customExercises.some((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype);
+  
+  list.push(
+    <div key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
+      className="exercise-item"
+      onClick={(e: React.MouseEvent) => {
+        if (!(e.target as HTMLElement).classList.contains('exercise-menu')) {
+          showExerciseDetail(ex);
+        }
+      }}
+      style={{
+        background: 'var(--bg-dark)',
+        borderRadius: '12px',
+        padding: '16px',
+        marginBottom: '8px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        border: '1px solid rgba(255, 255, 255, 0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+      }}
+    >
+      <div className="exercise-name" style={{
+        fontWeight: '600',
+        fontSize: '1.1em',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        color: 'var(--text)',
+      }}>              
+      <span>{ex.name}</span>
               {isCustom && <span className="exercise-menu" onClick={() => openCustomMenu(ex.name, ex.subtype || '', data.customExercises.findIndex((c: Exercise) => c.name === ex.name && c.subtype === ex.subtype))}>⋯</span>}
             </div>
             {ex.subtype && (
@@ -201,41 +190,34 @@ const renderedExercises = useMemo(() => {
     return list;
   }, [searchQuery, exerciseDatabase, data.customExercises, showExerciseDetail, openCustomMenu]);
 
-  return (
-    <div>
-<h2 style={{
-  margin: '0 0 20px 0',
-  fontSize: '1.3em',
-  textAlign: 'center',
-  fontWeight: '600',
-  color: 'var(--text)',
-}}>Exercises</h2>
-<input 
-  type="text" 
-  className="search-bar" 
-  id="exercise-search" 
-  placeholder="Search exercises..." 
-  value={searchQuery} 
-  onChange={(e) => setSearchQuery(e.target.value)}
-  style={{
-    background: 'var(--bg-lighter)',
-    border: '1px solid var(--border)',
-    borderRadius: '12px',
-    padding: '14px 16px',
-    marginBottom: '8px',          fontSize: '16px',
-          color: 'var(--text)',
-          transition: 'all 0.3s ease',
-        }}
-        onFocus={(e) => {
-          e.target.style.borderColor = 'var(--accent-primary)';
-          e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-        }}
-        onBlur={(e) => {
-          e.target.style.borderColor = 'var(--border)';
-          e.target.style.boxShadow = 'none';
-        }}
-      />
-<button
+return (
+  <div>
+    <h2 style={{
+      margin: '0 0 16px 0',
+      fontSize: '1.3em',
+      textAlign: 'center',
+      fontWeight: '600',
+      color: 'var(--text)',
+    }}>Exercises</h2>
+    <input
+      type="text"
+      className="search-bar"
+      id="exercise-search"
+      placeholder="Search exercises..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      style={{
+        background: 'var(--bg-lighter)',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        padding: '12px 16px',
+        marginBottom: '8px',
+        fontSize: '16px',
+        color: 'var(--text)',
+        width: '100%',
+      }}
+    />
+    <button
   onClick={openCustomExerciseModal}
   style={{
     width: '100%',
