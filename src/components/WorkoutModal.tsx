@@ -579,10 +579,10 @@ const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
   if (set.type === 'D') return 'D';
   if ((set as any).isDropSet) return 'DS';
   
-  // Count only regular sets (non-drop sets) before this one
-  let regularSetNumber = 1;
-  for (let i = 0; i < setIdx; i++) {
-    if (!allSets[i].type && !(allSets[i] as any).isDropSet) {
+  // Count all non-drop sets before and including this one
+  let regularSetNumber = 0;
+  for (let i = 0; i <= setIdx; i++) {
+    if (!(allSets[i] as any).isDropSet) {
       regularSetNumber++;
     }
   }
