@@ -65,16 +65,19 @@ const ProgressTab = () => {
   };
 
 const uploadProgressPic = () => {
-  // Reset body styles just in case
+  // Clean up any stuck states
   document.body.style.overflow = '';
   document.body.style.position = '';
   document.body.style.width = '';
+  document.body.style.top = '';
   
+  // Ensure clean state
   setData(prev => ({ 
     ...prev, 
     activeModal: 'progress-upload-modal',
     tempBase64: null,
-    tempTimestamp: null
+    tempTimestamp: null,
+    activeTab: 'progress-tab' // Ensure we're on right tab
   }));
 };
   const saveEditedCaption = () => {

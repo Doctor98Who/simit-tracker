@@ -757,18 +757,30 @@ const Modals = () => {
     }));
   };
 
-  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        setData((prev: DataType) => ({ ...prev, coverPhoto: base64 }));
-      };
-      reader.readAsDataURL(file);
+const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    // Check file size (limit to 5MB for cover photos)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image is too large. Please choose an image under 5MB.');
+      return;
     }
-  };
-
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setData((prev: DataType) => ({ 
+        ...prev, 
+        coverPhoto: base64,
+        activeModal: 'edit-profile-modal' // Keep modal open
+      }));
+    };
+    reader.onerror = () => {
+      alert('Failed to read image. Please try again.');
+    };
+    reader.readAsDataURL(file);
+  }
+};
   // Custom exercise handlers
   const saveCustomExercise = () => {
     const name = (document.getElementById('custom-exercise-name') as HTMLInputElement)?.value;
@@ -2198,46 +2210,95 @@ onClick={() => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*';
-                  input.onchange = (e: Event) => {
-                    const target = e.target as HTMLInputElement;
-                    if (target.files && target.files[0]) {
-                      const file = target.files[0];
-                      const reader = new FileReader();
-                      reader.onload = (event: ProgressEvent<FileReader>) => {
-                        const base64 = event.target?.result as string;
-                        const img = new Image();
-                        img.src = base64;
-                        img.onload = () => {
-                          EXIF.getData(img as any, function () {
-                            let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
-                            let timestamp = Date.now();
-                            if (exifDate) {
-                              const parts = exifDate.split(' ');
-                              const datePart = parts[0].replace(/:/g, '-');
-                              const timePart = parts[1];
-                              const dt = new Date(`${datePart}T${timePart}`);
-                              if (!isNaN(dt.getTime())) {
-                                timestamp = dt.getTime();
-                              }
-                            }
-                            setData((prev: DataType) => ({
-                              ...prev,
-                              tempBase64: base64,
-                              tempTimestamp: timestamp,
-                              activeModal: 'progress-upload-modal'
-                            }));
-                          });
-                        };
-                      };
-                      reader.readAsDataURL(file);
+onClick={() => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment'; // Help mobile browsers
+  
+  input.onchange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+      const file = target.files[0];
+      
+      // Check file size (limit to 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image is too large. Please choose an image under 10MB.');
+        return;
+      }
+      
+      const reader = new FileReader();
+      
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const base64 = event.target?.result as string;
+        
+        // Try to get EXIF data, but don't fail if it doesn't work
+        const img = new Image();
+        img.src = base64;
+        
+        img.onload = () => {
+          let timestamp = Date.now();
+          
+          try {
+            EXIF.getData(img as any, function() {
+              try {
+                let exifDate = EXIF.getTag(img, 'DateTimeOriginal');
+                if (exifDate) {
+                  const parts = exifDate.split(' ');
+                  if (parts.length === 2) {
+                    const datePart = parts[0].replace(/:/g, '-');
+                    const timePart = parts[1];
+                    const dt = new Date(`${datePart}T${timePart}`);
+                    if (!isNaN(dt.getTime())) {
+                      timestamp = dt.getTime();
                     }
-                  };
-                  input.click();
-                }}
+                  }
+                }
+              } catch (exifError) {
+                console.log('EXIF parsing failed, using current time');
+              }
+              
+              // Set the data regardless of EXIF success
+              setData((prev: DataType) => ({
+                ...prev,
+                tempBase64: base64,
+                tempTimestamp: timestamp,
+                activeModal: 'progress-upload-modal'
+              }));
+            });
+          } catch (error) {
+            // If EXIF completely fails, still upload the image
+            console.log('EXIF extraction failed, proceeding without it');
+            setData((prev: DataType) => ({
+              ...prev,
+              tempBase64: base64,
+              tempTimestamp: timestamp,
+              activeModal: 'progress-upload-modal'
+            }));
+          }
+        };
+        
+        img.onerror = () => {
+          // If image fails to load, still try to save it
+          setData((prev: DataType) => ({
+            ...prev,
+            tempBase64: base64,
+            tempTimestamp: Date.now(),
+            activeModal: 'progress-upload-modal'
+          }));
+        };
+      };
+      
+      reader.onerror = () => {
+        alert('Failed to read image. Please try another photo.');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  input.click();
+}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'var(--accent-primary)';
                   e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';

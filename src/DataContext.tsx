@@ -152,7 +152,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setStorageAvailable(available);
     if (available) {
       // Version check and migration
-      const DATA_VERSION = '1.0.1'; // Increment this when making breaking changes
+      const DATA_VERSION = '1.0.2'; // Increment this when making breaking changes
       const storedVersion = localStorage.getItem('dataVersion');
       
       if (storedVersion !== DATA_VERSION) {
