@@ -129,7 +129,7 @@ export const DataContext = createContext<DataContextType>({
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const [data, setData] = useState<DataType>(initialData);
   const [storageAvailable, setStorageAvailable] = useState(false);
-
+  
   const checkLocalStorage = () => {
     try {
       const testKey = 'localStorageTest';
@@ -141,16 +141,65 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     }
   };
-
+  
   // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', data.theme);
   }, [data.theme]);
-
+  
   useEffect(() => {
     const available = checkLocalStorage();
     setStorageAvailable(available);
     if (available) {
+      // Version check and migration
+      const DATA_VERSION = '1.0.1'; // Increment this when making breaking changes
+      const storedVersion = localStorage.getItem('dataVersion');
+      
+      if (storedVersion !== DATA_VERSION) {
+        console.log('Data version mismatch, migrating...');
+        
+        // Backup old data if needed
+        const oldData = {
+          templates: JSON.parse(localStorage.getItem('templates') || '[]'),
+          history: JSON.parse(localStorage.getItem('history') || '[]'),
+          progressPics: JSON.parse(localStorage.getItem('progressPics') || '[]'),
+          profilePic: localStorage.getItem('profilePic') || '',
+          username: localStorage.getItem('username') || 'User',
+          firstName: localStorage.getItem('firstName') || '',
+          lastName: localStorage.getItem('lastName') || '',
+          bio: localStorage.getItem('bio') || '',
+          email: localStorage.getItem('email') || '',
+          country: localStorage.getItem('country') || 'United States',
+          state: localStorage.getItem('state') || '',
+          coverPhoto: localStorage.getItem('coverPhoto') || '',
+          completedPrograms: JSON.parse(localStorage.getItem('completedPrograms') || '{}'),
+          customExercises: JSON.parse(localStorage.getItem('customExercises') || '[]'),
+          theme: localStorage.getItem('theme') || 'dark',
+          intensityMetric: localStorage.getItem('intensityMetric') || 'rpe',
+          weightUnit: localStorage.getItem('weightUnit') || 'lbs',
+          distanceUnit: localStorage.getItem('distanceUnit') || 'miles',
+        };
+        
+        // Clear potentially corrupted data
+        localStorage.removeItem('activeModal');
+        localStorage.removeItem('activeTab');
+        localStorage.removeItem('currentWorkout');
+        sessionStorage.clear();
+        
+        // Set new version
+        localStorage.setItem('dataVersion', DATA_VERSION);
+        
+        // Restore data
+        Object.entries(oldData).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            localStorage.setItem(key, value);
+          } else {
+            localStorage.setItem(key, JSON.stringify(value));
+          }
+        });
+      }
+      
+      // Continue with normal loading...
       const templates = JSON.parse(localStorage.getItem('templates') || '[]');
       const history = JSON.parse(localStorage.getItem('history') || '[]');
       const progressPics = JSON.parse(localStorage.getItem('progressPics') || '[]');
@@ -167,6 +216,8 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const customExercises = JSON.parse(localStorage.getItem('customExercises') || '[]');
       const theme = (localStorage.getItem('theme') || 'dark') as 'dark' | 'light';
       const intensityMetric = (localStorage.getItem('intensityMetric') || 'rpe') as 'rpe' | 'rir';
+      const weightUnit = (localStorage.getItem('weightUnit') || 'lbs') as 'kg' | 'lbs';
+      const distanceUnit = (localStorage.getItem('distanceUnit') || 'miles') as 'km' | 'miles';
       
       // Check for saved workout in sessionStorage
       const savedWorkout = sessionStorage.getItem('currentWorkout');
@@ -190,17 +241,19 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         customExercises,
         theme,
         intensityMetric,
+        weightUnit,
+        distanceUnit,
         currentWorkout,
         // Reset these state variables on load unless there's a saved workout
         isWorkoutSelect: false,
         currentExerciseIdx: null,
         activeModal: currentWorkout ? 'workout-modal' : null,
         returnModal: null,
-        currentDayExercises: []
+        currentDayExercises: [],
+        activeTab: 'start-workout-tab' // Always start fresh on this tab
       }));
     }
   }, []);
-
   // Save current workout to sessionStorage
   useEffect(() => {
     if (data.currentWorkout) {

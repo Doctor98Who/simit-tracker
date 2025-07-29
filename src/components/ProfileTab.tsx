@@ -205,72 +205,117 @@ const ProfileTab = () => {
     });
   }, [sortedHistory, expandedHistoryItems, openHistoryMenu, data.weightUnit]);
 
-  const openSettingsModal = () => {
-    setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }));
-  };
+const openSettingsModal = () => {
+  setData((prev: DataType) => ({ ...prev, activeModal: 'settings-modal' }));
+};
+
+const clearAppCache = () => {
+  if (window.confirm('Clear app cache? This will fix display issues but keep your workout data.')) {
+    // Keep user data
+    const userData = {
+      templates: data.templates,
+      history: data.history,
+      progressPics: data.progressPics,
+      profilePic: data.profilePic,
+      username: data.username,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      bio: data.bio,
+      email: data.email,
+      country: data.country,
+      state: data.state,
+      coverPhoto: data.coverPhoto,
+      completedPrograms: data.completedPrograms,
+      customExercises: data.customExercises,
+      theme: data.theme,
+      intensityMetric: data.intensityMetric,
+      weightUnit: data.weightUnit,
+      distanceUnit: data.distanceUnit,
+    };
+    
+    // Clear everything
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Restore user data
+    Object.entries(userData).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        localStorage.setItem(key, value);
+      } else {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+    });
+    
+    // Set data version
+    localStorage.setItem('dataVersion', '1.0.1');
+    
+    // Reload
+    window.location.reload();
+  }
+};
 
 return (
-    <div>
-      <div className="profile-header" id="profile-cover" style={{
-        backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none',
-        position: 'relative',
-        overflow: 'visible',
-      }}>
-        <div
-          className="settings-icon"
-          onClick={openSettingsModal}
-          style={{
-            position: 'absolute',
-            top: '80px',
-            right: '20px',
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            fontSize: '18px',
-            zIndex: 100,
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          ⚙️
-        </div>        
-        <div className="profile-pic" style={{ backgroundImage: `url('${data.profilePic}')` }} onClick={editProfilePic}></div>
-        <div className="profile-name" id="profile-fullname">{data.firstName} {data.lastName}</div>
-        <div className="profile-username">@{data.username}</div>
-        <div className="profile-location" id="profile-location">{data.country}{data.state ? ', ' + data.state : ''}</div>
+  <div>
+    <div className="profile-header" id="profile-cover" style={{
+      backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none',
+      position: 'relative',
+      overflow: 'visible',
+    }}>
+      <div
+        className="settings-icon"
+        onClick={openSettingsModal}
+        style={{
+          position: 'absolute',
+          top: '80px',
+          right: '20px',
+          width: '36px',
+          height: '36px',
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          fontSize: '18px',
+          zIndex: 100,
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+      >
+        ⚙️
+      </div>        
+      <div className="profile-pic" style={{ backgroundImage: `url('${data.profilePic}')` }} onClick={editProfilePic}></div>
+      <div className="profile-name" id="profile-fullname">{data.firstName} {data.lastName}</div>
+      <div className="profile-username">@{data.username}</div>
+      <div className="profile-location" id="profile-location">{data.country}{data.state ? ', ' + data.state : ''}</div>
+    </div>
+    <div className="profile-stats">
+      <div className="stat-box">
+        <div className="stat-number" id="total-workouts">{data.history.length}</div>
+        <div className="stat-label">Workouts</div>
       </div>
-      <div className="profile-stats">
-        <div className="stat-box">
-          <div className="stat-number" id="total-workouts">{data.history.length}</div>
-          <div className="stat-label">Workouts</div>
-        </div>
-        <div className="stat-box">
-          <div className="stat-number" id="total-friends">0</div>
-          <div className="stat-label">Friends</div>
-        </div>
+      <div className="stat-box">
+        <div className="stat-number" id="total-friends">0</div>
+        <div className="stat-label">Friends</div>
       </div>
-      <div className="profile-actions" style={{
-        display: 'flex',
-        gap: '8px',
-        padding: '0 20px',
-        marginBottom: '20px',
-      }}>
-        <button
+    </div>
+    <div className="profile-actions" style={{
+      display: 'flex',
+      gap: '8px',
+      padding: '0 20px',
+      marginBottom: '20px',
+    }}>        
+    <button
           onClick={openEditProfileModal}
           style={{
             background: 'transparent',
