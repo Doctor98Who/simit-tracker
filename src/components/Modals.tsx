@@ -73,7 +73,7 @@ const Modals = () => {
   ];
 
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
-  const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
+  const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null, isEditingProgram: false }));
 
   const goBack = () => {
     if (activeModal === 'day-modal') openModal('week-modal');
@@ -113,13 +113,13 @@ const Modals = () => {
     }));
   };
 
- const saveProgram = () => {
+const saveProgram = () => {
   const input = document.getElementById('program-name') as HTMLInputElement | null;
   if (input) {
     const name = input.value;
     const weeksLength = data.currentProgram.weeks.length;
     if (!name || weeksLength === 0) return;
-    
+   
     // Deep copy the weeks to avoid reference issues
     const weeksCopy = data.currentProgram.weeks.map((week: any) => ({
       days: week.days.map((day: any) => ({
@@ -127,25 +127,28 @@ const Modals = () => {
         exercises: day.exercises.map((ex: any) => ({ ...ex }))
       }))
     }));
-    
+   
     const programData: Template = {
       name,
       mesocycleLength: weeksLength,
       weeks: weeksCopy,
-        lastUsed: Date.now(),
-      };
-      const existingIndex = data.templates.findIndex((t: Template) => t.name === name);
-      const newTemplates = [...data.templates];
-      if (existingIndex > -1) {
-        newTemplates[existingIndex] = programData;
-      } else {
-        newTemplates.push(programData);
-      }
-      setData((prev: DataType) => ({ ...prev, templates: newTemplates }));
-      closeModal();
+      lastUsed: Date.now(),
+    };
+    const existingIndex = data.templates.findIndex((t: Template) => t.name === name);
+    const newTemplates = [...data.templates];
+    if (existingIndex > -1) {
+      newTemplates[existingIndex] = programData;
+    } else {
+      newTemplates.push(programData);
     }
-  };
-
+    setData((prev: DataType) => ({ 
+      ...prev, 
+      templates: newTemplates,
+      isEditingProgram: false  // Add this line
+    }));
+    closeModal();
+  }
+};
   const addDayToWeek = () => {
     if (data.currentWeekIndex === null) return;
     setData((prev: DataType) => {
