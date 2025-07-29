@@ -987,16 +987,25 @@ const WorkoutModal: React.FC = () => {
     }
   }, [currentWorkout]);
 
-  // Prevent background scrolling when modal is open
+  // Prevent background scrolling when modal is open - FIX for Safari
   useEffect(() => {
     if (data.activeModal === 'workout-modal' && currentWorkout) {
       const scrollY = window.scrollY;
-      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      // Safari specific fix
+      document.body.style.height = '100%';
+      document.documentElement.style.overflow = 'hidden';
       
       return () => {
-        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.position = '';
         document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.documentElement.style.overflow = '';
         window.scrollTo(0, scrollY);
       };
     }
@@ -1264,12 +1273,16 @@ const WorkoutModal: React.FC = () => {
           maxWidth: '100%',
           width: '100%',
           height: '100vh',
+          maxHeight: '100vh',
           background: 'var(--bg-dark)',
           padding: '0',
           borderRadius: '20px 20px 0 0',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
+          // Safari-specific fixes
+          WebkitOverflowScrolling: 'touch',
+          WebkitTransform: `translateY(${modalTransform}px)`,
         }}
       >
         <div 
@@ -1288,6 +1301,7 @@ const WorkoutModal: React.FC = () => {
             position: 'sticky',
             top: 0,
             zIndex: 10,
+            flexShrink: 0,
           }}
         >
           <div className="drag-indicator" style={{
@@ -1299,6 +1313,80 @@ const WorkoutModal: React.FC = () => {
           }}></div>
         </div>
         
+        <div className="workout-header" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          padding: '10px 14px',
+          background: 'var(--bg-dark)',
+          position: 'sticky',
+          top: '15px',
+          zIndex: 5,
+          flexShrink: 0,
+          minHeight: '60px',
+        }}>
+          <div 
+            className="timer-button" 
+            onClick={() => setShowRestTimer(true)}
+            style={{
+              fontSize: '18px',
+              padding: '6px',
+              borderRadius: '50%',
+              background: 'var(--bg-lighter)',
+              width: '34px',
+              height: '34px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              border: 'none',
+              color: 'var(--text)',
+              minWidth: '34px',
+              flexShrink: 0,
+            }}
+          >
+            ⏱
+          </div>
+          <input
+            type="text"
+            id="workout-name-input"
+            value={currentWorkout?.name || ''}
+            onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1.5em',
+              fontWeight: '700',
+              textAlign: 'center',
+              flex: 1,
+              padding: '0 8px',
+              color: 'var(--text)',
+              letterSpacing: '-0.3px',
+              minWidth: '0',
+            }}
+          />
+          <button 
+            className="finish" 
+            onClick={finishWorkout}
+            style={{
+              background: '#22C55E',
+              color: 'white',
+              border: 'none',
+              borderRadius: '14px',
+              padding: '6px 14px',
+              fontSize: '0.8em',
+              fontWeight: '600',
+              cursor: 'pointer',
+              minWidth: '60px',
+              letterSpacing: '-0.2px',
+              flexShrink: 0,
+            }}
+          >
+            Finish
+          </button>
+        </div>
+        
         <div 
           ref={scrollContainerRef}
           style={{ 
@@ -1307,81 +1395,9 @@ const WorkoutModal: React.FC = () => {
             WebkitOverflowScrolling: 'touch',
             padding: '0 10px 80px',
             overscrollBehavior: 'contain',
+            minHeight: '0',
           }}
         >
-          <div className="workout-header" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
-            gap: '8px',
-            padding: '0 4px',
-            position: 'sticky',
-            top: 0,
-            background: 'var(--bg-dark)',
-            zIndex: 5,
-            paddingTop: '10px',
-            paddingBottom: '10px',
-          }}>
-            <div 
-              className="timer-button" 
-              onClick={() => setShowRestTimer(true)}
-              style={{
-                fontSize: '18px',
-                padding: '6px',
-                borderRadius: '50%',
-                background: 'var(--bg-lighter)',
-                width: '34px',
-                height: '34px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                border: 'none',
-                color: 'var(--text)',
-                minWidth: '34px',
-              }}
-            >
-              ⏱
-            </div>
-            <input
-              type="text"
-              id="workout-name-input"
-              value={currentWorkout?.name || ''}
-              onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontSize: '2em',
-                fontWeight: '700',
-                textAlign: 'center',
-                flex: 1,
-                padding: '0',
-                color: 'var(--text)',
-                letterSpacing: '-0.3px',
-                marginTop: '10px',
-              }}
-            />
-            <button 
-              className="finish" 
-              onClick={finishWorkout}
-              style={{
-                background: '#22C55E',
-                color: 'white',
-                border: 'none',
-                borderRadius: '14px',
-                padding: '6px 14px',
-                fontSize: '0.8em',
-                fontWeight: '600',
-                cursor: 'pointer',
-                minWidth: '60px',
-                letterSpacing: '-0.2px',
-              }}
-            >
-              Finish
-            </button>
-          </div>
-          
           <div className="workout-info" style={{
             display: 'flex',
             gap: '14px',

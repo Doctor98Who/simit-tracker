@@ -1781,7 +1781,7 @@ const Modals = () => {
                 </div>
               </div>
               
-              <button onClick={() => {
+ <button onClick={() => {
                 const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
                 const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
                 const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
@@ -1802,11 +1802,12 @@ const Modals = () => {
                     tempBase64: null,
                     tempTimestamp: null,
                     activeModal: null,
+                    activeTab: 'progress-tab', // Ensure we're on the progress tab
                   }));
                 }
               }}>
                 Share
-              </button>
+              </button>              
               <button 
                 className="secondary" 
                 onClick={() => setData((prev: DataType) => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
