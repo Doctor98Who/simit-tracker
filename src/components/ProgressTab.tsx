@@ -96,27 +96,42 @@ const uploadProgressPic = () => {
   };
 
   const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: ProgressPic, index: number) => (
-    <div 
-      key={index} 
-      className="progress-pic"
-      onClick={() => openPhotoModal(pic, index)}
-      style={{
-        position: 'relative',
-        cursor: 'pointer',
-        aspectRatio: '1',
-        overflow: 'hidden',
-        background: 'var(--bg-lighter)',
-        borderRadius: '2px',
-        transition: 'all 0.3s ease',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(0.95)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)';
-      }}
-    >
-<img 
+<div 
+  key={index} 
+  className="progress-pic"
+  onClick={() => openPhotoModal(pic, index)}
+  style={{
+    position: 'relative',
+    cursor: 'pointer',
+    aspectRatio: '1',
+    overflow: 'hidden',
+    background: 'var(--bg-dark)',
+    borderRadius: '2px',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = 'scale(0.95)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = 'scale(1)';
+  }}
+>
+  <img 
+    src={pic.base64} 
+    alt="Progress" 
+    style={{
+      maxWidth: '100%',
+      maxHeight: '100%',
+      width: 'auto',
+      height: 'auto',
+      objectFit: 'contain',
+      objectPosition: 'center',
+    }}
+  />
+  <img 
   src={pic.base64} 
   alt="Progress" 
   style={{
