@@ -1332,8 +1332,19 @@ const WorkoutModal: React.FC = () => {
           WebkitTransform: `translateY(${modalTransform}px)`,
         }}
       >
-        <div 
-          className="drag-handle"
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          background: 'var(--bg-dark)',
+          zIndex: 100,
+          borderBottom: '1px solid var(--border)',
+          borderRadius: '20px 20px 0 0',
+        }}>
+        </div>
+          <div 
+            className="drag-handle"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -1443,6 +1454,7 @@ const WorkoutModal: React.FC = () => {
             padding: '0 10px 80px',
             overscrollBehavior: 'contain',
             minHeight: '0',
+            marginTop: '120px',
           }}
         >
           <div className="workout-info" style={{
