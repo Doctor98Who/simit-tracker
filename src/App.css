@@ -1735,3 +1735,13 @@ button:active::before {
     color: white;
     border-color: var(--accent-primary);
 }
+/* Temporary debug fix for Firefox */
+.content {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.content.hidden {
+  display: none !important;
+}
