@@ -575,19 +575,19 @@ const toggleSetType = (setIdx: number) => {
   updateSet(idx, setIdx, 'type', newType);
 };  
 const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
-    if (set.type === 'W') return 'W';
-    if (set.type === 'D') return 'D';
-    
-    // Count only regular sets before this one
-    let regularSetNumber = 1;
-    for (let i = 0; i < setIdx; i++) {
-      if (!allSets[i].type || allSets[i].type === 'S') {
-        regularSetNumber++;
-      }
+  if (set.type === 'W') return 'W';
+  if (set.type === 'D') return 'D';
+  if ((set as any).isDropSet) return 'DS';
+  
+  // Count only regular sets (non-drop sets) before this one
+  let regularSetNumber = 1;
+  for (let i = 0; i < setIdx; i++) {
+    if (!allSets[i].type && !(allSets[i] as any).isDropSet) {
+      regularSetNumber++;
     }
-    return regularSetNumber.toString();
-  };
-
+  }
+  return regularSetNumber.toString();
+};
 const isDropSet = (setIdx: number): boolean => {
   if (setIdx === 0) return false;
   
