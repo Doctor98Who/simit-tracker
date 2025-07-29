@@ -42,27 +42,6 @@ interface ExerciseFromDatabase {
   equipment?: string;
 }
 
-const muscleGroups = [
-  'Chest',
-  'Back',
-  'Shoulders',
-  'Biceps',
-  'Triceps',
-  'Quads',
-  'Hamstrings',
-  'Glutes',
-  'Calves',
-  'Abdominals',
-  'Core',
-  'Obliques',
-  'Forearms',
-  'Traps',
-  'Lower Back',
-  'Full Body',
-  'Neck',
-  'Other'
-];
-
 const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
   const activeModal = data.activeModal;
@@ -72,6 +51,27 @@ const Modals = () => {
   const [minimizedDragY, setMinimizedDragY] = useState(0);
   const [isDraggingMinimized, setIsDraggingMinimized] = useState(false);
   const minimizedStartY = useRef(0);
+
+  const muscleGroups = [
+    'Chest',
+    'Back',
+    'Shoulders',
+    'Biceps',
+    'Triceps',
+    'Quads',
+    'Hamstrings',
+    'Glutes',
+    'Calves',
+    'Abdominals',
+    'Core',
+    'Obliques',
+    'Forearms',
+    'Traps',
+    'Lower Back',
+    'Full Body',
+    'Neck',
+    'Other'
+  ];
 
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
   const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null }));
@@ -327,80 +327,132 @@ const Modals = () => {
       });
     }
     
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    // Group by primary muscle group
+    const muscleGroups: Record<string, (Exercise | ExerciseFromDatabase)[]> = {};
+    
+    filtered.forEach((ex: Exercise | ExerciseFromDatabase) => {
+      // Get the primary muscle group (first muscle listed)
+      let primaryMuscle = ex.muscles.split(',')[0].trim();
+      
+      // Normalize muscle groups
+      if (primaryMuscle.toLowerCase().includes('chest')) {
+        primaryMuscle = 'Chest';
+      } else if (primaryMuscle.toLowerCase().includes('shoulder') || primaryMuscle.toLowerCase().includes('delt')) {
+        primaryMuscle = 'Shoulders';
+      } else if (primaryMuscle.toLowerCase().includes('back') || primaryMuscle === 'Lats' || primaryMuscle === 'Traps') {
+        primaryMuscle = 'Back';
+      } else if (primaryMuscle === 'Biceps' || primaryMuscle === 'Triceps' || primaryMuscle === 'Forearms') {
+        primaryMuscle = 'Arms';
+      } else if (primaryMuscle.toLowerCase().includes('quad') || primaryMuscle.toLowerCase().includes('hamstring') || 
+                 primaryMuscle.toLowerCase().includes('glute') || primaryMuscle.toLowerCase().includes('calf') || 
+                 primaryMuscle === 'Calves') {
+        primaryMuscle = 'Legs';
+      } else if (primaryMuscle.toLowerCase().includes('abs') || primaryMuscle.toLowerCase().includes('oblique') || 
+                 primaryMuscle.toLowerCase().includes('core')) {
+        primaryMuscle = 'Core';
+      }
+      
+      if (!muscleGroups[primaryMuscle]) {
+        muscleGroups[primaryMuscle] = [];
+      }
+      muscleGroups[primaryMuscle].push(ex);
+    });
+    
+    // Sort muscle groups with most common ones first
+    const muscleGroupOrder = [
+      'Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Full Body'
+    ];
+    
+    const sortedMuscleGroups = Object.keys(muscleGroups).sort((a, b) => {
+      const indexA = muscleGroupOrder.findIndex(m => a === m);
+      const indexB = muscleGroupOrder.findIndex(m => b === m);
+      
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return a.localeCompare(b);
+    });
 
     if (filtered.length === 0 && query) {
       return [<div key="no-results" className="feed-placeholder" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No exercises found containing "{query}"</div>];
     }
 
-    let currentLetter = '';
     const list: React.ReactNode[] = [];
     
-    filtered.forEach((ex: Exercise | ExerciseFromDatabase) => {
-      const firstLetter = ex.name[0].toUpperCase();
-      if (firstLetter !== currentLetter) {
-        list.push(<div key={firstLetter} className="letter-header" style={{ 
+    sortedMuscleGroups.forEach((muscleGroup) => {
+      // Add muscle group header
+      list.push(
+        <div key={`muscle-${muscleGroup}`} className="muscle-group-header" style={{
           fontSize: '1.2em',
+          fontWeight: '600',
           color: 'var(--accent-primary)',
-          marginTop: currentLetter ? '20px' : '0',
+          marginTop: list.length > 0 ? '20px' : '0',
           marginBottom: '10px',
           padding: '10px 16px',
           background: 'linear-gradient(to right, var(--bg-dark), var(--bg-light))',
           borderRadius: '8px',
-        }}>{firstLetter}</div>);
-        currentLetter = firstLetter;
-      }
-      
-      list.push(
-        <div
-          key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
-          className="exercise-item"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!isScrolling) {
-              selectExercise(ex);
-            }
-          }}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            if (!isScrolling) {
-              setTimeout(() => selectExercise(ex), 50);
-            }
-          }}
-          style={{ 
-            cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            background: 'var(--bg-dark)',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '8px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            transition: 'all 0.2s ease',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-          }}
-        >
-          <div className="exercise-name" style={{ 
-            pointerEvents: 'none',
-            fontWeight: '600',
-            fontSize: '1.1em',
-            marginBottom: '4px'
-          }}>{ex.name}</div>
-          {ex.subtype && <div className="exercise-subtype" style={{ 
-            pointerEvents: 'none',
-            color: 'var(--accent-blue)',
-            fontSize: '0.9em',
-            marginBottom: '4px'
-          }}>{ex.subtype}</div>}
-          <div className="exercise-muscles" style={{ 
-            pointerEvents: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '0.85em'
-          }}>{ex.muscles}</div>
+        }}>
+          {muscleGroup}
         </div>
       );
+      
+      // Sort exercises alphabetically within muscle group
+      const exercises = muscleGroups[muscleGroup].sort((a, b) => a.name.localeCompare(b.name));
+      
+      exercises.forEach((ex: Exercise | ExerciseFromDatabase) => {
+        list.push(
+          <div
+            key={`${ex.name}-${ex.subtype || ''}-${Math.random()}`}
+            className="exercise-item"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!isScrolling) {
+                selectExercise(ex);
+              }
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              if (!isScrolling) {
+                setTimeout(() => selectExercise(ex), 50);
+              }
+            }}
+            style={{ 
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              background: 'var(--bg-dark)',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '8px',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              transition: 'all 0.2s ease',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            }}
+          >
+            <div className="exercise-name" style={{ 
+              pointerEvents: 'none',
+              fontWeight: '600',
+              fontSize: '1.1em',
+              marginBottom: '4px'
+            }}>{ex.name}</div>
+            {ex.subtype && <div className="exercise-subtype" style={{ 
+              pointerEvents: 'none',
+              color: 'var(--accent-blue)',
+              fontSize: '0.9em',
+              marginBottom: '4px'
+            }}>{ex.subtype}</div>}
+            <div className="exercise-muscles" style={{ 
+              pointerEvents: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '0.85em'
+            }}>{ex.muscles}</div>
+          </div>
+        );
+      });
     });
 
     return list;
@@ -418,9 +470,31 @@ const Modals = () => {
             activeModal: 'week-modal',
           }))
         }
+        style={{
+          background: 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '12px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+        }}
       >
-        Week {index + 1}
-        <div>Days: {data.currentProgram.weeks[index].days.length}</div>
+        <div style={{ fontSize: '1.2em', fontWeight: '600', marginBottom: '8px' }}>
+          Week {index + 1}
+        </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
+          Days: {data.currentProgram.weeks[index].days.length}
+        </div>
       </div>
     ));
   }, [data.currentProgram.weeks]);
@@ -485,9 +559,34 @@ const Modals = () => {
               }));
             }
           }}
+          style={{
+            background: isCompleted 
+              ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+              : 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
+            borderRadius: '16px',
+            padding: '20px',
+            marginBottom: '12px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            color: isCompleted ? 'white' : 'var(--text)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+          }}
         >
-          {day.name || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.name}
-          <div>Exercises: {day.exercises?.length || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.exercises?.length || 0}</div>
+          <div style={{ fontSize: '1.1em', fontWeight: '600', marginBottom: '8px' }}>
+            {day.name || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.name}
+          </div>
+          <div style={{ fontSize: '0.9em', opacity: 0.8 }}>
+            Exercises: {day.exercises?.length || (data.currentProgram as any).weeks?.[data.currentWeekIndex!]?.days?.[index]?.exercises?.length || 0}
+          </div>
         </div>
       );
     });
@@ -528,9 +627,31 @@ const Modals = () => {
             activeModal: 'week-modal',
           }))
         }
+        style={{
+          background: 'linear-gradient(135deg, var(--bg-light), var(--bg-lighter))',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '12px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+        }}
       >
-        Week {index + 1}
-        <div>Days: {program.weeks[index].days.length}</div>
+        <div style={{ fontSize: '1.2em', fontWeight: '600', marginBottom: '8px' }}>
+          Week {index + 1}
+        </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>
+          Days: {program.weeks[index].days.length}
+        </div>
       </div>
     ));
   }, [data.currentProgram, isSimitProgram]);
@@ -576,7 +697,7 @@ const Modals = () => {
         ...historyWorkout,
         startTime: Date.now(),
         duration: 0,
-        exercises: historyWorkout.exercises.map(ex => ({
+        exercises: historyWorkout.exercises.map((ex: Exercise) => ({
           ...ex,
           sets: ex.sets?.map(s => ({ ...s, completed: false })) || []
         }))
@@ -820,7 +941,7 @@ const Modals = () => {
     
     // If dragged up more than 50px, maximize
     if (deltaY < -50) {
-      setData(prev => ({ ...prev, activeModal: 'workout-modal' }));
+      setData((prev: DataType) => ({ ...prev, activeModal: 'workout-modal' }));
     }
     
     // Reset transform
@@ -854,19 +975,54 @@ const Modals = () => {
   return (
     <>
       <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{ maxHeight: '80vh', overflow: 'auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <span className="back-button" onClick={goBack} style={{ marginRight: '10px' }}>←</span>
-            <h2 style={{ margin: 0, flex: 1 }}>Create Program</h2>
+        <div className="modal-content" style={{ 
+          maxHeight: '80vh', 
+          overflow: 'auto',
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+            <span className="back-button" onClick={goBack} style={{ 
+              marginRight: '16px',
+              fontSize: '1.4em',
+              cursor: 'pointer',
+              color: 'var(--text-muted)',
+              transition: 'color 0.2s ease',
+            }}>←</span>
+            <h2 style={{ 
+              margin: 0, 
+              flex: 1,
+              fontSize: '1.8em',
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>Create Program</h2>
           </div>
           <input 
             type="text" 
             id="program-name" 
             placeholder="Program Name (e.g., PUSH PULL LEGS)" 
-            style={{ marginBottom: '20px' }}
+            style={{ 
+              marginBottom: '24px',
+              background: 'var(--bg-lighter)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '14px 16px',
+              fontSize: '1em',
+            }}
           />
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ color: 'var(--text-muted)', fontSize: '0.9em', marginBottom: '8px', display: 'block' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ 
+              color: 'var(--text-muted)', 
+              fontSize: '0.9em', 
+              marginBottom: '12px', 
+              display: 'block',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              fontWeight: '600',
+            }}>
               Number of Weeks
             </label>
             <input
@@ -876,38 +1032,131 @@ const Modals = () => {
               min="1"
               max="52"
               onInput={generateWeeks}
-              style={{ marginBottom: '10px' }}
+              style={{ 
+                marginBottom: '12px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                fontSize: '1em',
+              }}
             />
           </div>
           <div id="program-weeks" style={{ marginBottom: '20px' }}>
             {renderProgramWeeks}
           </div>
-          <button onClick={addWeek} style={{ background: 'var(--bg-lighter)', color: 'var(--text)', marginBottom: '10px' }}>
+          <button onClick={addWeek} style={{ 
+            background: 'var(--bg-lighter)', 
+            color: 'var(--text)', 
+            marginBottom: '12px',
+            width: '100%',
+            borderRadius: '12px',
+            padding: '14px',
+            border: '1px solid var(--border)',
+            transition: 'all 0.2s ease',
+          }}>
             + Add Week
           </button>
-          <button onClick={saveProgram} style={{ background: 'var(--accent-primary)' }}>
+          <button onClick={saveProgram} style={{ 
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            width: '100%',
+            borderRadius: '12px',
+            padding: '14px',
+            fontWeight: '600',
+            fontSize: '1em',
+          }}>
             Save Program
           </button>
-          <button className="secondary" onClick={closeModal}>Cancel</button>
+          <button className="secondary" onClick={closeModal} style={{
+            background: 'transparent',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: 'rgba(239, 68, 68, 0.8)',
+            width: '100%',
+            marginTop: '8px',
+          }}>Cancel</button>
         </div>
       </div>
       
       <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <h2>{(data.currentProgram as any)?.name || 'Program'}</h2>
+        <div className="modal-content" style={{
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }}>
+          <h2 style={{
+            fontSize: '1.8em',
+            marginBottom: '24px',
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>{(data.currentProgram as any)?.name || 'Program'}</h2>
           <div id="program-weeks">{isSimitProgram ? renderSimitProgramWeeks : renderProgramWeeks}</div>
-          <button className="secondary" onClick={closeModal}>Cancel</button>
+          <button className="secondary" onClick={closeModal} style={{
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            width: '100%',
+            marginTop: '12px',
+          }}>Cancel</button>
         </div>
       </div>
       
       <div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
-        <div className="modal-content">
-          <span className="back-button" onClick={goBack}>←</span>
-          <h2>{isSimitProgram ? 'View Week' : 'Edit Week'} {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
-          {!isSimitProgram && <button onClick={addDayToWeek}>Add Day</button>}
+        <div className="modal-content" style={{
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+            <span className="back-button" onClick={goBack} style={{
+              marginRight: '16px',
+              fontSize: '1.4em',
+              cursor: 'pointer',
+              color: 'var(--text-muted)',
+              transition: 'color 0.2s ease',
+            }}>←</span>
+            <h2 style={{
+              margin: 0,
+              flex: 1,
+              fontSize: '1.6em',
+            }}>{isSimitProgram ? 'View Week' : 'Edit Week'} {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}</h2>
+          </div>
+          {!isSimitProgram && (
+            <button onClick={addDayToWeek} style={{
+              background: 'var(--bg-lighter)',
+              color: 'var(--text)',
+              width: '100%',
+              marginBottom: '16px',
+              borderRadius: '12px',
+              padding: '14px',
+              border: '1px solid var(--border)',
+            }}>
+              + Add Day
+            </button>
+          )}
           <div id="week-days">{renderWeekDays}</div>
-          {!isSimitProgram && <button onClick={saveWeek}>Save Week</button>}
-          <button className="secondary" onClick={closeModal}>Cancel</button>
+          {!isSimitProgram && (
+            <button onClick={saveWeek} style={{
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+              width: '100%',
+              borderRadius: '12px',
+              padding: '14px',
+              fontWeight: '600',
+              fontSize: '1em',
+              marginTop: '16px',
+            }}>
+              Save Week
+            </button>
+          )}
+          <button className="secondary" onClick={closeModal} style={{
+            background: 'transparent',
+            border: '1px solid var(--border)',
+            color: 'var(--text-muted)',
+            width: '100%',
+            marginTop: '8px',
+          }}>Cancel</button>
         </div>
       </div>
       
@@ -1082,7 +1331,7 @@ const Modals = () => {
                 gap: '8px',
                 padding: '0 20px',
               }}>
-                {data.currentWorkout?.exercises.map((ex, idx) => (
+                {data.currentWorkout?.exercises.map((ex: Exercise, idx: number) => (
                   <div key={idx} style={{
                     background: 'var(--bg-lighter)',
                     borderRadius: '8px',
@@ -1108,7 +1357,7 @@ const Modals = () => {
                       <div style={{ textAlign: 'center', fontWeight: '600' }}>Weight</div>
                       <div style={{ textAlign: 'center', fontWeight: '600' }}>Reps</div>
                       <div style={{ textAlign: 'center', fontWeight: '600' }}>{data.intensityMetric.toUpperCase()}</div>
-                      {ex.sets.map((set, sIdx) => (
+                      {ex.sets.map((set: any, sIdx: number) => (
                         <React.Fragment key={sIdx}>
                           <div>{sIdx + 1}</div>
                           <div style={{ textAlign: 'center' }}>{set.weight || '-'}</div>
@@ -1561,7 +1810,7 @@ const Modals = () => {
               </button>
               <button 
                 className="secondary" 
-                onClick={() => setData(prev => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
+                onClick={() => setData((prev: DataType) => ({ ...prev, tempBase64: null, tempTimestamp: null }))}
               >
                 Choose Different Photo
               </button>
@@ -1604,7 +1853,7 @@ const Modals = () => {
                                 timestamp = dt.getTime();
                               }
                             }
-                            setData(prev => ({ 
+                            setData((prev: DataType) => ({ 
                               ...prev, 
                               tempBase64: base64, 
                               tempTimestamp: timestamp 
@@ -1672,7 +1921,7 @@ const Modals = () => {
               <div className="settings-options" style={{ display: 'flex', gap: '10px' }}>
                 <div
                   className={`settings-option ${data.intensityMetric === 'rpe' ? 'active' : ''}`}
-                  onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rpe' }))}
+                  onClick={() => setData((prev: DataType) => ({ ...prev, intensityMetric: 'rpe' }))}
                   style={{
                     flex: 1,
                     padding: '10px',
@@ -1689,7 +1938,7 @@ const Modals = () => {
                 </div>
                 <div
                   className={`settings-option ${data.intensityMetric === 'rir' ? 'active' : ''}`}
-                  onClick={() => setData(prev => ({ ...prev, intensityMetric: 'rir' }))}
+                  onClick={() => setData((prev: DataType) => ({ ...prev, intensityMetric: 'rir' }))}
                   style={{
                     flex: 1,
                     padding: '10px',
@@ -1724,7 +1973,7 @@ const Modals = () => {
               <div className="settings-options" style={{ display: 'flex', gap: '10px' }}>
                 <div
                   className={`settings-option ${data.theme === 'dark' ? 'active' : ''}`}
-                  onClick={() => setData(prev => ({ ...prev, theme: 'dark' }))}
+                  onClick={() => setData((prev: DataType) => ({ ...prev, theme: 'dark' }))}
                   style={{
                     flex: 1,
                     padding: '10px',
@@ -1741,7 +1990,7 @@ const Modals = () => {
                 </div>
                 <div
                   className={`settings-option ${data.theme === 'light' ? 'active' : ''}`}
-                  onClick={() => setData(prev => ({ ...prev, theme: 'light' }))}
+                  onClick={() => setData((prev: DataType) => ({ ...prev, theme: 'light' }))}
                   style={{
                     flex: 1,
                     padding: '10px',
@@ -1831,7 +2080,7 @@ const Modals = () => {
             onClick={() => {
               const selectedPhotoData = data.tempBase64;
               const pics = data.progressPics;
-              const index = pics.findIndex(p => p.base64 === selectedPhotoData);
+              const index = pics.findIndex((p: any) => p.base64 === selectedPhotoData);
               if (index !== -1 && window.confirm("Are you sure you want to delete this photo?")) {
                 const newPics = [...pics];
                 newPics.splice(index, 1);
@@ -1858,7 +2107,7 @@ const Modals = () => {
               fontSize: '0.9em',
               color: 'var(--text-muted)',
             }}
-            onClick={() => setData(prev => ({ ...prev, activeModal: 'progress-photo-modal' }))}
+            onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'progress-photo-modal' }))}
             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >

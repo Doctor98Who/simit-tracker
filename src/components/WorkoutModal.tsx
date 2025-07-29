@@ -556,11 +556,17 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
       style={{ 
         opacity: isDragging ? 0.5 : 1,
         transform: isDragging ? 'scale(1.02) rotate(2deg)' : isHolding ? 'scale(0.98)' : isOver ? 'translateY(-2px)' : 'scale(1)',
-        boxShadow: isDragging ? '0 16px 32px rgba(59, 130, 246, 0.5)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+        boxShadow: isDragging ? '0 16px 32px rgba(59, 130, 246, 0.5)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
         height: isCollapsed ? '36px' : 'auto',
         overflow: 'hidden',
-        background: isDragging ? 'rgba(59, 130, 246, 0.1)' : isHolding ? 'var(--bg-lighter)' : isOver ? 'rgba(59, 130, 246, 0.05)' : 'var(--bg-lighter)',
-        border: isDragging ? '2px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid var(--border)',
+        background: isDragging 
+          ? 'rgba(59, 130, 246, 0.1)' 
+          : isHolding 
+          ? 'linear-gradient(135deg, var(--bg-lighter), rgba(59, 130, 246, 0.05))' 
+          : isOver 
+          ? 'rgba(59, 130, 246, 0.05)' 
+          : 'linear-gradient(135deg, var(--bg-lighter), rgba(255, 255, 255, 0.02))',
+        border: isDragging ? '2px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
         marginBottom: isOver ? '16px' : '6px',
         borderRadius: '10px',
         cursor: isDragging ? 'grabbing' : 'grab',
@@ -604,30 +610,6 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         onMouseLeave={handleTouchEnd}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-          {/* Feature 1: Exercise history button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              openExerciseHistory(ex);
-            }}
-            style={{
-              background: 'var(--bg-dark)',
-              border: '1px solid var(--border)',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.7em',
-              color: 'var(--accent-primary)',
-              padding: 0,
-              minHeight: 'auto',
-            }}
-          >
-            ℹ
-          </button>
           <div className="exercise-name" style={{ 
             fontSize: '1.2em', 
             fontWeight: '600',
@@ -645,15 +627,40 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
           </div>
         </div>
         {!isCollapsed && (
-          <span className="exercise-menu" onClick={(e) => {
-            e.stopPropagation();
-            openExerciseMenu(idx, e.currentTarget);
-          }} style={{ 
-            fontSize: '1em', 
-            padding: '2px 4px', 
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-          }}>⋯</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openExerciseHistory(ex);
+              }}
+              style={{
+                background: 'var(--bg-dark)',
+                border: '1px solid var(--border)',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '0.8em',
+                color: 'var(--accent-primary)',
+                padding: 0,
+                minHeight: 'auto',
+              }}
+            >
+              ℹ
+            </button>
+            <span className="exercise-menu" onClick={(e) => {
+              e.stopPropagation();
+              openExerciseMenu(idx, e.currentTarget);
+            }} style={{ 
+              fontSize: '1em', 
+              padding: '2px 4px', 
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+            }}>⋯</span>
+          </div>
         )}
       </div>
       {!isCollapsed && (

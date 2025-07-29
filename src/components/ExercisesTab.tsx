@@ -28,7 +28,7 @@ const ExercisesTab = () => {
     setData(prev => ({ ...prev, currentCustomName: name, currentCustomSubtype: subtype, currentCustomIdx: idx, activeModal: 'custom-menu-modal' }));
   }, [setData]);
 
-  const renderedExercises = useMemo(() => {
+const renderedExercises = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     const combinedDatabase: Exercise[] = [...(exerciseDatabase as Exercise[]), ...data.customExercises];
     
@@ -51,7 +51,25 @@ const ExercisesTab = () => {
     
     filtered.forEach((ex: Exercise) => {
       // Get the primary muscle group (first muscle listed)
-      const primaryMuscle = ex.muscles.split(',')[0].trim();
+      let primaryMuscle = ex.muscles.split(',')[0].trim();
+      
+      // Normalize muscle groups
+      if (primaryMuscle.toLowerCase().includes('chest')) {
+        primaryMuscle = 'Chest';
+      } else if (primaryMuscle.toLowerCase().includes('shoulder') || primaryMuscle.toLowerCase().includes('delt')) {
+        primaryMuscle = 'Shoulders';
+      } else if (primaryMuscle.toLowerCase().includes('back') || primaryMuscle === 'Lats' || primaryMuscle === 'Traps') {
+        primaryMuscle = 'Back';
+      } else if (primaryMuscle === 'Biceps' || primaryMuscle === 'Triceps' || primaryMuscle === 'Forearms') {
+        primaryMuscle = 'Arms';
+      } else if (primaryMuscle.toLowerCase().includes('quad') || primaryMuscle.toLowerCase().includes('hamstring') || 
+                 primaryMuscle.toLowerCase().includes('glute') || primaryMuscle.toLowerCase().includes('calf') || 
+                 primaryMuscle === 'Calves') {
+        primaryMuscle = 'Legs';
+      } else if (primaryMuscle.toLowerCase().includes('abs') || primaryMuscle.toLowerCase().includes('oblique') || 
+                 primaryMuscle.toLowerCase().includes('core')) {
+        primaryMuscle = 'Core';
+      }
       
       if (!muscleGroups[primaryMuscle]) {
         muscleGroups[primaryMuscle] = [];
@@ -61,14 +79,12 @@ const ExercisesTab = () => {
     
     // Sort muscle groups with most common ones first
     const muscleGroupOrder = [
-      'Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 
-      'Quads', 'Hamstrings', 'Glutes', 'Calves',
-      'Abdominals', 'Core', 'Full Body'
+      'Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Full Body'
     ];
     
     const sortedMuscleGroups = Object.keys(muscleGroups).sort((a, b) => {
-      const indexA = muscleGroupOrder.findIndex(m => a.includes(m));
-      const indexB = muscleGroupOrder.findIndex(m => b.includes(m));
+      const indexA = muscleGroupOrder.findIndex(m => a === m);
+      const indexB = muscleGroupOrder.findIndex(m => b === m);
       
       if (indexA !== -1 && indexB !== -1) {
         return indexA - indexB;
@@ -77,7 +93,6 @@ const ExercisesTab = () => {
       if (indexB !== -1) return 1;
       return a.localeCompare(b);
     });
-
     const list: React.ReactNode[] = [];
     
     sortedMuscleGroups.forEach((muscleGroup) => {

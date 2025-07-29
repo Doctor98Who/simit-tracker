@@ -143,7 +143,11 @@ const ProfileTab = () => {
 
   return (
     <div>
-      <div className="profile-header" id="profile-cover" style={{ backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none', position: 'relative' }}>
+      <div className="profile-header" id="profile-cover" style={{ 
+        backgroundImage: data.coverPhoto ? `url('${data.coverPhoto}')` : 'none', 
+        position: 'relative',
+        zIndex: 0 
+      }}>
         <div 
           className="settings-icon"
           onClick={openSettingsModal}
@@ -156,12 +160,14 @@ const ProfileTab = () => {
             borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.2)',
             backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             fontSize: '18px',
+            zIndex: 10,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
