@@ -2433,18 +2433,110 @@ onClick={() => {
               </div>
             </div>
 
-            {/* Account Section */}
-            <div style={{ padding: '20px' }}>
-              <button
-                className="delete-account-btn"
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.reload();
-                  }
-                }}
-                style={{
+{/* Account Section */}
+<div style={{ padding: '20px' }}>
+  <h3 style={{
+    margin: '0 0 15px 0',
+    fontSize: '0.8em',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  }}>
+    TROUBLESHOOTING
+  </h3>
+  
+  <button
+    onClick={() => {
+      if (window.confirm('Clear app cache? This will fix display issues but keep all your workout data, photos, and settings.')) {
+        // Keep user data
+        const userData = {
+          templates: data.templates,
+          history: data.history,
+          progressPics: data.progressPics,
+          profilePic: data.profilePic,
+          username: data.username,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          bio: data.bio,
+          email: data.email,
+          country: data.country,
+          state: data.state,
+          coverPhoto: data.coverPhoto,
+          completedPrograms: data.completedPrograms,
+          customExercises: data.customExercises,
+          theme: data.theme,
+          intensityMetric: data.intensityMetric,
+          weightUnit: data.weightUnit,
+          distanceUnit: data.distanceUnit,
+        };
+        
+        // Clear everything
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Restore user data
+        Object.entries(userData).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            localStorage.setItem(key, value);
+          } else {
+            localStorage.setItem(key, JSON.stringify(value));
+          }
+        });
+        
+        // Set data version
+        localStorage.setItem('dataVersion', '1.0.1');
+        
+        // Reload
+        window.location.reload();
+      }
+    }}
+    style={{
+      width: '100%',
+      background: 'var(--bg-lighter)',
+      color: 'var(--text)',
+      border: '1px solid var(--border)',
+      borderRadius: '8px',
+      padding: '12px',
+      fontSize: '0.9em',
+      fontWeight: '500',
+      cursor: 'pointer',
+      marginBottom: '40px',
+      transition: 'all 0.2s ease',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = 'var(--accent-primary)';
+      e.currentTarget.style.color = 'white';
+      e.currentTarget.style.borderColor = 'var(--accent-primary)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = 'var(--bg-lighter)';
+      e.currentTarget.style.color = 'var(--text)';
+      e.currentTarget.style.borderColor = 'var(--border)';
+    }}
+  >
+    Clear Cache
+  </button>
+  
+  <div style={{ 
+    fontSize: '0.75em', 
+    color: 'var(--text-muted)', 
+    marginTop: '-30px',
+    marginBottom: '30px',
+    textAlign: 'center'
+  }}>
+    Fixes black screens and display issues
+  </div>
+
+  <button
+    className="delete-account-btn"
+    onClick={() => {
+      if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.reload();
+      }
+    }}
+                    style={{
                   width: '100%',
                   background: 'transparent',
                   color: '#FF3B30',
