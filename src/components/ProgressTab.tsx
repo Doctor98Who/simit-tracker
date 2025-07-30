@@ -105,8 +105,7 @@ const uploadProgressPic = () => {
     cursor: 'pointer',
     aspectRatio: '1',
     overflow: 'hidden',
-    background: 'var(--bg-dark)',
-    borderRadius: '2px',
+    background: '#000',
   }}
 >
   <img 
@@ -115,26 +114,39 @@ const uploadProgressPic = () => {
     style={{
       width: '100%',
       height: '100%',
-      objectFit: 'contain',
+      objectFit: 'cover',
+      display: 'block',
     }}
   />
   {pic.pump && (
     <div style={{
       position: 'absolute',
-      top: '8px',
-      right: '8px',
-      background: 'rgba(0, 0, 0, 0.6)',
-      backdropFilter: 'blur(10px)',
-      borderRadius: '20px',
-      padding: '4px 8px',
-      fontSize: '0.7em',
+      bottom: '8px',
+      left: '8px',
+      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9))',
+      backdropFilter: 'blur(8px)',
+      borderRadius: '16px',
+      padding: '4px 10px',
+      fontSize: '11px',
       color: 'white',
       fontWeight: '600',
       display: 'flex',
       alignItems: 'center',
       gap: '4px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
     }}>
-      💪 {pic.pump}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.5 9.5L18.5 8.5C17.5 7.5 16 7 14.5 7C13 7 11.5 7.5 10.5 8.5L9.5 9.5L8.5 8.5C7.5 7.5 6 7 4.5 7C3 7 1.5 7.5 0.5 8.5L0.5 8.5C-0.5 9.5 -0.5 11 0.5 12L7.5 19C8.5 20 10 20.5 11.5 20.5C13 20.5 14.5 20 15.5 19L22.5 12C23.5 11 23.5 9.5 22.5 8.5C21.5 7.5 20.5 7.5 19.5 8.5V9.5Z" 
+          fill="white" 
+          stroke="white" 
+          strokeWidth="1.5" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        />
+        <path d="M15 3L17 5L15 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 3L7 5L9 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      {pic.pump}
     </div>
   )}
 </div>
@@ -168,16 +180,15 @@ const uploadProgressPic = () => {
     + Add Photo
   </div>
 </div>      
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '2px',
-        padding: '2px',
-        background: 'var(--bg-dark)',
-      }}>
-        {renderedProgressPics}
-      </div>
-
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: '1px',
+  background: 'var(--bg-dark)',
+  marginTop: '-20px',
+}}>
+  {renderedProgressPics}
+</div>
       {/* Photo Detail Modal */}
       {selectedPhoto && data.activeModal === 'progress-photo-modal' && (
         <div 

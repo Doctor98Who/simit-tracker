@@ -6,7 +6,7 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.1.3' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.4' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
@@ -148,24 +148,26 @@ useEffect(() => {
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
             border: '1px solid var(--border)',
           }} onClick={(e) => e.stopPropagation()}>
-            <div style={{
-              padding: '20px',
-              borderBottom: '1px solid var(--border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: 'var(--bg-light)',
-            }}>
-              <h3 style={{ 
-                margin: 0, 
-                fontSize: '1.2em',
-                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
-                What's New
-              </h3>
-              <button
+<div style={{
+  padding: '16px 20px',
+  borderBottom: '1px solid var(--border)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  background: 'var(--bg-light)',
+}}>
+  <h3 style={{ 
+    margin: 0, 
+    fontSize: '1.2em',
+    background: 'linear-gradient(135deg, #ffffff, #f0f0f0)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    fontWeight: '700',
+    letterSpacing: '-0.5px',
+  }}>
+    What's New
+  </h3>              
+  <button
                 onClick={() => setShowChangelog(false)}
                 style={{
                   background: 'transparent',
@@ -193,12 +195,14 @@ useEffect(() => {
               </button>
             </div>
             
-            <div style={{
-              padding: '20px',
-              overflowY: 'auto',
-              maxHeight: 'calc(80vh - 80px)',
-            }}>
-              <div style={{ marginBottom: '24px' }}>
+<div style={{
+  padding: '20px',
+  overflowY: 'auto',
+  maxHeight: 'calc(80vh - 65px)',
+  WebkitOverflowScrolling: 'touch',
+  overscrollBehavior: 'contain',
+}}>
+                <div style={{ marginBottom: '24px' }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -213,7 +217,7 @@ useEffect(() => {
                     fontSize: '0.75em',
                     fontWeight: '600',
                   }}>
-                    v0.1.3
+                    v0.1.4
                   </span>
                   <span style={{
                     color: 'var(--text-muted)',
@@ -241,7 +245,8 @@ useEffect(() => {
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
-                    <li>Cloud sync with Supabase - no more lost data!</li>
+                    <li>Added login capability!</li>
+                    <li>Added cloud sync with Supabase</li>
                     <li>1RM progress tracking and charts</li>
                     <li>Exercise history viewing</li>
                     <li>Rest timer with custom durations</li>
@@ -269,12 +274,13 @@ useEffect(() => {
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
-                    <li>Fixed Safari workout modal scrolling</li>
+                    <li>Fixed Safari based browser issues</li>
                     <li>Fixed profile photo uploads</li>
                     <li>Fixed light mode visibility issues</li>
                     <li>Fixed exercise selection on mobile</li>
                     <li>Fixed auto-populate previous weights</li>
                     <li>Fixed Firefox display issues</li>
+                    <li>Improved UI in Progress Tab</li>
                   </ul>
                 </div>
               </div>
