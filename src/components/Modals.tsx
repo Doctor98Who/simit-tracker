@@ -1349,14 +1349,15 @@ const Modals = () => {
           onMouseUp={handleMinimizedTouchEnd}
           onMouseLeave={handleMinimizedTouchEnd}
         >
-          <div className="drag-indicator" style={{
-            margin: '2px auto 4px',
-            width: '36px',
-            height: '4px',
-            background: 'rgba(255,255,255,0.4)',
-            borderRadius: '2px'
-          }}></div>
-          <div style={{
+<div className="drag-indicator" style={{
+  margin: '2px auto 4px',
+  width: '36px',
+  height: '4px',
+  background: data.theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+  borderRadius: '2px',
+  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+}}></div>          
+<div style={{
             fontSize: '0.95em',
             fontWeight: '700',
             color: 'var(--text)',
