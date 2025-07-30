@@ -245,6 +245,7 @@ useEffect(() => {
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
+                    <li>Complete overhaul of create program UI</li>
                     <li>Added login capability!</li>
                     <li>Added cloud sync with Supabase</li>
                     <li>1RM progress tracking and charts</li>
@@ -277,8 +278,7 @@ useEffect(() => {
                     lineHeight: '1.6',
                   }}>
                     <li>Fixed seach bar going off screen in ExerciseTab</li>
-                    <li>Fixed sync issues when refreshing/exiting browsser</li>
-                    <li>Fixed seach bar going off screen in ExerciseTab</li>
+                    <li>Fixed sync issues when refreshing/exiting browser</li>
                     <li>Fixed numerical display of sets involving warm up sets</li>
                   </ul>
                 </div>
