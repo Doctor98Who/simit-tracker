@@ -120,18 +120,16 @@ const uploadProgressPic = () => {
   }}
 >
   <img 
-    src={pic.base64} 
-    alt="Progress" 
-    style={{
-      maxWidth: '100%',
-      maxHeight: '100%',
-      width: 'auto',
-      height: 'auto',
-      objectFit: 'contain',
-      objectPosition: 'center',
-    }}
-  />
-  <img 
+  src={pic.base64} 
+  alt="Progress" 
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    objectPosition: 'center',
+  }}
+/>  
+<img 
   src={pic.base64} 
   alt="Progress" 
   style={{

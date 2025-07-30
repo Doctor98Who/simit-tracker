@@ -2087,25 +2087,30 @@ const Modals = () => {
 
           {data.tempBase64 ? (
             <>
-              <div style={{
-                width: '100%',
-                height: '300px',
-                marginBottom: '16px',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                background: 'var(--bg-lighter)',
-              }}>
-                <img
-                  src={data.tempBase64}
-                  alt="Preview"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-              </div>
-
+<div style={{
+  width: '100%',
+  height: '300px',
+  marginBottom: '16px',
+  borderRadius: '8px',
+  overflow: 'hidden',
+  background: 'var(--bg-lighter)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}}>
+  <img
+    src={data.tempBase64}
+    alt="Preview"
+    style={{
+      maxWidth: '100%',
+      maxHeight: '100%',
+      width: 'auto',
+      height: 'auto',
+      objectFit: 'contain',
+      objectPosition: 'center',
+    }}
+  />
+</div>
               <textarea
                 id="progress-caption"
                 placeholder="Write a caption..."
