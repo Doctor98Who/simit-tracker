@@ -6,7 +6,7 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.0.27' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.0' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
@@ -78,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.0.27' }) => {
           color: 'var(--text-muted)',
           fontWeight: '400',
         }}>
-          Alpha {version}
+          Beta {version}
         </span>
       </div>
 

@@ -1,7 +1,9 @@
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
-import { DataContext, DataType, Exercise } from '../DataContext';
+import { DataContext, DataType, Exercise, Template } from '../DataContext';
 import WorkoutModal from './WorkoutModal';
+import { useAuth0 } from '@auth0/auth0-react';
 import EXIF from 'exif-js';
+
 
 interface Day {
   name: string;
@@ -26,12 +28,7 @@ interface SimitProgram {
   }[];
 }
 
-interface Template {
-  name: string;
-  mesocycleLength: number;
-  weeks: Week[];
-  lastUsed: number;
-}
+
 
 interface ExerciseFromDatabase {
   name: string;
@@ -43,6 +40,7 @@ interface ExerciseFromDatabase {
 
 const Modals = () => {
   const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
+  const { logout } = useAuth0();
   const activeModal = data.activeModal;
   const [exerciseSelectMode, setExerciseSelectMode] = useState<'workout' | 'program' | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -216,7 +214,7 @@ const Modals = () => {
           exercises: preFilledExercises,
           startTime: Date.now(),
           duration: 0,
-          programName: (data.currentProgram as any).name || '' 
+          programName: (data.currentProgram as any).name || ''
         };
         setData((prev: DataType) => ({
           ...prev,
@@ -1349,15 +1347,15 @@ const Modals = () => {
           onMouseUp={handleMinimizedTouchEnd}
           onMouseLeave={handleMinimizedTouchEnd}
         >
-<div className="drag-indicator" style={{
-  margin: '2px auto 4px',
-  width: '36px',
-  height: '4px',
-  background: data.theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)',
-  borderRadius: '2px',
-  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-}}></div>          
-<div style={{
+          <div className="drag-indicator" style={{
+            margin: '2px auto 4px',
+            width: '36px',
+            height: '4px',
+            background: data.theme === 'light' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+            borderRadius: '2px',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+          }}></div>
+          <div style={{
             fontSize: '0.95em',
             fontWeight: '700',
             color: 'var(--text)',
@@ -2090,30 +2088,30 @@ const Modals = () => {
 
           {data.tempBase64 ? (
             <>
-<div style={{
-  width: '100%',
-  height: '300px',
-  marginBottom: '16px',
-  borderRadius: '8px',
-  overflow: 'hidden',
-  background: 'var(--bg-lighter)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}}>
-  <img
-    src={data.tempBase64}
-    alt="Preview"
-    style={{
-      maxWidth: '100%',
-      maxHeight: '100%',
-      width: 'auto',
-      height: 'auto',
-      objectFit: 'contain',
-      objectPosition: 'center',
-    }}
-  />
-</div>
+              <div style={{
+                width: '100%',
+                height: '300px',
+                marginBottom: '16px',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                background: 'var(--bg-lighter)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <img
+                  src={data.tempBase64}
+                  alt="Preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    objectFit: 'contain',
+                    objectPosition: 'center',
+                  }}
+                />
+              </div>
               <textarea
                 id="progress-caption"
                 placeholder="Write a caption..."
@@ -2426,7 +2424,7 @@ const Modals = () => {
           )}
         </div>
       </div>
-      <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
+<div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '400px',
           background: 'var(--bg-dark)',
@@ -2583,7 +2581,7 @@ const Modals = () => {
               </div>
             </div>
 
-            {/* Account Section */}
+            {/* ACCOUNT Section */}
             <div style={{ padding: '20px' }}>
               <h3 style={{
                 margin: '0 0 15px 0',
@@ -2592,54 +2590,11 @@ const Modals = () => {
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }}>
-                TROUBLESHOOTING
+                ACCOUNT
               </h3>
 
               <button
-                onClick={() => {
-                  if (window.confirm('Clear app cache? This will fix display issues but keep all your workout data, photos, and settings.')) {
-                    // Keep user data
-                    const userData = {
-                      templates: data.templates,
-                      history: data.history,
-                      progressPics: data.progressPics,
-                      profilePic: data.profilePic,
-                      username: data.username,
-                      firstName: data.firstName,
-                      lastName: data.lastName,
-                      bio: data.bio,
-                      email: data.email,
-                      country: data.country,
-                      state: data.state,
-                      coverPhoto: data.coverPhoto,
-                      completedPrograms: data.completedPrograms,
-                      customExercises: data.customExercises,
-                      theme: data.theme,
-                      intensityMetric: data.intensityMetric,
-                      weightUnit: data.weightUnit,
-                      distanceUnit: data.distanceUnit,
-                    };
-
-                    // Clear everything
-                    localStorage.clear();
-                    sessionStorage.clear();
-
-                    // Restore user data
-                    Object.entries(userData).forEach(([key, value]) => {
-                      if (typeof value === 'string') {
-                        localStorage.setItem(key, value);
-                      } else {
-                        localStorage.setItem(key, JSON.stringify(value));
-                      }
-                    });
-
-                    // Set data version
-                    localStorage.setItem('dataVersion', '1.0.1');
-
-                    // Reload
-                    window.location.reload();
-                  }
-                }}
+                onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
                 style={{
                   width: '100%',
                   background: 'var(--bg-lighter)',
@@ -2650,7 +2605,7 @@ const Modals = () => {
                   fontSize: '0.9em',
                   fontWeight: '500',
                   cursor: 'pointer',
-                  marginBottom: '40px',
+                  marginBottom: '20px',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
@@ -2664,18 +2619,8 @@ const Modals = () => {
                   e.currentTarget.style.borderColor = 'var(--border)';
                 }}
               >
-                Clear Cache
+                Log Out
               </button>
-
-              <div style={{
-                fontSize: '0.75em',
-                color: 'var(--text-muted)',
-                marginTop: '-30px',
-                marginBottom: '30px',
-                textAlign: 'center'
-              }}>
-                Fixes black screens and display issues
-              </div>
 
               <button
                 className="delete-account-btn"
@@ -2691,7 +2636,12 @@ const Modals = () => {
                   background: 'transparent',
                   color: '#FF3B30',
                   border: '1px solid #FF3B30',
-                  marginTop: '20px',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
@@ -3002,6 +2952,7 @@ const Modals = () => {
           </div>
         </div>
       </div>
+// Replace the photo-menu-modal section in Modals.tsx with this:
 
       <div id="photo-menu-modal" className={`modal ${activeModal === 'photo-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -3040,10 +2991,11 @@ const Modals = () => {
             onClick={() => {
               const selectedPhotoData = data.tempBase64;
               const pics = data.progressPics;
-              const index = pics.findIndex((p: any) => p.base64 === selectedPhotoData);
-              if (index !== -1 && window.confirm("Are you sure you want to delete this photo?")) {
-                const newPics = [...pics];
-                newPics.splice(index, 1);
+              const photoToDelete = pics.find((p: any) => p.base64 === selectedPhotoData);
+              
+              if (photoToDelete && window.confirm("Are you sure you want to delete this photo?")) {
+                // Remove from local state
+                const newPics = pics.filter((p: any) => p.id !== photoToDelete.id);
                 setData((prev: DataType) => ({
                   ...prev,
                   progressPics: newPics,
@@ -3075,7 +3027,6 @@ const Modals = () => {
           </div>
         </div>
       </div>
-
       <div id="progress-menu-modal" className={`modal ${activeModal === 'progress-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '300px',
