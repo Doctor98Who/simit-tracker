@@ -1362,9 +1362,6 @@ const saveCustomExercise = () => {
     </div>
   </div>
 </div>
-
-
-
 <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
   <div className="modal-content" style={{
     background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',

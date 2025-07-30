@@ -243,12 +243,24 @@ if (newData.username !== prev.username ||
   DatabaseService.updateUserProfile(user.sub, newData).catch(console.error);
 }
         
-        // Workout completion
-        if (newData.history.length > prev.history.length) {
-          const newWorkout = newData.history[newData.history.length - 1];
-          DatabaseService.saveWorkout(dbUser.id, newWorkout).catch(console.error);
-        }
-        
+// Workout completion
+if (newData.history.length > prev.history.length) {
+  const newWorkout = newData.history[newData.history.length - 1];
+  DatabaseService.saveWorkout(dbUser.id, newWorkout).catch(console.error);
+}
+
+// Add this new section for workout deletion
+if (newData.history.length < prev.history.length) {
+  // Find which workout was deleted by comparing arrays
+  const deletedWorkout = prev.history.find((workout, index) => 
+    !newData.history[index] || newData.history[index].startTime !== workout.startTime
+  );
+  
+  if (deletedWorkout) {
+    // You'll need to sync the entire history array since we don't have individual workout IDs
+    DatabaseService.updateUserProfile(user.sub, { history: newData.history }).catch(console.error);
+  }
+}        
         // Progress photo addition
         if (newData.progressPics.length > prev.progressPics.length) {
           const newPhoto = newData.progressPics[newData.progressPics.length - 1];
