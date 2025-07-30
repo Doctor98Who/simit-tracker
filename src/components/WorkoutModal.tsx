@@ -711,63 +711,60 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="8" cy="5" r="0.75" fill="currentColor" />
-                <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShow1RMProgress(true);
-setSelected1RMExercise(ex);     
-              }}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                borderRadius: '6px',
-                width: '24px',
-                height: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '0.9em',
-                color: 'var(--accent-primary)',
-                padding: 0,
-                minHeight: 'auto',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-                e.currentTarget.style.transform = 'scale(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="8" cy="5" r="0.75" fill="currentColor" />
-                <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-            <span className="exercise-menu" onClick={(e) => {
-              e.stopPropagation();
-              openExerciseMenu(idx, e.currentTarget);
-            }} style={{
-              fontSize: '1em',
-              padding: '2px 4px',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-            }}>⋯</span>
-          </div>
-        )}      </div>
-      {!isCollapsed && (
-        <div style={{ padding: '0 12px 10px' }}>
-          <div className="set-table-header" style={{
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+  <circle cx="8" cy="5" r="0.75" fill="currentColor" />
+  <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+</svg>
+</button>
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setShow1RMProgress(true);
+    setSelected1RMExercise(ex);    
+  }}
+  style={{
+    background: 'transparent',
+    border: '1px solid var(--accent-primary)',
+    borderRadius: '4px',
+    padding: '2px 6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    fontSize: '0.65em',
+    color: 'var(--accent-primary)',
+    minHeight: 'auto',
+    transition: 'all 0.2s ease',
+    fontWeight: '700',
+    letterSpacing: '-0.5px',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = 'var(--accent-primary)';
+    e.currentTarget.style.color = 'white';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = 'transparent';
+    e.currentTarget.style.color = 'var(--accent-primary)';
+  }}
+  title="View 1RM Progress"
+>
+  1RM
+</button>
+<span className="exercise-menu" onClick={(e) => {
+  e.stopPropagation();
+  openExerciseMenu(idx, e.currentTarget);
+}} style={{
+  fontSize: '1em',
+  padding: '2px 4px',
+  color: 'var(--text-muted)',
+  cursor: 'pointer',
+}}>⋯</span>
+</div>
+)}      </div>
+{!isCollapsed && (
+<div style={{ padding: '0 12px 10px' }}>
+            <div className="set-table-header" style={{
             display: 'grid',
             gridTemplateColumns: '32px 1fr 48px 48px 48px 22px',
             gap: '6px',

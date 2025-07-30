@@ -45,34 +45,69 @@ export function calculateOneRM(weight: number, reps: number, rpe?: number): numb
 export function getOneRMHistory(history: any[], exerciseName: string, exerciseSubtype?: string): OneRMData[] {
   const oneRMHistory: OneRMData[] = [];
   
+  console.log('Getting 1RM history for:', exerciseName, exerciseSubtype);
+  console.log('Total workouts:', history.length);
+  
   history.forEach(workout => {
     workout.exercises.forEach((exercise: any) => {
       if (exercise.name === exerciseName && (!exerciseSubtype || exercise.subtype === exerciseSubtype)) {
-        exercise.sets.forEach((set: any) => {
-          if (set.completed && set.weight && set.reps && set.rpe) {
-            const estimated1RM = calculateOneRM(
-              parseFloat(set.weight),
-              parseInt(set.reps),
-              parseFloat(set.rpe)
-            );
+        console.log('Found matching exercise in workout:', workout.startTime);
+        
+        exercise.sets.forEach((set: any, idx: number) => {
+          console.log(`Set ${idx + 1}:`, set);
+          
+          if (set.completed && set.weight && set.reps) {
+            // Check for either RPE or RIR
+            let rpeValue = set.rpe;
             
-            if (estimated1RM > 0) {
-              oneRMHistory.push({
-                exercise: exercise.name,
-                subtype: exercise.subtype,
-                date: workout.startTime,
-                estimated1RM,
-                weight: parseFloat(set.weight),
-                reps: parseInt(set.reps),
-                rpe: parseFloat(set.rpe),
-                programName: workout.programName
+            // If using RIR, convert to RPE (RPE = 10 - RIR)
+            if (!rpeValue && set.rir !== undefined && set.rir !== '') {
+              rpeValue = (10 - parseFloat(set.rir)).toString();
+              console.log(`Converted RIR ${set.rir} to RPE ${rpeValue}`);
+            }
+            
+            if (rpeValue) {
+              const estimated1RM = calculateOneRM(
+                parseFloat(set.weight),
+                parseInt(set.reps),
+                parseFloat(rpeValue)
+              );
+              
+              console.log(`Calculated 1RM: ${estimated1RM}`);
+              
+              if (estimated1RM > 0) {
+                oneRMHistory.push({
+                  exercise: exercise.name,
+                  subtype: exercise.subtype,
+                  date: workout.startTime,
+                  estimated1RM,
+                  weight: parseFloat(set.weight),
+                  reps: parseInt(set.reps),
+                  rpe: parseFloat(rpeValue),
+                  programName: workout.programName
+                });
+              }
+            } else {
+              console.log('Set missing intensity data (no RPE or RIR):', {
+                completed: set.completed,
+                weight: set.weight,
+                reps: set.reps,
+                rpe: set.rpe,
+                rir: set.rir
               });
             }
+          } else {
+            console.log('Set missing basic data:', {
+              completed: set.completed,
+              weight: set.weight,
+              reps: set.reps
+            });
           }
         });
       }
     });
   });
   
+  console.log('Total 1RM entries found:', oneRMHistory.length);
   return oneRMHistory.sort((a, b) => a.date - b.date);
 }
