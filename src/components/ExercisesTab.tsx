@@ -175,33 +175,64 @@ return (
       fontWeight: '600',
       color: 'var(--text)',
     }}>Exercises</h2>
-<input
-  type="text"
-  className="search-bar"
-  id="exercise-search"
-  placeholder="Search exercises..."
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
-/>
-<div 
-  onClick={openCustomExerciseModal}
-  style={{
-    color: 'var(--accent-primary)',
-    fontSize: '1em',
-    cursor: 'pointer',
-    textAlign: 'right',
-    marginBottom: '16px',
-    fontWeight: '500',
-    background: 'transparent',
-    border: 'none',
-    padding: '0',
-  }}
->
-  + Exercise
-</div>
-<div id="exercise-list">{renderedExercises}</div>
+    <div style={{ position: 'relative', marginBottom: '8px' }}>
+      <input
+        type="text"
+        className="search-bar"
+        id="exercise-search"
+        placeholder="Search exercises..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        style={{
+          width: '100%',
+          paddingRight: searchQuery ? '40px' : '16px',
+        }}
+      />
+      {searchQuery && (
+        <button
+          onClick={() => setSearchQuery('')}
+          style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--text-muted)',
+            fontSize: '1.2em',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 'auto',
+            width: '24px',
+            height: '24px',
+          }}
+        >
+          ×
+        </button>
+      )}
     </div>
-  );
+    <div 
+      onClick={openCustomExerciseModal}
+      style={{
+        color: 'var(--accent-primary)',
+        fontSize: '1em',
+        cursor: 'pointer',
+        textAlign: 'right',
+        marginBottom: '16px',
+        fontWeight: '500',
+        background: 'transparent',
+        border: 'none',
+        padding: '0',
+      }}
+    >
+      + Exercise
+    </div>
+    <div id="exercise-list">{renderedExercises}</div>
+  </div>
+);
 };
 
 export default ExercisesTab;

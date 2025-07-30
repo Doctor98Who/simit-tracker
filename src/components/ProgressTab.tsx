@@ -184,7 +184,7 @@ const uploadProgressPic = () => {
   display: 'grid',
   gridTemplateColumns: 'repeat(3, 1fr)',
   gap: '1px',
-  background: 'white',
+  background: '#000',
   margin: '0 -20px',  // Full width to edges
 }}>
   {renderedProgressPics}
