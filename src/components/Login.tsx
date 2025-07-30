@@ -15,11 +15,11 @@ export const Login: React.FC = () => {
       padding: '20px',
     }}>
       <h2 style={{ 
-        fontSize: '1.8em', 
-        marginBottom: '20px',
+        fontSize: '2.5em', 
+        marginBottom: '24px',
         color: 'white',
-        fontWeight: '400',
-        letterSpacing: '-0.5px',
+        fontWeight: '700',
+        letterSpacing: '-1px',
       }}>
         Welcome to
       </h2>
