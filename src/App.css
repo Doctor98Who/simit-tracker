@@ -461,7 +461,8 @@ body {
 }
 .progress-pic {
   position: relative;
-  aspect-ratio: 1;
+  width: 100%;
+  padding-bottom: 100%;  /* This creates 1:1 aspect ratio */
   overflow: hidden;
   cursor: pointer;
   background: #000;
@@ -469,6 +470,9 @@ body {
 }
 
 .progress-pic img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;

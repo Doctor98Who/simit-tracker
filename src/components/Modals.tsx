@@ -2083,15 +2083,19 @@ const Modals = () => {
       </div>
 
 <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{ 
-    maxWidth: '400px',
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    overflow: 'hidden',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  }}>
-    {/* Header */}
+<div className="modal-content" style={{ 
+  maxWidth: '400px',
+  maxHeight: '90vh',  // Add this
+  overflowY: 'auto',  // Add this
+  background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+  borderRadius: '24px',
+  padding: '0',
+  overflow: 'hidden',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  display: 'flex',      // Add this
+  flexDirection: 'column',  // Add this
+}}>
+      {/* Header */}
     <div style={{
       padding: '20px 24px',
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
@@ -2109,8 +2113,13 @@ const Modals = () => {
       }}>New Progress Photo</h2>
     </div>
 
-    <div style={{ padding: '24px' }}>
-      {data.tempBase64 ? (
+<div style={{ 
+  padding: '24px',
+  overflowY: 'auto',
+  flex: 1,
+  WebkitOverflowScrolling: 'touch',
+}}>    
+  {data.tempBase64 ? (
         <>
           <div style={{
             width: '100%',
