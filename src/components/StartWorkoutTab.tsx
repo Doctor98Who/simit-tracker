@@ -90,6 +90,8 @@ const createProgram = () => {
     }));
   }, [setData]);
 
+// In StartWorkoutTab.tsx, find the renderedProgramsInProgress section and replace it with:
+
   const renderedProgramsInProgress = useMemo(() => {
     const completedProgramNames = Object.keys(data.completedPrograms);
     if (completedProgramNames.length === 0) {
@@ -102,7 +104,9 @@ const createProgram = () => {
       if (!program) return null;
       
       const progress = data.completedPrograms[programName];
-      const totalDays = program.weeks.reduce((acc: number, week: any) => acc + week.days.length, 0);
+      // Fix: Cast program.weeks to ensure it's an array
+      const weeks = program.weeks as Array<{days: Array<any>}>;
+      const totalDays = weeks.reduce((acc: number, week: any) => acc + (week.days?.length || 0), 0);
       const completedDays = Object.keys(progress).length;
       
       return (
@@ -114,7 +118,6 @@ const createProgram = () => {
       );
     }).filter(Boolean);
   }, [data.completedPrograms, data.templates, simitPrograms, showProgramWeeks, openProgressMenu]);
-
   const renderedTemplates = useMemo(() => {
     if (data.templates.length === 0) {
       return <div className="feed-placeholder">No custom programs yet</div>;
