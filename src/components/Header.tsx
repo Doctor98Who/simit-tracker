@@ -6,13 +6,18 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.1.2' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.3' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
     if ('serviceWorker' in navigator) {
+      // Check for updates immediately on load
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.update();
+      });
+
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data.type === 'NEW_VERSION_AVAILABLE') {
           setUpdateAvailable(true);
@@ -30,9 +35,17 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.1.2' }) => {
           });
         });
 
+        // Check for updates every 5 minutes
         setInterval(() => {
           registration.update();
-        }, 30 * 60 * 1000);
+        }, 5 * 60 * 1000);
+      });
+
+      // Also check when window regains focus
+      window.addEventListener('focus', () => {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.update();
+        });
       });
     }
   }, []);
@@ -200,7 +213,7 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.1.2' }) => {
                     fontSize: '0.75em',
                     fontWeight: '600',
                   }}>
-                    v0.1.2
+                    v0.1.3
                   </span>
                   <span style={{
                     color: 'var(--text-muted)',
