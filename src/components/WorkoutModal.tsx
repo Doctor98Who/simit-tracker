@@ -1394,13 +1394,14 @@ const WorkoutModal: React.FC = () => {
             flexShrink: 0,
           }}
         >
-          <div className="drag-indicator" style={{
-            width: '32px',
-            height: '3px',
-            background: 'var(--border)',
-            borderRadius: '2px',
-            margin: '0 auto',
-          }}></div>
+<div className="drag-indicator" style={{
+  width: '32px',
+  height: '3px',
+  background: data.theme === 'light' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)',
+  borderRadius: '2px',
+  margin: '0 auto',
+  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+}}></div>
         </div>
 
         <div className="workout-header" style={{
