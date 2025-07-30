@@ -1,6 +1,7 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm install react-scripts --force && npm install --force && npm run build"
   publish = "build"
 
 [build.environment]
   CI = "false"
+  NODE_VERSION = "16"
