@@ -1363,7 +1363,7 @@ const saveCustomExercise = () => {
   </div>
 </div>
 
-// Add these modals after your existing program-modal in Modals.tsx
+
 
 <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
   <div className="modal-content" style={{
