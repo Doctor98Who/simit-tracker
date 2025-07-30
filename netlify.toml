@@ -1,7 +1,17 @@
 [build]
-  command = "npm install react-scripts --force && npm install --force && npm run build"
+  command = "npm ci && npm run build"
   publish = "build"
 
 [build.environment]
   CI = "false"
-  NODE_VERSION = "16"
+  NODE_VERSION = "18"
+  # Exclude React environment variables from secrets scanning
+  SECRETS_SCAN_OMIT_KEYS = "REACT_APP_AUTH0_DOMAIN,REACT_APP_AUTH0_CLIENT_ID,REACT_APP_SUPABASE_URL,REACT_APP_SUPABASE_ANON_KEY"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  GENERATE_SOURCEMAP = "false"
