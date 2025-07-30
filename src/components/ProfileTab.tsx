@@ -40,7 +40,7 @@ const ProfileTab = () => {
     );
   };
 
-  const editProfilePic = () => {
+const editProfilePic = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -48,12 +48,54 @@ const ProfileTab = () => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files[0]) {
         const file = target.files[0];
+        
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Image is too large. Please choose an image under 5MB.');
+          return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (event: ProgressEvent<FileReader>) => {
           if (event.target && event.target.result) {
             const base64Result = event.target.result as string;
-            setData((prev: DataType) => ({ ...prev, profilePic: base64Result }));
+            
+            // Create image to resize if needed
+            const img = new Image();
+            img.src = base64Result;
+            
+            img.onload = () => {
+              const maxSize = 400; // Smaller size for profile pics
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > maxSize || height > maxSize) {
+                const ratio = Math.min(maxSize / width, maxSize / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+              }
+              
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, width, height);
+                const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // Update profile pic - this will trigger sync with Supabase
+                setData((prev: DataType) => ({ ...prev, profilePic: resizedBase64 }));
+              }
+            };
+            
+            img.onerror = () => {
+              alert('Failed to process image. Please try another photo.');
+            };
           }
+        };
+        reader.onerror = () => {
+          alert('Failed to read image. Please try again.');
         };
         reader.readAsDataURL(file);
       }
