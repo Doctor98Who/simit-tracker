@@ -21,10 +21,9 @@ const BottomNav = ({ activeTab, setActiveTab }: BottomNavProps) => {
       id: 'community-tab', 
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
         </svg>
       ), 
       label: 'Community' 
@@ -42,14 +41,11 @@ const BottomNav = ({ activeTab, setActiveTab }: BottomNavProps) => {
       id: 'exercises-tab', 
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6.5 6.5m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/>
-          <path d="M17.5 6.5m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/>
-          <path d="M6.5 17.5m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/>
-          <path d="M17.5 17.5m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/>
-          <path d="M9 7h6"/>
-          <path d="M9 17h6"/>
-          <path d="M7 9v6"/>
-          <path d="M17 9v6"/>
+          <path d="M9 11H3"/>
+          <path d="M21 11h-6"/>
+          <rect x="10" y="7" width="4" height="14" rx="1"/>
+          <rect x="4" y="9" width="4" height="10" rx="1"/>
+          <rect x="16" y="9" width="4" height="10" rx="1"/>
         </svg>
       ), 
       label: 'Exercises' 
@@ -58,9 +54,10 @@ const BottomNav = ({ activeTab, setActiveTab }: BottomNavProps) => {
       id: 'progress-tab', 
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-          <polyline points="21 15 16 10 5 21"/>
+          <line x1="12" y1="20" x2="12" y2="10"/>
+          <line x1="18" y1="20" x2="18" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="16"/>
+          <path d="M3 20h18"/>
         </svg>
       ), 
       label: 'Progress' 
