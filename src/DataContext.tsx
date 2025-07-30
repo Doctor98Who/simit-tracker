@@ -5,7 +5,7 @@ import { setSupabaseAuth0Id } from './lib/supabase';
 import { createContext, useState, useEffect } from 'react';
 import { exerciseDatabase } from './data/ExerciseDatabase';
 import { simitPrograms } from './data/SimitPrograms';
-
+import { supabase } from './lib/supabase';
 export interface Set {
   weight: string;
   reps: string;
@@ -249,19 +249,48 @@ if (newData.history.length > prev.history.length) {
   DatabaseService.saveWorkout(dbUser.id, newWorkout).catch(console.error);
 }
 
-// Add this new section for workout deletion
+// Workout deletion
 if (newData.history.length < prev.history.length) {
-  // Find which workout was deleted by comparing arrays
-  const deletedWorkout = prev.history.find((workout, index) => 
+  // Find which workout was deleted
+  const deletedIndex = prev.history.findIndex((workout, index) => 
     !newData.history[index] || newData.history[index].startTime !== workout.startTime
   );
   
-  if (deletedWorkout) {
-    // You'll need to sync the entire history array since we don't have individual workout IDs
-    DatabaseService.updateUserProfile(user.sub, { history: newData.history }).catch(console.error);
+  if (deletedIndex !== -1) {
+    const deletedWorkout = prev.history[deletedIndex];
+    
+    // Create an async function to handle the deletion
+    const deleteWorkoutFromSupabase = async () => {
+      try {
+        const { data: workoutToDelete, error } = await supabase
+          .from('workouts')
+          .select('id')
+          .eq('user_id', dbUser.id)
+          .eq('start_time', deletedWorkout.startTime)
+          .eq('name', deletedWorkout.name)
+          .single();
+        
+        if (!error && workoutToDelete) {
+          const { error: deleteError } = await supabase
+            .from('workouts')
+            .delete()
+            .eq('id', workoutToDelete.id);
+          
+          if (deleteError) {
+            console.error('Error deleting workout:', deleteError);
+          }
+        }
+      } catch (error) {
+        console.error('Error in workout deletion:', error);
+      }
+    };
+    
+    // Call the async function
+    deleteWorkoutFromSupabase();
   }
-}        
-        // Progress photo addition
+}
+
+// Progress photo addition
         if (newData.progressPics.length > prev.progressPics.length) {
           const newPhoto = newData.progressPics[newData.progressPics.length - 1];
           DatabaseService.saveProgressPhoto(dbUser.id, newPhoto)
