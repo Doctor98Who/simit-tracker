@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
 import { useDrag, useDrop, DragSourceMonitor } from 'react-dnd';
 import { DataContext, type Set } from '../DataContext';
+import OneRMProgressModal from './OneRMProgressModal';
 
 const ItemType = 'EXERCISE';
 
@@ -27,6 +28,8 @@ interface WorkoutExerciseItemProps {
   intensityMetric: 'rpe' | 'rir';
   addDropSet: (exIdx: number, afterSetIdx: number) => void;
   openExerciseHistory: (ex: Exercise) => void;
+  setShow1RMProgress: (show: boolean) => void;  // Add this line
+  setSelected1RMExercise: (ex: Exercise | null) => void;  // Add this line
 }
 
 interface DragItem {
@@ -68,8 +71,8 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             // Play a sound if possible
             try {
               const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHWm+7+OZURE');
-              audio.play().catch(() => {});
-            } catch (e) {}
+              audio.play().catch(() => { });
+            } catch (e) { }
             return null;
           }
           return prev - 1;
@@ -301,25 +304,25 @@ const RestTimer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 // Exercise History Modal - Feature 1
 const ExerciseHistoryModal: React.FC<{ exercise: Exercise, onClose: () => void }> = ({ exercise, onClose }) => {
   const { data } = useContext(DataContext);
-  
+
   const exerciseHistory = useMemo(() => {
     const history: HistoryEntry[] = [];
-    
-data.history.forEach((workout: any) => {
-  const matchingEx = workout.exercises.find((e: any) => 
-    e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
-  );
-  
-  if (matchingEx && matchingEx.sets && matchingEx.sets.length > 0) {
-    history.push({
-      date: workout.startTime,
-      sets: matchingEx.sets.filter((s: any) => s.completed)
+
+    data.history.forEach((workout: any) => {
+      const matchingEx = workout.exercises.find((e: any) =>
+        e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
+      );
+
+      if (matchingEx && matchingEx.sets && matchingEx.sets.length > 0) {
+        history.push({
+          date: workout.startTime,
+          sets: matchingEx.sets.filter((s: any) => s.completed)
+        });
+      }
     });
-  }
-});    
     return history.sort((a, b) => b.date - a.date);
   }, [data.history, exercise]);
-  
+
   return (
     <div style={{
       position: 'fixed',
@@ -361,7 +364,7 @@ data.history.forEach((workout: any) => {
           ×
         </button>
       </div>
-      
+
       {exerciseHistory.length === 0 ? (
         <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
           No history for this exercise yet
@@ -408,12 +411,12 @@ data.history.forEach((workout: any) => {
   );
 };
 
-const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({ 
-  ex, 
-  idx, 
-  moveExercise, 
-  openExerciseMenu, 
-  updateSet, 
+const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
+  ex,
+  idx,
+  moveExercise,
+  openExerciseMenu,
+  updateSet,
   addSet,
   deleteSet,
   isGlobalDragging,
@@ -421,7 +424,9 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   onDragEnd,
   intensityMetric,
   addDropSet,
-  openExerciseHistory
+  openExerciseHistory,
+  setShow1RMProgress,  // Add this line
+  setSelected1RMExercise  // Add this line
 }) => {
   const { data } = useContext(DataContext);
   const ref = useRef<HTMLDivElement>(null);
@@ -429,7 +434,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const [localIsDragging, setLocalIsDragging] = useState(false);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
-  
+
   const [{ handlerId, isOver }, drop] = useDrop<DragItem, void, { handlerId: string | symbol | null; isOver: boolean }>({
     accept: ItemType,
     collect(monitor) {
@@ -513,7 +518,7 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     const touch = 'touches' in e ? e.touches[0] : e;
     touchStartPos.current = { x: touch.clientX, y: touch.clientY };
-    
+
     longPressTimer.current = setTimeout(() => {
       setIsHolding(true);
       // Haptic feedback if available
@@ -525,11 +530,11 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
 
   const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!touchStartPos.current || !longPressTimer.current) return;
-    
+
     const touch = 'touches' in e ? e.touches[0] : e;
     const deltaX = Math.abs(touch.clientX - touchStartPos.current.x);
     const deltaY = Math.abs(touch.clientY - touchStartPos.current.y);
-    
+
     // If user moves finger more than 10px before long press, cancel
     if (deltaX > 10 || deltaY > 10) {
       if (longPressTimer.current) {
@@ -554,66 +559,66 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
 
-const toggleSetType = (setIdx: number) => {
-  const currentSet = ex.sets[setIdx];
-  
-  // Don't allow changing type of auto-generated drop sets
-  if (isDropSet(setIdx)) return;
-  
-  // Cycle through: S (undefined) -> W -> D -> S
-  let newType: 'W' | 'D' | 'S' | undefined;
-  if (!currentSet.type || currentSet.type === 'S') {
-    newType = 'W';
-  } else if (currentSet.type === 'W') {
-    newType = 'D';
-    // Add drop set automatically when D is selected
-    addDropSet(idx, setIdx);
-  } else {
-    newType = 'S';
-  }
-  
-  updateSet(idx, setIdx, 'type', newType);
-};  
-const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
-  if (set.type === 'W') return 'W';
-  if (set.type === 'D') return 'D';
-  if ((set as any).isDropSet) return 'DS';
-  
-  // Count all non-drop sets before and including this one
-  let regularSetNumber = 0;
-  for (let i = 0; i <= setIdx; i++) {
-    if (!(allSets[i] as any).isDropSet) {
-      regularSetNumber++;
+  const toggleSetType = (setIdx: number) => {
+    const currentSet = ex.sets[setIdx];
+
+    // Don't allow changing type of auto-generated drop sets
+    if (isDropSet(setIdx)) return;
+
+    // Cycle through: S (undefined) -> W -> D -> S
+    let newType: 'W' | 'D' | 'S' | undefined;
+    if (!currentSet.type || currentSet.type === 'S') {
+      newType = 'W';
+    } else if (currentSet.type === 'W') {
+      newType = 'D';
+      // Add drop set automatically when D is selected
+      addDropSet(idx, setIdx);
+    } else {
+      newType = 'S';
     }
-  }
-  return regularSetNumber.toString();
-};
-const isDropSet = (setIdx: number): boolean => {
-  if (setIdx === 0) return false;
-  
-  // Check if this set has the isDropSet flag
-  return !!(ex.sets[setIdx] as any).isDropSet;
-};
-// Collapsed state when any exercise is being dragged
+
+    updateSet(idx, setIdx, 'type', newType);
+  };
+  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
+    if (set.type === 'W') return 'W';
+    if (set.type === 'D') return 'D';
+    if ((set as any).isDropSet) return 'DS';
+
+    // Count all non-drop sets before and including this one
+    let regularSetNumber = 0;
+    for (let i = 0; i <= setIdx; i++) {
+      if (!(allSets[i] as any).isDropSet) {
+        regularSetNumber++;
+      }
+    }
+    return regularSetNumber.toString();
+  };
+  const isDropSet = (setIdx: number): boolean => {
+    if (setIdx === 0) return false;
+
+    // Check if this set has the isDropSet flag
+    return !!(ex.sets[setIdx] as any).isDropSet;
+  };
+  // Collapsed state when any exercise is being dragged
   const isCollapsed = isGlobalDragging && !isDragging;
 
   return (
-    <div 
+    <div
       ref={ref}
-      className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCollapsed ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`} 
-      style={{ 
+      className={`exercise-item ${isDragging ? 'dragging' : ''} ${isCollapsed ? 'collapsed' : ''} ${isHolding ? 'holding' : ''}`}
+      style={{
         opacity: isDragging ? 0.5 : 1,
         transform: isDragging ? 'scale(1.02) rotate(2deg)' : isHolding ? 'scale(0.98)' : isOver ? 'translateY(-2px)' : 'scale(1)',
         boxShadow: isDragging ? '0 16px 32px rgba(59, 130, 246, 0.5)' : isHolding ? '0 4px 12px rgba(59, 130, 246, 0.2)' : isOver ? '0 4px 16px rgba(59, 130, 246, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
         height: isCollapsed ? '36px' : 'auto',
         overflow: 'hidden',
-        background: isDragging 
-          ? 'rgba(59, 130, 246, 0.1)' 
-          : isHolding 
-          ? 'linear-gradient(135deg, var(--bg-lighter), rgba(59, 130, 246, 0.05))' 
-          : isOver 
-          ? 'rgba(59, 130, 246, 0.05)' 
-          : 'linear-gradient(135deg, var(--bg-lighter), rgba(255, 255, 255, 0.02))',
+        background: isDragging
+          ? 'rgba(59, 130, 246, 0.1)'
+          : isHolding
+            ? 'linear-gradient(135deg, var(--bg-lighter), rgba(59, 130, 246, 0.05))'
+            : isOver
+              ? 'rgba(59, 130, 246, 0.05)'
+              : 'linear-gradient(135deg, var(--bg-lighter), rgba(255, 255, 255, 0.02))',
         border: isDragging ? '2px solid var(--accent-primary)' : isOver ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
         marginBottom: isOver ? '16px' : '6px',
         borderRadius: '10px',
@@ -621,7 +626,7 @@ const isDropSet = (setIdx: number): boolean => {
         transition: isDragging ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         zIndex: isDragging ? 1000 : 'auto',
-      }} 
+      }}
       data-handler-id={handlerId}
     >
       {isOver && (
@@ -637,11 +642,11 @@ const isDropSet = (setIdx: number): boolean => {
           animation: 'pulse 1s infinite',
         }} />
       )}
-      <div 
-        className="exercise-header" 
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+      <div
+        className="exercise-header"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           padding: '10px 12px',
           touchAction: 'none',
@@ -658,28 +663,63 @@ const isDropSet = (setIdx: number): boolean => {
         onMouseLeave={handleTouchEnd}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-          <div className="exercise-name" style={{ 
-            fontSize: '1.2em', 
+          <div className="exercise-name" style={{
+            fontSize: '1.2em',
             fontWeight: '600',
             color: isDragging ? 'var(--accent-primary)' : 'var(--accent-blue)',
             letterSpacing: '-0.3px',
-            
+
           }}>
-            {ex.name} 
-            {ex.subtype && <span style={{ 
-              color: isDragging ? 'var(--accent-primary)' : 'var(--text-muted)', 
-              fontSize: '0.85em', 
+            {ex.name}
+            {ex.subtype && <span style={{
+              color: isDragging ? 'var(--accent-primary)' : 'var(--text-muted)',
+              fontSize: '0.85em',
               marginLeft: '4px',
               fontWeight: '400',
             }}>({ex.subtype})</span>}
           </div>
         </div>
-{!isCollapsed && (
+        {!isCollapsed && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 openExerciseHistory(ex);
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShow1RMProgress(true);
+                    setSelected1RMExercise(ex);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    width: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '0.7em',
+                    color: 'var(--accent-primary)',
+                    padding: 0,
+                    minHeight: 'auto',
+                    transition: 'all 0.2s ease',
+                    fontWeight: '700',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                  title="View 1RM Progress"
+                >
+                  1RM
+                </button>
               }}
               style={{
                 background: 'transparent',
@@ -707,17 +747,17 @@ const isDropSet = (setIdx: number): boolean => {
               }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
-                <circle cx="8" cy="5" r="0.75" fill="currentColor"/>
-                <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="8" cy="5" r="0.75" fill="currentColor" />
+                <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
             <span className="exercise-menu" onClick={(e) => {
               e.stopPropagation();
               openExerciseMenu(idx, e.currentTarget);
-            }} style={{ 
-              fontSize: '1em', 
-              padding: '2px 4px', 
+            }} style={{
+              fontSize: '1em',
+              padding: '2px 4px',
               color: 'var(--text-muted)',
               cursor: 'pointer',
             }}>⋯</span>
@@ -725,7 +765,7 @@ const isDropSet = (setIdx: number): boolean => {
         )}      </div>
       {!isCollapsed && (
         <div style={{ padding: '0 12px 10px' }}>
-          <div className="set-table-header" style={{ 
+          <div className="set-table-header" style={{
             display: 'grid',
             gridTemplateColumns: '32px 1fr 48px 48px 48px 22px',
             gap: '6px',
@@ -755,82 +795,82 @@ const isDropSet = (setIdx: number): boolean => {
                 marginBottom: '6px',
                 alignItems: 'center',
                 borderRadius: '6px',
-                background: s.completed 
-                  ? 'rgba(34, 197, 94, 0.08)' 
+                background: s.completed
+                  ? 'rgba(34, 197, 94, 0.08)'
                   : dropSet
-                  ? 'rgba(59, 130, 246, 0.05)'
-                  : 'transparent',
+                    ? 'rgba(59, 130, 246, 0.05)'
+                    : 'transparent',
                 padding: '4px 2px',
                 paddingLeft: dropSet ? '20px' : '2px',
                 borderLeft: dropSet ? '3px solid var(--accent-primary)' : 'none',
                 transition: 'all 0.2s ease',
                 position: 'relative',
               }}>
-<div 
-  className="set-type-indicator"
-  style={{
-    fontWeight: '600',
-    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text-muted)',
-    fontSize: '0.7em',
-    textAlign: 'center',
-    cursor: 'pointer',
-    userSelect: 'none',
-    WebkitUserSelect: 'none',
-    padding: '4px',
-    borderRadius: '4px',
-    transition: 'all 0.2s ease',
-    background: 'var(--bg-dark)',
-    border: '1px solid',
-    borderColor: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--border)',
-  }}
-onClick={() => {
-  if (dropSet) {
-    // If this is a drop set (DS), clicking it creates another drop set after it
-    addDropSet(idx, sIdx);
-  } else if (s.type === 'D') {
-    // If this is a D type, just cycle it (don't create new drop sets)
-    toggleSetType(sIdx);
-  } else {
-    // Regular cycling for other types
-    toggleSetType(sIdx);
-  }
-}}  title={dropSet ? 'Drop set' : 'Click to change set type'}
->
-  {dropSet ? 'DS' : getSetLabel(s, sIdx, ex.sets)}
-</div>
-<div style={{
-  textAlign: 'center',
-  fontSize: '0.65em',
-  color: 'var(--text-muted)',
-  fontWeight: '500',
-  position: 'relative',
-}}>
-  {ex.previousSets?.[sIdx]?.weight && ex.previousSets?.[sIdx]?.reps
-    ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}`
-    : '—'}
-</div>
-<input
-  value={s.weight}
-  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
-  type="number"
-  inputMode="decimal"
-  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
-  style={{
-    background: 'var(--bg-dark)',
-    border: '1px solid var(--border)',
-    borderRadius: '6px',
-    textAlign: 'center',
-    fontSize: '0.75em',
-    fontWeight: '600',
-    color: s.completed ? '#22C55E' : 'var(--text)',
-    padding: '5px 2px',
-    height: '28px',
-    width: '100%',
-    WebkitAppearance: 'none',
-    MozAppearance: 'textfield',
-    transition: 'all 0.2s ease',
-    outline: 'none',
-  }}                  onFocus={(e) => {
+                <div
+                  className="set-type-indicator"
+                  style={{
+                    fontWeight: '600',
+                    color: s.completed ? '#22C55E' : s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text-muted)',
+                    fontSize: '0.7em',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                    padding: '4px',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s ease',
+                    background: 'var(--bg-dark)',
+                    border: '1px solid',
+                    borderColor: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--border)',
+                  }}
+                  onClick={() => {
+                    if (dropSet) {
+                      // If this is a drop set (DS), clicking it creates another drop set after it
+                      addDropSet(idx, sIdx);
+                    } else if (s.type === 'D') {
+                      // If this is a D type, just cycle it (don't create new drop sets)
+                      toggleSetType(sIdx);
+                    } else {
+                      // Regular cycling for other types
+                      toggleSetType(sIdx);
+                    }
+                  }} title={dropSet ? 'Drop set' : 'Click to change set type'}
+                >
+                  {dropSet ? 'DS' : getSetLabel(s, sIdx, ex.sets)}
+                </div>
+                <div style={{
+                  textAlign: 'center',
+                  fontSize: '0.65em',
+                  color: 'var(--text-muted)',
+                  fontWeight: '500',
+                  position: 'relative',
+                }}>
+                  {ex.previousSets?.[sIdx]?.weight && ex.previousSets?.[sIdx]?.reps
+                    ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}`
+                    : '—'}
+                </div>
+                <input
+                  value={s.weight}
+                  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
+                  type="number"
+                  inputMode="decimal"
+                  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
+                  style={{
+                    background: 'var(--bg-dark)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    fontSize: '0.75em',
+                    fontWeight: '600',
+                    color: s.completed ? '#22C55E' : 'var(--text)',
+                    padding: '5px 2px',
+                    height: '28px',
+                    width: '100%',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'textfield',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }} onFocus={(e) => {
                     e.target.style.borderColor = 'var(--accent-primary)';
                     e.target.style.background = 'rgba(59, 130, 246, 0.08)';
                     // Bug 17 fix: Auto-populate weight from previous if empty
@@ -844,8 +884,8 @@ onClick={() => {
                   }}
                 />
                 <div style={{ position: 'relative' }}>
-                  <input 
-                    value={s.reps} 
+                  <input
+                    value={s.reps}
                     onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
                     type="number"
                     inputMode="numeric"
@@ -891,8 +931,8 @@ onClick={() => {
                     </div>
                   )}
                 </div>
-                <input 
-                  value={s[intensityMetric] || ''} 
+                <input
+                  value={s[intensityMetric] || ''}
                   onChange={(e) => updateSet(idx, sIdx, intensityMetric, e.target.value)}
                   type="number"
                   inputMode="decimal"
@@ -924,8 +964,8 @@ onClick={() => {
                     e.target.style.background = 'var(--bg-dark)';
                   }}
                 />
-                <div 
-                  className={`log-square ${s.completed ? 'completed' : ''}`} 
+                <div
+                  className={`log-square ${s.completed ? 'completed' : ''}`}
                   onClick={() => toggleCompleted(sIdx)}
                   style={{
                     width: '22px',
@@ -933,8 +973,8 @@ onClick={() => {
                     margin: '0 auto',
                     borderRadius: '5px',
                     border: s.completed ? 'none' : '1.5px solid var(--border)',
-                    background: s.completed 
-                      ? '#22C55E' 
+                    background: s.completed
+                      ? '#22C55E'
                       : 'var(--bg-dark)',
                     display: 'flex',
                     alignItems: 'center',
@@ -979,8 +1019,8 @@ onClick={() => {
               </div>
             );
           })}
-          <button 
-            className="add-set-btn" 
+          <button
+            className="add-set-btn"
             onClick={() => addSet(idx)}
             style={{
               marginTop: '8px',
@@ -1034,7 +1074,8 @@ const WorkoutModal: React.FC = () => {
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
   const [historyExercise, setHistoryExercise] = useState<Exercise | null>(null);
-
+  const [show1RMProgress, setShow1RMProgress] = useState(false);
+  const [selected1RMExercise, setSelected1RMExercise] = useState<Exercise | null>(null);
   useEffect(() => {
     if (currentWorkout) {
       const interval = setInterval(() => {
@@ -1055,7 +1096,7 @@ const WorkoutModal: React.FC = () => {
       // Safari specific fix
       document.body.style.height = '100%';
       document.documentElement.style.overflow = 'hidden';
-      
+
       return () => {
         document.body.style.overflow = '';
         document.body.style.position = '';
@@ -1117,7 +1158,7 @@ const WorkoutModal: React.FC = () => {
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setCurrentY(clientY);
     const deltaY = clientY - startY;
-    
+
     // Only allow downward drag
     if (deltaY > 0) {
       setModalTransform(deltaY);
@@ -1127,16 +1168,16 @@ const WorkoutModal: React.FC = () => {
   const handleTouchEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
-    
+
     const deltaY = currentY - startY;
-    
+
     // If dragged more than 100px, minimize
     if (deltaY > 100) {
       setData(prev => ({ ...prev, activeModal: null }));
       setModalTransform(0);
       return;
     }
-    
+
     // Reset transform
     setModalTransform(0);
   };
@@ -1154,7 +1195,7 @@ const WorkoutModal: React.FC = () => {
     const rect = element.getBoundingClientRect();
     const modalContent = element.closest('.workout-modal-content');
     const modalRect = modalContent?.getBoundingClientRect();
-    
+
     if (modalRect) {
       setInlineMenuPosition({
         top: rect.top - modalRect.top + rect.height + 4,
@@ -1221,40 +1262,40 @@ const WorkoutModal: React.FC = () => {
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
 
-const addDropSet = useCallback((exIdx: number, afterSetIdx: number) => {
-  if (!currentWorkout) return;
-  const newExercises = [...currentWorkout.exercises];
-  const exercise = newExercises[exIdx];
-  
-  // Remove the check that prevents adding drop sets - we want to allow multiple drop sets
-  
-  // Insert a new drop set after the specified set
-const dropSet = {
-    weight: '',
-    reps: '',
-    rpe: '',
-    completed: false,
-    type: undefined,
-    isDropSet: true  // Add this flag
-  };
-  
-  exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
-  setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
-}, [currentWorkout, setData]);
+  const addDropSet = useCallback((exIdx: number, afterSetIdx: number) => {
+    if (!currentWorkout) return;
+    const newExercises = [...currentWorkout.exercises];
+    const exercise = newExercises[exIdx];
+
+    // Remove the check that prevents adding drop sets - we want to allow multiple drop sets
+
+    // Insert a new drop set after the specified set
+    const dropSet = {
+      weight: '',
+      reps: '',
+      rpe: '',
+      completed: false,
+      type: undefined,
+      isDropSet: true  // Add this flag
+    };
+
+    exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
+    setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
+  }, [currentWorkout, setData]);
   const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string }[] => {
     const previous: { weight: string; reps: string }[] = [];
-    
+
     // Bug 17 fix: Look for the most recent workout with this exercise
     for (let i = data.history.length - 1; i >= 0; i--) {
       const workout = data.history[i];
-const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
-if (matchingEx && matchingEx.sets) {
-  const completedSets = matchingEx.sets
-    .filter((s: Set) => s.completed && s.weight && s.reps)
-    .map((s: Set) => ({
-      weight: s.weight || '0',
-      reps: s.reps || '0'
-    }));        
+      const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
+      if (matchingEx && matchingEx.sets) {
+        const completedSets = matchingEx.sets
+          .filter((s: Set) => s.completed && s.weight && s.reps)
+          .map((s: Set) => ({
+            weight: s.weight || '0',
+            reps: s.reps || '0'
+          }));
         if (completedSets.length > 0) {
           // Pad with empty values if needed
           while (completedSets.length < ex.sets.length) {
@@ -1280,8 +1321,8 @@ if (matchingEx && matchingEx.sets) {
 
   const renderedExercises = useMemo(() => {
     if (!currentWorkout) return null;
-return currentWorkout.exercises.map((ex: Exercise, idx: number) => (      
-<WorkoutExerciseItem
+    return currentWorkout.exercises.map((ex: Exercise, idx: number) => (
+      <WorkoutExerciseItem
         key={`${ex.name}-${ex.subtype}-${idx}`}
         ex={{ ...ex, previousSets: getPreviousSets(ex) }}
         idx={idx}
@@ -1296,6 +1337,8 @@ return currentWorkout.exercises.map((ex: Exercise, idx: number) => (
         intensityMetric={data.intensityMetric}
         addDropSet={addDropSet}
         openExerciseHistory={openExerciseHistory}
+        setShow1RMProgress={setShow1RMProgress}  // Add this line
+        setSelected1RMExercise={setSelected1RMExercise}  // Add this line
       />
     ));
   }, [currentWorkout, getPreviousSets, moveExercise, openExerciseMenu, updateSet, addSet, deleteSet, isGlobalDragging, handleDragStart, handleDragEnd, data.intensityMetric, addDropSet, openExerciseHistory]);
@@ -1305,78 +1348,78 @@ return currentWorkout.exercises.map((ex: Exercise, idx: number) => (
       setData(prev => ({ ...prev, currentWorkout: null, activeModal: null, isWorkoutSelect: false, returnModal: null }));
     }
   };
-  
-const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
-const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
-if (!currentWorkout) return null;
-return (
-  <>
-    <div
-      className="modal-content workout-modal-content"
-      ref={modalContentRef}
-style={{
-  position: 'relative',
-  transform: `translateY(${modalTransform}px)`,
-  transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-  maxWidth: '100%',
-  width: '100%',
-  height: '-webkit-fill-available',
-  maxHeight: '-webkit-fill-available',
-  background: 'var(--bg-dark)',
-  padding: '0',
-  paddingBottom: 'env(safe-area-inset-bottom)',
-  borderRadius: '20px 20px 0 0',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  WebkitOverflowScrolling: 'touch',
-  WebkitTransform: `translateY(${modalTransform}px)`,
-} as React.CSSProperties}
->
-      <div 
-        className="drag-handle"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleTouchStart}
-        onMouseMove={handleTouchMove}
-        onMouseUp={handleTouchEnd}
-        onMouseLeave={handleTouchEnd}
+
+  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
+  const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
+  if (!currentWorkout) return null;
+  return (
+    <>
+      <div
+        className="modal-content workout-modal-content"
+        ref={modalContentRef}
         style={{
-          padding: '6px',
-          cursor: 'grab',
+          position: 'relative',
+          transform: `translateY(${modalTransform}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+          maxWidth: '100%',
+          width: '100%',
+          height: '-webkit-fill-available',
+          maxHeight: '-webkit-fill-available',
+          background: 'var(--bg-dark)',
+          padding: '0',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          borderRadius: '20px 20px 0 0',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          WebkitOverflowScrolling: 'touch',
+          WebkitTransform: `translateY(${modalTransform}px)`,
+        } as React.CSSProperties}
+      >
+        <div
+          className="drag-handle"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleTouchStart}
+          onMouseMove={handleTouchMove}
+          onMouseUp={handleTouchEnd}
+          onMouseLeave={handleTouchEnd}
+          style={{
+            padding: '6px',
+            cursor: 'grab',
+            background: 'var(--bg-dark)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            flexShrink: 0,
+          }}
+        >
+          <div className="drag-indicator" style={{
+            width: '32px',
+            height: '3px',
+            background: 'var(--border)',
+            borderRadius: '2px',
+            margin: '0 auto',
+          }}></div>
+        </div>
+
+        <div className="workout-header" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          padding: '10px 14px 10px 14px',
+          paddingTop: 'max(10px, env(safe-area-inset-top))',
           background: 'var(--bg-dark)',
           position: 'sticky',
-          top: 0,
-          zIndex: 10,
+          top: '0',
+          zIndex: 5,
           flexShrink: 0,
-        }}
-      >
-        <div className="drag-indicator" style={{
-          width: '32px',
-          height: '3px',
-          background: 'var(--border)',
-          borderRadius: '2px',
-          margin: '0 auto',
-        }}></div>
-      </div>
-      
-<div className="workout-header" style={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '8px',
-  padding: '10px 14px 10px 14px',
-  paddingTop: 'max(10px, env(safe-area-inset-top))',
-  background: 'var(--bg-dark)',
-  position: 'sticky',
-  top: '0',
-  zIndex: 5,
-  flexShrink: 0,
-  minHeight: '60px',
-  width: '100%',
-  boxSizing: 'border-box',
-}}>        <div
+          minHeight: '60px',
+          width: '100%',
+          boxSizing: 'border-box',
+        }}>        <div
           className="timer-button"
           onClick={() => setShowRestTimer(true)}
           style={{
@@ -1396,58 +1439,58 @@ style={{
             flexShrink: 0,
           }}
         >
-          ⏱
+            ⏱
+          </div>
+          <input
+            type="text"
+            id="workout-name-input"
+            value={currentWorkout?.name || ''}
+            onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1.5em',
+              fontWeight: '700',
+              textAlign: 'center',
+              flex: 1,
+              padding: '0 8px',
+              color: 'var(--text)',
+              letterSpacing: '-0.3px',
+              minWidth: '0',
+            }}
+          />
+          <button
+            className="finish"
+            onClick={finishWorkout}
+            style={{
+              background: '#22C55E',
+              color: 'white',
+              border: 'none',
+              borderRadius: '14px',
+              padding: '6px 14px',
+              fontSize: '0.8em',
+              fontWeight: '600',
+              cursor: 'pointer',
+              minWidth: '60px',
+              letterSpacing: '-0.2px',
+              flexShrink: 0,
+            }}
+          >
+            Finish
+          </button>
         </div>
-        <input
-          type="text"
-          id="workout-name-input"
-          value={currentWorkout?.name || ''}
-          onChange={(e) => setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, name: e.target.value } }))}
+        <div
+          ref={scrollContainerRef}
           style={{
-            background: 'transparent',
-            border: 'none',
-            fontSize: '1.5em',
-            fontWeight: '700',
-            textAlign: 'center',
-            flex: 1,
-            padding: '0 8px',
-            color: 'var(--text)',
-            letterSpacing: '-0.3px',
-            minWidth: '0',
-          }}
-        />
-        <button
-          className="finish"
-          onClick={finishWorkout}
-          style={{
-            background: '#22C55E',
-            color: 'white',
-            border: 'none',
-            borderRadius: '14px',
-            padding: '6px 14px',
-            fontSize: '0.8em',
-            fontWeight: '600',
-            cursor: 'pointer',
-            minWidth: '60px',
-            letterSpacing: '-0.2px',
-            flexShrink: 0,
+            flex: '1 1 auto',
+            overflow: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            padding: '0 10px 80px',
+            overscrollBehavior: 'contain',
+            minHeight: '0',
+            maxHeight: 'calc(100% - 140px)',  // Add this
           }}
         >
-          Finish
-        </button>
-      </div>        
-        <div 
-          ref={scrollContainerRef}
-          style={{ 
-          flex: '1 1 auto',
-          overflow: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          padding: '0 10px 80px',
-          overscrollBehavior: 'contain',
-          minHeight: '0',
-          maxHeight: 'calc(100% - 140px)',  // Add this
-  }}
->
           <div className="workout-info" style={{
             display: 'flex',
             gap: '14px',
@@ -1459,13 +1502,13 @@ style={{
             <div className="workout-date">📅 {new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</div>
             <div className="workout-timer">⏱ {formattedTime}</div>
           </div>
-          
+
           <div id="workout-exercises">
             {renderedExercises}
           </div>
-          
-          <button 
-            className="add-exercise" 
+
+          <button
+            className="add-exercise"
             onClick={addExerciseToWorkout}
             style={{
               width: '100%',
@@ -1495,8 +1538,8 @@ style={{
           >
             + Add Exercise
           </button>
-          <button 
-            className="cancel-workout" 
+          <button
+            className="cancel-workout"
             onClick={cancelWorkout}
             style={{
               width: '100%',
@@ -1525,11 +1568,11 @@ style={{
             Cancel Workout
           </button>
         </div>
-        
+
         {/* Inline Exercise Menu */}
         {inlineMenuPosition && !isGlobalDragging && (
-          <div 
-            className="inline-exercise-menu" 
+          <div
+            className="inline-exercise-menu"
             style={{
               position: 'absolute',
               top: `${inlineMenuPosition.top}px`,
@@ -1543,7 +1586,7 @@ style={{
               border: '1px solid var(--border)',
             }}
           >
-            <div 
+            <div
               style={{
                 padding: '8px 12px',
                 cursor: 'pointer',
@@ -1558,7 +1601,7 @@ style={{
             >
               Delete Exercise
             </div>
-            <div 
+            <div
               style={{
                 padding: '8px 12px',
                 cursor: 'pointer',
@@ -1576,11 +1619,11 @@ style={{
           </div>
         )}
       </div>
-      
+
       {/* Rest Timer Overlay */}
       {showRestTimer && (
         <>
-          <div 
+          <div
             style={{
               position: 'fixed',
               top: 0,
@@ -1595,11 +1638,11 @@ style={{
           <RestTimer onClose={() => setShowRestTimer(false)} />
         </>
       )}
-      
+
       {/* Exercise History Overlay */}
       {showExerciseHistory && historyExercise && (
         <>
-          <div 
+          <div
             style={{
               position: 'fixed',
               top: 0,
@@ -1614,16 +1657,45 @@ style={{
               setHistoryExercise(null);
             }}
           />
-          <ExerciseHistoryModal 
-            exercise={historyExercise} 
+          <ExerciseHistoryModal
+            exercise={historyExercise}
             onClose={() => {
               setShowExerciseHistory(false);
               setHistoryExercise(null);
-            }} 
+            }}
           />
         </>
       )}
-      
+      {/* 1RM Progress Modal */ }
+{
+  show1RMProgress && selected1RMExercise && (
+    <>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1999,
+        }}
+        onClick={() => {
+          setShow1RMProgress(false);
+          setSelected1RMExercise(null);
+        }}
+      />
+      <OneRMProgressModal
+        exercise={selected1RMExercise}
+        onClose={() => {
+          setShow1RMProgress(false);
+          setSelected1RMExercise(null);
+        }}
+      />
+    </>
+  )
+}
+
       <style>{`
         @keyframes pulse {
           0% { opacity: 0.4; }
@@ -1639,5 +1711,4 @@ style={{
     </>
   );
 };
-
 export default WorkoutModal;

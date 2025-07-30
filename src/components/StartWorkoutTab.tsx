@@ -32,12 +32,13 @@ const StartWorkoutTab = () => {
   }, []);
 
   const startEmptyWorkout = () => {
-    const newWorkout = { 
-      name: 'New Workout', 
-      exercises: [], 
-      startTime: Date.now(), 
-      duration: 0 
-    };
+const newWorkout = { 
+  name: 'New Workout', 
+  exercises: [], 
+  startTime: Date.now(), 
+  duration: 0,
+  programName: '' // Add this line
+};
     setData(prev => ({ 
       ...prev, 
       currentWorkout: newWorkout, 

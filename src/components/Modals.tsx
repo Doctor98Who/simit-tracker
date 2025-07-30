@@ -216,6 +216,7 @@ const Modals = () => {
           exercises: preFilledExercises,
           startTime: Date.now(),
           duration: 0,
+          programName: (data.currentProgram as any).name || '' 
         };
         setData((prev: DataType) => ({
           ...prev,
@@ -563,6 +564,7 @@ const Modals = () => {
                 exercises: preFilledExercises,
                 startTime: Date.now(),
                 duration: 0,
+                programName: (data.currentProgram as any).name || ''
               };
               setData((prev: DataType) => ({
                 ...prev,
