@@ -9,7 +9,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ version = 'v0.1.0' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
-
+const [showChangelog, setShowChangelog] = useState(false);
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
@@ -69,17 +69,31 @@ const Header: React.FC<HeaderProps> = ({ version = 'v0.1.0' }) => {
             mixBlendMode: 'normal',
           }}
         />
-        <span id="app-version" style={{
-          position: 'absolute',
-          right: '15px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          fontSize: '0.45em',
-          color: 'var(--text-muted)',
-          fontWeight: '400',
-        }}>
-          Beta {version}
-        </span>
+     <span 
+  id="app-version" 
+  onClick={() => setShowChangelog(true)}
+  style={{
+    position: 'absolute',
+    right: '15px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    fontSize: '0.45em',
+    color: 'var(--text-muted)',
+    fontWeight: '400',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.color = 'var(--accent-primary)';
+    e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.color = 'var(--text-muted)';
+    e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+  }}
+>
+  Beta {version}
+</span>
       </div>
 
       {updateAvailable && (
