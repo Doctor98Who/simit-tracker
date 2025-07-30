@@ -107,59 +107,37 @@ const uploadProgressPic = () => {
     overflow: 'hidden',
     background: 'var(--bg-dark)',
     borderRadius: '2px',
-    transition: 'all 0.3s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.transform = 'scale(0.95)';
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.transform = 'scale(1)';
   }}
 >
   <img 
-  src={pic.base64} 
-  alt="Progress" 
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    objectPosition: 'center',
-  }}
-/>  
-<img 
-  src={pic.base64} 
-  alt="Progress" 
-  style={{
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    objectPosition: 'center',
-    backgroundColor: 'var(--bg-dark)',
-  }}
-/>
-      {pic.pump && (
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          background: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '4px 8px',
-          fontSize: '0.7em',
-          color: 'white',
-          fontWeight: '600',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-        }}>
-          💪 {pic.pump}
-        </div>
-      )}
+    src={pic.base64} 
+    alt="Progress" 
+    style={{
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+    }}
+  />
+  {pic.pump && (
+    <div style={{
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      background: 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '20px',
+      padding: '4px 8px',
+      fontSize: '0.7em',
+      color: 'white',
+      fontWeight: '600',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+    }}>
+      💪 {pic.pump}
     </div>
+  )}
+</div>
   )), [sortedProgressPics]);
 
   return (
