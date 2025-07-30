@@ -685,42 +685,42 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 openExerciseHistory(ex);
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShow1RMProgress(true);
-                    setSelected1RMExercise(ex);
+<button
+      onClick={(e) => {
+        e.stopPropagation();
+        setShow1RMProgress(true);
+        setSelected1RMExercise(ex);
+      }}
+      style={{
+        background: 'transparent',
+        border: 'none',
+        borderRadius: '6px',
+        width: '24px',
+        height: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        fontSize: '0.7em',
+        color: 'var(--accent-primary)',
+        padding: 0,
+        minHeight: 'auto',
+        transition: 'all 0.2s ease',
+        fontWeight: '700',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+        e.currentTarget.style.transform = 'scale(1.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+      title="View 1RM Progress"
+    >
+      1RM
+    </button>
                   }}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    width: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '0.7em',
-                    color: 'var(--accent-primary)',
-                    padding: 0,
-                    minHeight: 'auto',
-                    transition: 'all 0.2s ease',
-                    fontWeight: '700',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                  title="View 1RM Progress"
-                >
-                  1RM
-                </button>
-              }}
               style={{
                 background: 'transparent',
                 border: 'none',
