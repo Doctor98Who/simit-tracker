@@ -2952,8 +2952,6 @@ const Modals = () => {
           </div>
         </div>
       </div>
-// Replace the photo-menu-modal section in Modals.tsx with this:
-
       <div id="photo-menu-modal" className={`modal ${activeModal === 'photo-menu-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '300px',
