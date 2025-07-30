@@ -579,20 +579,20 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
 
     updateSet(idx, setIdx, 'type', newType);
   };
-  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
-    if (set.type === 'W') return 'W';
-    if (set.type === 'D') return 'D';
-    if ((set as any).isDropSet) return 'DS';
+const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
+  if (set.type === 'W') return 'W';
+  if (set.type === 'D') return 'D';
+  if ((set as any).isDropSet) return 'DS';
 
-    // Count all non-drop sets before and including this one
-    let regularSetNumber = 0;
-    for (let i = 0; i <= setIdx; i++) {
-      if (!(allSets[i] as any).isDropSet) {
-        regularSetNumber++;
-      }
+  // Count only non-warmup, non-drop sets before and including this one
+  let regularSetNumber = 0;
+  for (let i = 0; i <= setIdx; i++) {
+    if (!(allSets[i] as any).isDropSet && allSets[i].type !== 'W') {
+      regularSetNumber++;
     }
-    return regularSetNumber.toString();
-  };
+  }
+  return regularSetNumber.toString();
+};
   const isDropSet = (setIdx: number): boolean => {
     if (setIdx === 0) return false;
 
@@ -727,17 +727,18 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
     background: 'transparent',
     border: '1px solid var(--accent-primary)',
     borderRadius: '4px',
-    padding: '2px 6px',
+    padding: '1px 3px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    fontSize: '0.65em',
+    fontSize: '0.60em',
     color: 'var(--accent-primary)',
     minHeight: 'auto',
     transition: 'all 0.2s ease',
-    fontWeight: '700',
-    letterSpacing: '-0.5px',
+    fontWeight: '600',
+    letterSpacing: '-0.3px',
+    height: '20px',
   }}
   onMouseEnter={(e) => {
     e.currentTarget.style.background = 'var(--accent-primary)';

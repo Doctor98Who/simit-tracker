@@ -132,21 +132,20 @@ const editProfilePic = () => {
 
   const sortedHistory = useMemo(() => [...data.history].sort((a: Workout, b: Workout) => b.startTime - a.startTime), [data.history]);
 
-  const getSetLabel = (set: any, setIdx: number, allSets: any[]) => {
-    if (set.type === 'W') return 'W';
-    if (set.type === 'D') return 'D';
-    if (set.isDropSet) return 'DS';
-    
-    // Count only non-drop sets before this one
-    let regularSetNumber = 1;
-    for (let i = 0; i < setIdx; i++) {
-      if (!allSets[i].isDropSet && (!allSets[i].type || allSets[i].type === 'S')) {
-        regularSetNumber++;
-      }
+const getSetLabel = (set: any, setIdx: number, allSets: any[]) => {
+  if (set.type === 'W') return 'W';
+  if (set.type === 'D') return 'D';
+  if (set.isDropSet) return 'DS';
+  
+  // Count only non-warmup, non-drop sets before and including this one
+  let regularSetNumber = 0;
+  for (let i = 0; i <= setIdx; i++) {
+    if (!allSets[i].isDropSet && allSets[i].type !== 'W') {
+      regularSetNumber++;
     }
-    return regularSetNumber;
-  };
-
+  }
+  return regularSetNumber;
+};
   const renderedHistory = useMemo(() => {
     if (sortedHistory.length === 0) {
       return <div className="feed-placeholder">No workouts completed yet.</div>;

@@ -38,8 +38,8 @@ interface Workout {
   programName?: string;
 }
 
-interface ProgressPhoto {
-  id?: string;
+export interface ProgressPhoto {
+    id?: string;
   base64: string; // This will now be a URL or base64
   timestamp: number;
   weight?: string;
@@ -96,8 +96,10 @@ export interface DataType {
   weightUnit: 'kg' | 'lbs';
   distanceUnit: 'km' | 'miles';
   previousModal?: string;
+  isEditingCustomExercise: boolean;      // Add this line
+  editingCustomExerciseData: Exercise | null;  // Add this line
+  editingPhotoData: ProgressPhoto | null;
 }
-
 interface DataContextType {
   data: DataType;
   setData: React.Dispatch<React.SetStateAction<DataType>>;
@@ -145,6 +147,9 @@ const initialData: DataType = {
   weightUnit: 'lbs',
   distanceUnit: 'miles',
   isEditingProgram: false,
+  isEditingCustomExercise: false,
+editingCustomExerciseData: null,
+editingPhotoData: null,
 };
 
 export const DataContext = createContext<DataContextType>({
@@ -173,34 +178,38 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const userProfile = await DatabaseService.syncUserProfile(user.sub, user.email);
       setDbUser(userProfile);
       
-      // Load user data from Supabase
-      const [history, customExercises, progressPhotos, templates] = await Promise.all([
-        DatabaseService.getWorkoutHistory(userProfile.id),
-        DatabaseService.getCustomExercises(userProfile.id),
-        DatabaseService.getProgressPhotos(userProfile.id),
-        DatabaseService.getProgramTemplates(userProfile.id)
-      ]);
-      
-      setData(prev => ({
-        ...prev,
-        username: userProfile.username || prev.username,
-        firstName: userProfile.first_name || prev.firstName,
-        lastName: userProfile.last_name || prev.lastName,
-        bio: userProfile.bio || prev.bio,
-        email: userProfile.email || prev.email,
-        country: userProfile.country || prev.country,
-        state: userProfile.state || prev.state,
-        profilePic: userProfile.profile_pic || prev.profilePic,
-        coverPhoto: userProfile.cover_photo || prev.coverPhoto,
-        theme: userProfile.theme || prev.theme,
-        intensityMetric: userProfile.intensity_metric || prev.intensityMetric,
-        weightUnit: userProfile.weight_unit || prev.weightUnit,
-        distanceUnit: userProfile.distance_unit || prev.distanceUnit,
-        history,
-        customExercises,
-        progressPics: progressPhotos,
-        templates
-      }));
+  // Load user data from Supabase
+const [history, customExercises, progressPhotos, templates] = await Promise.all([
+  DatabaseService.getWorkoutHistory(userProfile.id),
+  DatabaseService.getCustomExercises(userProfile.id),
+  DatabaseService.getProgressPhotos(userProfile.id),
+  DatabaseService.getProgramTemplates(userProfile.id)
+]);
+
+// Add this to load current workout
+const currentWorkout = userProfile.current_workout || null;
+
+setData(prev => ({
+  ...prev,
+  username: userProfile.username || prev.username,
+  firstName: userProfile.first_name || prev.firstName,
+  lastName: userProfile.last_name || prev.lastName,
+  bio: userProfile.bio || prev.bio,
+  email: userProfile.email || prev.email,
+  country: userProfile.country || prev.country,
+  state: userProfile.state || prev.state,
+  profilePic: userProfile.profile_pic || prev.profilePic,
+  coverPhoto: userProfile.cover_photo || prev.coverPhoto,
+  theme: userProfile.theme || prev.theme,
+  intensityMetric: userProfile.intensity_metric || prev.intensityMetric,
+  weightUnit: userProfile.weight_unit || prev.weightUnit,
+  distanceUnit: userProfile.distance_unit || prev.distanceUnit,
+  history,
+  customExercises,
+  progressPics: progressPhotos,
+  templates,
+  currentWorkout  // Add this line
+}));
     } catch (error) {
       console.error('Error syncing user data:', error);
     } finally {
@@ -217,20 +226,22 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       // Sync specific changes to Supabase
       if (dbUser && !isSyncing && user?.sub) {
         // Profile updates
-        if (newData.username !== prev.username || 
-            newData.firstName !== prev.firstName ||
-            newData.lastName !== prev.lastName ||
-            newData.bio !== prev.bio ||
-            newData.country !== prev.country ||
-            newData.state !== prev.state ||
-            newData.profilePic !== prev.profilePic ||
-            newData.coverPhoto !== prev.coverPhoto ||
-            newData.theme !== prev.theme ||
-            newData.intensityMetric !== prev.intensityMetric ||
-            newData.weightUnit !== prev.weightUnit ||
-            newData.distanceUnit !== prev.distanceUnit) {
-          DatabaseService.updateUserProfile(user.sub, newData).catch(console.error);
-        }
+       // Profile updates
+if (newData.username !== prev.username || 
+    newData.firstName !== prev.firstName ||
+    newData.lastName !== prev.lastName ||
+    newData.bio !== prev.bio ||
+    newData.country !== prev.country ||
+    newData.state !== prev.state ||
+    newData.profilePic !== prev.profilePic ||
+    newData.coverPhoto !== prev.coverPhoto ||
+    newData.theme !== prev.theme ||
+    newData.intensityMetric !== prev.intensityMetric ||
+    newData.weightUnit !== prev.weightUnit ||
+    newData.distanceUnit !== prev.distanceUnit ||
+    JSON.stringify(newData.currentWorkout) !== JSON.stringify(prev.currentWorkout)) {  // Add this line
+  DatabaseService.updateUserProfile(user.sub, newData).catch(console.error);
+}
         
         // Workout completion
         if (newData.history.length > prev.history.length) {

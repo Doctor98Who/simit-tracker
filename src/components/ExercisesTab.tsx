@@ -175,8 +175,8 @@ return (
       fontWeight: '600',
       color: 'var(--text)',
     }}>Exercises</h2>
-    <div style={{ position: 'relative', marginBottom: '8px' }}>
-      <input
+<div style={{ position: 'relative', marginBottom: '8px', padding: '0 16px' }}>
+        <input
         type="text"
         className="search-bar"
         id="exercise-search"

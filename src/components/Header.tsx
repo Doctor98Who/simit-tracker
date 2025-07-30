@@ -6,7 +6,7 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.1.6' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.7' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
@@ -217,7 +217,7 @@ useEffect(() => {
                     fontSize: '0.75em',
                     fontWeight: '600',
                   }}>
-                    v0.1.6
+                    v0.1.7
                   </span>
                   <span style={{
                     color: 'var(--text-muted)',
@@ -236,7 +236,7 @@ useEffect(() => {
                     alignItems: 'center',
                     gap: '6px',
                   }}>
-                    ✨ Features
+                    Features
                   </h4>
                   <ul style={{ 
                     margin: 0, 
@@ -248,6 +248,8 @@ useEffect(() => {
                     <li>Added login capability!</li>
                     <li>Added cloud sync with Supabase</li>
                     <li>1RM progress tracking and charts</li>
+                    <li>Can edit custom exercises now</li>
+                    <li>Can edit uploaded progress pic</li>
                     <li>Exercise history viewing</li>
                     <li>Rest timer with custom durations</li>
                     <li>Drop set support (D sets)</li>
@@ -265,7 +267,7 @@ useEffect(() => {
                     alignItems: 'center',
                     gap: '6px',
                   }}>
-                    🐛 Bug Fixes
+                    Bug Fixes
                   </h4>
                   <ul style={{ 
                     margin: 0, 
@@ -274,13 +276,10 @@ useEffect(() => {
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
-                    <li>Fixed Safari based browser issues</li>
-                    <li>Fixed profile photo uploads</li>
-                    <li>Fixed light mode visibility issues</li>
-                    <li>Fixed exercise selection on mobile</li>
-                    <li>Fixed auto-populate previous weights</li>
-                    <li>Fixed Firefox display issues</li>
-                    <li>Improved UI in Progress Tab</li>
+                    <li>Fixed seach bar going off screen in ExerciseTab</li>
+                    <li>Fixed sync issues when refreshing/exiting browsser</li>
+                    <li>Fixed seach bar going off screen in ExerciseTab</li>
+                    <li>Fixed numerical display of sets involving warm up sets</li>
                   </ul>
                 </div>
               </div>

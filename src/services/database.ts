@@ -90,6 +90,7 @@ export class DatabaseService {
           intensity_metric: updates.intensityMetric,
           weight_unit: updates.weightUnit,
           distance_unit: updates.distanceUnit,
+          current_workout: updates.currentWorkout || null,  // Add this line
           updated_at: new Date().toISOString()
         })
         .eq('auth0_id', auth0Id);
