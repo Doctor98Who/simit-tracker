@@ -685,42 +685,44 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 openExerciseHistory(ex);
-<button
-      onClick={(e) => {
-        e.stopPropagation();
-        setShow1RMProgress(true);
-        setSelected1RMExercise(ex);
-      }}
-      style={{
-        background: 'transparent',
-        border: 'none',
-        borderRadius: '6px',
-        width: '24px',
-        height: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        fontSize: '0.7em',
-        color: 'var(--accent-primary)',
-        padding: 0,
-        minHeight: 'auto',
-        transition: 'all 0.2s ease',
-        fontWeight: '700',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-        e.currentTarget.style.transform = 'scale(1.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'transparent';
-        e.currentTarget.style.transform = 'scale(1)';
-      }}
-      title="View 1RM Progress"
-    >
-      1RM
-    </button>
-                  }}
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '6px',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '0.9em',
+                color: 'var(--accent-primary)',
+                padding: 0,
+                minHeight: 'auto',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="8" cy="5" r="0.75" fill="currentColor" />
+                <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShow1RMProgress(true);
+setSelected1RMExercise(ex);     
+              }}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -1666,35 +1668,35 @@ const WorkoutModal: React.FC = () => {
           />
         </>
       )}
-      {/* 1RM Progress Modal */ }
-{
-  show1RMProgress && selected1RMExercise && (
-    <>
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1999,
-        }}
-        onClick={() => {
-          setShow1RMProgress(false);
-          setSelected1RMExercise(null);
-        }}
-      />
-      <OneRMProgressModal
-        exercise={selected1RMExercise}
-        onClose={() => {
-          setShow1RMProgress(false);
-          setSelected1RMExercise(null);
-        }}
-      />
-    </>
-  )
-}
+      {/* 1RM Progress Modal */}
+      {
+        show1RMProgress && selected1RMExercise && (
+          <>
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1999,
+              }}
+              onClick={() => {
+                setShow1RMProgress(false);
+                setSelected1RMExercise(null);
+              }}
+            />
+            <OneRMProgressModal
+              exercise={selected1RMExercise}
+              onClose={() => {
+                setShow1RMProgress(false);
+                setSelected1RMExercise(null);
+              }}
+            />
+          </>
+        )
+      }
 
       <style>{`
         @keyframes pulse {
