@@ -1,13 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { DataContext } from '../DataContext';
 import PhotoCard from './PhotoCard';
-import CommentsModal from './CommentsModal';
 
 const CommunityTab = () => {
-  const { data } = useContext(DataContext);
+  const { data, setData } = useContext(DataContext);
   const [activeSubTab, setActiveSubTab] = useState('feed');
-  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
-  const [showComments, setShowComments] = useState(false);
   
   const tabs = [
     { id: 'feed', label: 'Feed' },
@@ -17,8 +14,11 @@ const CommunityTab = () => {
 
   const openComments = (photo: any, isOwn: boolean) => {
     console.log('Opening comments for photo:', photo);
-    setSelectedPhoto({ ...photo, isOwn });
-    setShowComments(true);
+    setData(prev => ({ 
+      ...prev, 
+      selectedPhoto: { ...photo, isOwn },
+      showComments: true 
+    }));
   };
 
   return (
@@ -81,18 +81,6 @@ const CommunityTab = () => {
         <div id="groups-content">
           <div className="groups-placeholder">Join groups to discuss workouts!</div>
         </div>
-      )}
-      
-      {/* Comments Modal */}
-      {showComments && selectedPhoto && (
-        <CommentsModal
-          photo={selectedPhoto}
-          isOwn={selectedPhoto.isOwn}
-          onClose={() => {
-            setShowComments(false);
-            setSelectedPhoto(null);
-          }}
-        />
       )}
     </div>
   );

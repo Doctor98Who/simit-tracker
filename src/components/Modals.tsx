@@ -4,6 +4,7 @@ import WorkoutModal from './WorkoutModal';
 import { useAuth0 } from '@auth0/auth0-react';
 import EXIF from 'exif-js';
 import { DatabaseService } from '../services/database';
+import CommentsModal from './CommentsModal';
 
 
 interface Day {
@@ -48,6 +49,7 @@ const Modals = () => {
   const [minimizedDragY, setMinimizedDragY] = useState(0);
   const [isDraggingMinimized, setIsDraggingMinimized] = useState(false);
   const minimizedStartY = useRef(0);
+
 
   const muscleGroups = [
     'Chest',
@@ -1854,17 +1856,24 @@ const Modals = () => {
               } else {
                 closeModal();
               }
-            }}>Cancel</button>
+}}>Cancel</button>
           </div>
         </div>
       </div>
-      <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
-        {data.currentWorkout && <WorkoutModal />}
-      </div>
-
-      {data.currentWorkout && activeModal !== 'workout-modal' && (
-        <div id="minimized-workout"
-          className="minimized-workout"
+<div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
+  {data.currentWorkout && <WorkoutModal />}
+</div>
+{/* CommentsModal */}
+{data.showComments && data.selectedPhoto && (
+  <CommentsModal
+    photo={data.selectedPhoto}
+    isOwn={data.selectedPhoto.isOwn}
+    onClose={() => setData(prev => ({ ...prev, showComments: false, selectedPhoto: null }))}
+  />
+)}
+{data.currentWorkout && activeModal !== 'workout-modal' && (
+  <div id="minimized-workout"
+              className="minimized-workout"
           style={{
             position: 'fixed',
             bottom: '0',

@@ -128,6 +128,8 @@ export interface DataType {
   friendsFeed: FeedItem[];
   showFriendsModal: boolean;
   showFindFriendsModal: boolean;
+   showComments: boolean;
+  selectedPhoto: any;
 }
 interface DataContextType {
   data: DataType;
@@ -185,6 +187,8 @@ const initialData: DataType = {
   friendsFeed: [],
   showFriendsModal: false,
   showFindFriendsModal: false,
+  showComments: false,
+  selectedPhoto: null,
 };
 export const DataContext = createContext<DataContextType>({
   data: initialData,
