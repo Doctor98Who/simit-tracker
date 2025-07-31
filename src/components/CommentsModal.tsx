@@ -17,10 +17,19 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   const [showMenu, setShowMenu] = useState<number | null>(null);
 
   useEffect(() => {
-    // Prevent body scroll
+    // Prevent body scroll on mobile
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
+    
     return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
       document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
     };
   }, []);
 
@@ -130,44 +139,59 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.8)',
-      zIndex: 99999,
-      display: 'flex',
-      alignItems: 'flex-end',
-    }} onClick={onClose}>
+    <>
+      {/* Backdrop */}
       <div 
         style={{
-          width: '100%',
-          height: '85vh',
-          background: '#1a1a1a',
-          borderRadius: '16px 16px 0 0',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-          zIndex: 100000,
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 9998,
+        }} 
+        onClick={onClose}
+      />
+      
+      {/* Modal Content */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '80vh',
+        background: 'var(--bg-dark)',
+        borderRadius: '16px 16px 0 0',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 9999,
+        transform: 'translateY(0)',
+        transition: 'transform 0.3s ease-out',
+      }}>
+        {/* Drag handle */}
+        <div style={{
+          width: '40px',
+          height: '4px',
+          background: 'var(--text-muted)',
+          borderRadius: '2px',
+          margin: '8px auto',
+          opacity: 0.5,
+        }} />
+        
         {/* Header */}
         <div style={{
-          padding: '16px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          padding: '12px 16px',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#1a1a1a',
         }}>
           <h3 style={{ 
             margin: 0, 
             fontSize: '1.1em', 
             fontWeight: '600',
-            color: '#ffffff' 
+            color: 'var(--text)',
           }}>
             Comments
           </h3>
@@ -178,13 +202,14 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
               border: 'none',
               fontSize: '1.5em',
               cursor: 'pointer',
-              color: '#ffffff',
-              padding: '4px',
-              width: '32px',
-              height: '32px',
+              color: 'var(--text-muted)',
+              padding: '8px',
+              width: '40px',
+              height: '40px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              borderRadius: '50%',
             }}
           >
             ×
@@ -195,17 +220,18 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
         <div style={{
           flex: 1,
           overflowY: 'auto',
+          overflowX: 'hidden',
           padding: '16px',
-          background: '#1a1a1a',
+          WebkitOverflowScrolling: 'touch',
         }}>
           {comments.length === 0 ? (
             <div style={{
               textAlign: 'center',
               padding: '40px 20px',
-              color: '#999999',
+              color: 'var(--text-muted)',
             }}>
-              <p style={{ marginBottom: '8px' }}>No comments yet</p>
-              <p style={{ fontSize: '0.85em' }}>Be the first to share your thoughts!</p>
+              <p style={{ marginBottom: '8px', fontSize: '16px' }}>No comments yet</p>
+              <p style={{ fontSize: '14px' }}>Be the first to share your thoughts!</p>
             </div>
           ) : (
             comments.map((comment: any, idx: number) => (
@@ -213,12 +239,13 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                 display: 'flex',
                 gap: '12px',
                 marginBottom: '16px',
+                paddingRight: '8px',
               }}>
                 <div style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '50%',
-                  background: '#2a2a2a',
+                  background: 'var(--bg-lighter)',
                   backgroundImage: comment.user_profile_pic 
                     ? `url(${comment.user_profile_pic})` 
                     : 'none',
@@ -227,30 +254,38 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                   flexShrink: 0,
                 }} />
                 
-                <div style={{ flex: 1 }}>
+                <div style={{ 
+                  flex: 1,
+                  minWidth: 0,
+                }}>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
                     marginBottom: '4px',
+                    flexWrap: 'wrap',
                   }}>
                     <span style={{ 
                       fontWeight: '600', 
-                      fontSize: '0.9em',
-                      color: '#ffffff' 
+                      fontSize: '14px',
+                      color: 'var(--text)',
                     }}>
                       {comment.user_name}
                     </span>
                     <span style={{ 
-                      fontSize: '0.75em', 
-                      color: '#999999' 
+                      fontSize: '12px', 
+                      color: 'var(--text-muted)',
                     }}>
                       {new Date(comment.timestamp).toLocaleString()}
                     </span>
                   </div>
                   
                   {editingIdx === idx ? (
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '8px',
+                      marginTop: '8px',
+                    }}>
                       <input
                         type="text"
                         value={editText}
@@ -258,59 +293,46 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                         onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                         style={{
                           flex: 1,
-                          background: '#2a2a2a',
-                          border: '1px solid #3a3a3a',
+                          background: 'var(--bg-lighter)',
+                          border: '1px solid var(--border)',
                           borderRadius: '8px',
-                          padding: '6px 12px',
-                          color: '#ffffff',
-                          fontSize: '0.9em',
+                          padding: '8px 12px',
+                          color: 'var(--text)',
+                          fontSize: '14px',
+                          outline: 'none',
+                          minWidth: 0,
                         }}
                         autoFocus
                       />
                       <button
                         onClick={saveEdit}
                         style={{
-                          background: '#4a9eff',
+                          background: 'var(--accent-primary)',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
-                          padding: '6px 12px',
-                          fontSize: '0.85em',
+                          padding: '8px 12px',
+                          fontSize: '14px',
                           cursor: 'pointer',
+                          whiteSpace: 'nowrap',
                         }}
                       >
                         Save
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditingIdx(null);
-                          setEditText('');
-                        }}
-                        style={{
-                          background: '#2a2a2a',
-                          color: '#ffffff',
-                          border: '1px solid #3a3a3a',
-                          borderRadius: '8px',
-                          padding: '6px 12px',
-                          fontSize: '0.85em',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Cancel
                       </button>
                     </div>
                   ) : (
                     <p style={{ 
                       margin: 0, 
-                      fontSize: '0.9em',
+                      fontSize: '14px',
                       lineHeight: '1.5',
-                      color: '#ffffff',
+                      color: 'var(--text)',
+                      wordBreak: 'break-word',
                     }}>
                       {comment.text}
                       {comment.edited && (
                         <span style={{ 
-                          fontSize: '0.8em', 
-                          color: '#999999',
+                          fontSize: '12px', 
+                          color: 'var(--text-muted)',
                           marginLeft: '8px',
                         }}>
                           (edited)
@@ -323,14 +345,22 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                 {comment.user_id === dbUser?.id && editingIdx !== idx && (
                   <div style={{ position: 'relative' }}>
                     <button
-                      onClick={() => setShowMenu(showMenu === idx ? null : idx)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMenu(showMenu === idx ? null : idx);
+                      }}
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#999999',
+                        color: 'var(--text-muted)',
                         cursor: 'pointer',
-                        padding: '4px',
-                        fontSize: '1.2em',
+                        padding: '8px',
+                        fontSize: '20px',
+                        minWidth: '44px',
+                        minHeight: '44px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
                       ⋯
@@ -341,23 +371,24 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                         position: 'absolute',
                         top: '100%',
                         right: 0,
-                        background: '#2a2a2a',
-                        border: '1px solid #3a3a3a',
+                        background: 'var(--bg-dark)',
+                        border: '1px solid var(--border)',
                         borderRadius: '8px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                        minWidth: '100px',
+                        minWidth: '120px',
                         zIndex: 10,
+                        overflow: 'hidden',
                       }}>
                         <button
                           onClick={() => handleEditComment(idx)}
                           style={{
                             display: 'block',
                             width: '100%',
-                            padding: '8px 16px',
+                            padding: '12px 16px',
                             background: 'none',
                             border: 'none',
-                            color: '#ffffff',
-                            fontSize: '0.9em',
+                            color: 'var(--text)',
+                            fontSize: '14px',
                             textAlign: 'left',
                             cursor: 'pointer',
                           }}
@@ -369,12 +400,12 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                           style={{
                             display: 'block',
                             width: '100%',
-                            padding: '8px 16px',
+                            padding: '12px 16px',
                             background: 'none',
                             border: 'none',
-                            borderTop: '1px solid #3a3a3a',
+                            borderTop: '1px solid var(--border)',
                             color: '#ef4444',
-                            fontSize: '0.9em',
+                            fontSize: '14px',
                             textAlign: 'left',
                             cursor: 'pointer',
                           }}
@@ -390,72 +421,79 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           )}
         </div>
 
-        {/* Comment input */}
+        {/* Comment input - fixed at bottom */}
         <div style={{
-          padding: '16px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          display: 'flex',
-          gap: '12px',
-          alignItems: 'center',
-          background: '#1a1a1a',
+          padding: '12px 16px',
+          paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+          borderTop: '1px solid var(--border)',
+          background: 'var(--bg-dark)',
         }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: '#2a2a2a',
-            backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            flexShrink: 0,
-          }} />
-          
-          <div style={{
-            flex: 1,
             display: 'flex',
-            gap: '8px',
+            gap: '12px',
             alignItems: 'center',
-            background: '#2a2a2a',
-            borderRadius: '20px',
-            padding: '8px 16px',
-            border: '1px solid #3a3a3a',
           }}>
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
-              placeholder="Add a comment..."
-              style={{
-                flex: 1,
-                background: 'none',
-                border: 'none',
-                color: '#ffffff',
-                fontSize: '14px',
-                outline: 'none',
-              }}
-            />
-            <button
-              onClick={handleAddComment}
-              disabled={!comment.trim()}
-              style={{
-                background: comment.trim() ? '#4a9eff' : '#3a3a3a',
-                color: comment.trim() ? 'white' : '#666666',
-                border: 'none',
-                borderRadius: '14px',
-                padding: '6px 16px',
-                fontSize: '0.85em',
-                fontWeight: '600',
-                cursor: comment.trim() ? 'pointer' : 'default',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              Post
-            </button>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'var(--bg-lighter)',
+              backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              flexShrink: 0,
+            }} />
+            
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              gap: '8px',
+              alignItems: 'center',
+              background: 'var(--bg-lighter)',
+              borderRadius: '20px',
+              padding: '8px 12px',
+              border: '1px solid var(--border)',
+              minHeight: '44px',
+            }}>
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                placeholder="Add a comment..."
+                style={{
+                  flex: 1,
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  minWidth: 0,
+                }}
+              />
+              <button
+                onClick={handleAddComment}
+                disabled={!comment.trim()}
+                style={{
+                  background: comment.trim() ? 'var(--accent-primary)' : 'var(--bg-darker)',
+                  color: comment.trim() ? 'white' : 'var(--text-muted)',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '6px 16px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: comment.trim() ? 'pointer' : 'default',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Post
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

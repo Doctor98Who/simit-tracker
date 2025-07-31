@@ -129,7 +129,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
             gap: '6px',
             color: userHasLiked ? '#ef4444' : 'var(--text)',
             fontSize: '1.2em',
-            padding: '4px 0',
+            padding: '8px',
+            minWidth: '44px',
+            minHeight: '44px',
             transition: 'color 0.2s',
           }}
         >
@@ -148,7 +150,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
             gap: '6px',
             color: 'var(--text)',
             fontSize: '1.2em',
-            padding: '4px 0',
+            padding: '8px',
+            minWidth: '44px',
+            minHeight: '44px',
           }}
         >
           <span>💬</span>
