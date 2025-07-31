@@ -30,47 +30,24 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
 
 useEffect(() => {
-  // Store the original position
+  // Store current scroll position
   const scrollY = window.scrollY;
-  const bodyStyle = document.body.style;
-  const htmlStyle = document.documentElement.style;
   
-  // Prevent body scroll when modal is open
-  bodyStyle.position = 'fixed';
-  bodyStyle.top = `-${scrollY}px`;
-  bodyStyle.width = '100%';
-  bodyStyle.overflowY = 'hidden';
+  // Prevent body from scrolling
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.width = '100%';
   
-  // Also lock html element for some browsers
-  htmlStyle.overflowY = 'hidden';
-  
-  // Force viewport to top before showing modal content
+  // Force modal to start at top
   window.scrollTo(0, 0);
   
-  // Then scroll modal content to top
-setTimeout(() => {
-  const modalContent = document.querySelector('.progress-photo-modal .modal-content');
-  if (modalContent) {
-    modalContent.scrollTop = 0;
-  }
-  
-  // Force a reflow to ensure positioning is correct
-  const modal = document.querySelector('.progress-photo-modal');
-  if (modal) {
-    (modal as HTMLElement).style.display = 'none';
-    // Fix: Assign to a variable to satisfy ESLint
-    const _reflow = (modal as HTMLElement).offsetHeight; // Force reflow
-    (modal as HTMLElement).style.display = 'block';
-  }
-}, 0);
-  
   return () => {
-    // Re-enable body scroll when modal closes
-    bodyStyle.position = '';
-    bodyStyle.top = '';
-    bodyStyle.width = '';
-    bodyStyle.overflowY = '';
-    htmlStyle.overflowY = '';
+    // Restore body scroll
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    
+    // Return to original scroll position
     window.scrollTo(0, scrollY);
   };
 }, []);
@@ -285,18 +262,17 @@ useEffect(() => {
 return (
 <div
   className="modal active progress-photo-modal"
-style={{
-  background: 'rgba(0, 0, 0, 0.95)',
-  display: 'block',
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 9999,
-  overflow: 'hidden',
-  transform: 'translate3d(0, 0, 0)',
-}}
+  style={{
+    background: 'rgba(0, 0, 0, 0.95)',
+    display: 'block',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+    overflow: 'hidden',
+  }}
 >
       <div className="modal-content" style={{
       width: '100%',

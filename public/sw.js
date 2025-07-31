@@ -1,5 +1,5 @@
 // sw.js - Simple service worker with update notifications
-const VERSION = 'v0.1.15'; // Update this number when you deploy changes
+const VERSION = 'v0.1.16'; // Update this number when you deploy changes
 
 self.addEventListener('install', (event) => {
     console.log('Installing service worker version:', VERSION);
