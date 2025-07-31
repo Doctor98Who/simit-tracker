@@ -245,7 +245,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start', // Changed from 'center' to 'flex-start'
         justifyContent: 'center',
         position: 'fixed',
         top: 0,
@@ -258,7 +258,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: 'calc(100vh - 80px)',
+        height: '100vh', // Full viewport height
         background: 'var(--bg-dark)',
         padding: 0,
         display: 'flex',
