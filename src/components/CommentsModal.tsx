@@ -66,31 +66,41 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       console.error('Error adding comment:', error);
     }
   };
-  const handleDeleteComment = async (idx: number) => {
-    const commentToDelete = comments[idx];
-    if (!dbUser || commentToDelete.user_id !== dbUser.id) return;
-    try {
-      const updatedComments = comments.filter((_: any, i: number) => i !== idx);
-      setComments(updatedComments);
-      setShowMenu(null);
-      // Update context
-      const updatePhoto = (p: any) =>
-        p.id === photo.id ? { ...p, comments: updatedComments } : p;
-      if (isOwn) {
-        setData((prev: any) => ({
-          ...prev,
-          progressPics: prev.progressPics.map(updatePhoto)
-        }));
-      } else {
-        setData((prev: any) => ({
-          ...prev,
-          friendsFeed: prev.friendsFeed.map(updatePhoto)
-        }));
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error);
+const handleDeleteComment = async (idx: number) => {
+  const commentToDelete = comments[idx];
+  if (!dbUser || commentToDelete.user_id !== dbUser.id) return;
+
+  try {
+    const updatedComments = comments.filter((_: any, i: number) => i !== idx);
+    setComments(updatedComments);
+    setShowMenu(null);
+
+    // API call to delete from database - THIS IS THE MISSING PART!
+    if (commentToDelete.id) {
+      await DatabaseService.deleteComment(commentToDelete.id, dbUser.id);
     }
-  };
+
+    // Update context
+    const updatePhoto = (p: any) => 
+      p.id === photo.id ? { ...p, comments: updatedComments } : p;
+
+    if (isOwn) {
+      setData((prev: any) => ({
+        ...prev,
+        progressPics: prev.progressPics.map(updatePhoto)
+      }));
+    } else {
+      setData((prev: any) => ({
+        ...prev,
+        friendsFeed: prev.friendsFeed.map(updatePhoto)
+      }));
+    }
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    // Revert on error
+    setComments(photo.comments || []);
+  }
+};
   const handleEditComment = (idx: number) => {
     setEditingIdx(idx);
     setEditText(comments[idx].text);
@@ -141,23 +151,32 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
         overflow: 'hidden',
       }}
     >
-      <div 
-        className="modal-content"
-        style={{
-          width: '100%',
-          maxWidth: '100%',
-          height: '85vh',
-          maxHeight: '85vh',
-          borderRadius: '20px 20px 0 0',
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-dark)',
-          overflow: 'hidden',  // Add this to match workout modal
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Drag handle */}
+<div 
+  className="modal-content"
+  style={{
+    width: '100%',
+    maxWidth: '100%',
+    height: '85vh',
+    maxHeight: '85vh',
+    borderRadius: '20px 20px 0 0',
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    background: 'var(--bg-dark)',
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    transform: 'translateZ(0)', // Force GPU acceleration
+    WebkitTransform: 'translateZ(0)', // Safari prefix
+     backfaceVisibility: 'hidden', // Prevent flickering
+    WebkitBackfaceVisibility: 'hidden', // Safari prefix
+    willChange: 'transform', // Optimize for animations
+  }}
+  onClick={(e) => e.stopPropagation()}
+>
+            {/* Drag handle */}
         <div style={{
           width: '40px',
           height: '4px',
