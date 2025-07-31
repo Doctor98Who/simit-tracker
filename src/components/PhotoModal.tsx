@@ -21,7 +21,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   
   // Get initial photo from context
   const getPhotoFromContext = () => {
-    return isOwn
+    return isOwn 
       ? data.progressPics.find((p: any) => p.id === photo.id) || photo
       : data.friendsFeed.find((p: any) => p.id === photo.id) || photo;
   };
@@ -30,36 +30,38 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
   
   // Update local photo when photo prop changes (for navigation between photos)
-useEffect(() => {
-  const newPhoto = getPhotoFromContext();
-  setLocalPhoto(newPhoto);
-  setEditCaption(newPhoto.caption || '');
-}, [photo.id, isOwn]); // Add isOwn to dependencies too
-
-// REPLACE the existing scroll lock useEffect with this more comprehensive version:
-useEffect(() => {
-  // Store the original position
-  const scrollY = window.scrollY;
+  useEffect(() => {
+    const newPhoto = getPhotoFromContext();
+    setLocalPhoto(newPhoto);
+    setEditCaption(newPhoto.caption || '');
+  }, [photo.id, isOwn]);
   
-  // Prevent body scroll when modal is open
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.width = '100%';
+  // Prevent background scrolling with better mobile support
+  useEffect(() => {
+    // Store the original position
+    const scrollY = window.scrollY;
+    
+    // Prevent body scroll when modal is open
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    return () => {
+      // Re-enable body scroll when modal closes
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
   
-  return () => {
-    // Re-enable body scroll when modal closes
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    window.scrollTo(0, scrollY);
-  };
-}, []);  
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
   const [editingCommentIdx, setEditingCommentIdx] = useState<number | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
-  const [showCommentMenu, setShowCommentMenu] = useState<number | null>(null);  
+  const [showCommentMenu, setShowCommentMenu] = useState<number | null>(null);
+  
   const handleLike = async () => {
     if (!dbUser) return;
     
@@ -264,36 +266,27 @@ useEffect(() => {
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
- alignItems: 'center',
-         justifyContent: 'center',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         zIndex: 9999,
-        overflowY: 'auto', // Add this to allow modal scrolling if needed
-         WebkitOverflowScrolling: 'touch',  // Add this for iOS smooth scrolling
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}
-      onClick={(e) => {
-    // Close modal if clicking on backdrop
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }}
->
+    >
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: '90vh',   
-         maxHeight: '90vh',
-     background: 'var(--bg-dark)',
+        minHeight: '100vh',
+        background: 'var(--bg-dark)',
         padding: 0,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-        position: 'relative', // Add relative positioning
-        margin: '20px 0',  // Add some margin
+        position: 'relative',
       }}>
         {/* Header */}
         <div style={{
@@ -304,7 +297,9 @@ useEffect(() => {
           borderBottom: '1px solid var(--border)',
           background: 'var(--bg-dark)',
           backdropFilter: 'blur(10px)',
-          flexShrink: 0,
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
         }}>
           <button
             onClick={onClose}
@@ -374,12 +369,8 @@ useEffect(() => {
           alignItems: 'center',
           justifyContent: 'center',
           background: 'black',
-          overflow: 'hidden',
           position: 'relative',
           width: '100%',
-          flexShrink: 0,
-          minHeight: '200px',
-          maxHeight: '40vh', 
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -439,27 +430,24 @@ useEffect(() => {
             alt="Progress"
             style={{
               width: '100%',
-              height: '100%',
-              maxHeight: '30vh',
+              height: 'auto',
+              maxHeight: '60vh',
               objectFit: 'contain',
               display: 'block',
             }}
           />              
         </div>
 
-        {/* Details - takes all remaining space */}
+        {/* Details section */}
         <div style={{
-          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
-         
         }}>
           {/* Like button and stats */}
           <div style={{
             padding: '16px 20px',
             borderTop: '1px solid var(--border)',
-            flexShrink: 0,
           }}>
             <div style={{
               display: 'flex',
@@ -598,21 +586,17 @@ useEffect(() => {
             )}
           </div>
 
-          {/* Comments section - expanded to fill remaining space */}
+          {/* Comments section - simplified */}
           <div style={{ 
-            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
-            minHeight: 0, // Critical for proper flex sizing
-           overflow: 'hidden', // ← ADD THIS BACK
-            // Remove overflow: 'hidden' to allow proper scrolling
+            paddingBottom: '40px',
           }}>
             {/* Comments header */}
             <div style={{
               padding: '16px 20px 12px',
-              flexShrink: 0,
             }}>
               <h4 style={{ 
                 margin: 0, 
@@ -636,7 +620,6 @@ useEffect(() => {
             {/* Comment input box */}
             <div style={{ 
               padding: '0 20px 12px',
-              flexShrink: 0,
             }}>
               <div style={{ 
                 display: 'flex', 
@@ -699,17 +682,11 @@ useEffect(() => {
               </div>
             </div>
             
-            {/* Comments list - scrollable area */}
+            {/* Comments list - no scroll, just flows */}
             <div style={{ 
-              flex: 1,
-              overflowY: 'auto',
-              overflowX: 'hidden',
               padding: '0 20px 20px',
               display: 'flex',
               flexDirection: 'column',
-              minHeight: 0, // Important!
-              paddingBottom: '80px', // ← ADD PADDING HERE INSTEAD
-               WebkitOverflowScrolling: 'touch',  // Add this for iOS
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 

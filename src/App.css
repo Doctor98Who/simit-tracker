@@ -1230,26 +1230,15 @@ button.finish {
 .progress-photo-modal {
     background: var(--bg-dark);
 }
-
-/* Add this to ensure the modal content fills the viewport properly */
-.progress-photo-modal .modal-content {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: -webkit-fill-available;
-  max-height: 100vh;
-  max-height: -webkit-fill-available;
-  overflow: hidden; /* Prevent the modal content itself from scrolling */
+/* Simplified Progress Photo Modal */
+.progress-photo-modal {
+    background: var(--bg-dark);
 }
 
-/* Ensure the modal respects safe areas on iOS */
-@supports (padding: max(0px)) {
-  .progress-photo-modal .modal-content {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+/* Simple webkit scrolling for smooth scroll on iOS */
+.progress-photo-modal {
+    -webkit-overflow-scrolling: touch;
 }
-
 /* Responsive adjustments for smaller screens */
 @media screen and (max-height: 700px) {
     .exercise-select-modal .modal-content {
