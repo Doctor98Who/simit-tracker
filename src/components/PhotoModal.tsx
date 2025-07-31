@@ -285,17 +285,18 @@ useEffect(() => {
 return (
 <div
   className="modal active progress-photo-modal"
-  style={{
-    background: 'rgba(0, 0, 0, 0.95)',
-    display: 'block',
-    position: 'fixed',
-top: '0px !important',  // This doesn't work in inline styles!
-left: '0px !important',  // This doesn't work either!    right: 0,
-    bottom: 0,
-    zIndex: 9999,
-    overflow: 'hidden',
-    transform: 'translate3d(0, 0, 0)',  // Create new stacking context
-  }}
+style={{
+  background: 'rgba(0, 0, 0, 0.95)',
+  display: 'block',
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 9999,
+  overflow: 'hidden',
+  transform: 'translate3d(0, 0, 0)',
+}}
 >
       <div className="modal-content" style={{
       width: '100%',
