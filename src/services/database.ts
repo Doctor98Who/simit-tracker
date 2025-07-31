@@ -755,7 +755,7 @@ static async addComment(userId: string, photoId: string, text: string) {
   }
 }
 
-static async deleteCommentByIndex(userId: string, photoId: string, commentIndex: number) {
+static async deleteComment(commentId: string, userId: string) {
   try {
     const response = await fetch('/.netlify/functions/photo-interactions', {
       method: 'POST',
@@ -763,10 +763,9 @@ static async deleteCommentByIndex(userId: string, photoId: string, commentIndex:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        action: 'deleteCommentByIndex',
-        userId,
-        photoId,
-        commentIndex
+        action: 'deleteComment',
+        commentId,
+        userId
       })
     });
 
@@ -782,7 +781,6 @@ static async deleteCommentByIndex(userId: string, photoId: string, commentIndex:
     throw error;
   }
 }
-
 static async getPhotoComments(photoId: string) {
   try {
     const response = await fetch('/.netlify/functions/photo-interactions', {

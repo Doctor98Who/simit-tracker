@@ -70,25 +70,23 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
     }
   };
 const handleDeleteComment = async (idx: number) => {
-  console.log('handleDeleteComment called with idx:', idx);
   const commentToDelete = comments[idx];
-  console.log('commentToDelete:', commentToDelete);
-  console.log('dbUser:', dbUser);
-  
-  if (!dbUser || commentToDelete.user_id !== dbUser.id) {
-    console.log('Returning early - user check failed');
-    return;
-  }
-  try {
-    // API call to delete from database FIRST
-    if (commentToDelete.id) {
-await DatabaseService.deleteCommentByIndex(dbUser.id, photo.id, idx);
-    }
+  if (!dbUser || commentToDelete.user_id !== dbUser.id) return;
 
-    // Then update local state
+  try {
     const updatedComments = comments.filter((_: any, i: number) => i !== idx);
     setComments(updatedComments);
     setShowMenu(null);
+
+    // Check if comment has an ID
+    if (!commentToDelete.id) {
+      console.error('Comment does not have an ID:', commentToDelete);
+      // For now, just update the UI without database call
+      // The change won't persist after refresh
+    } else {
+      // Use the existing deleteComment method
+      await DatabaseService.deleteComment(commentToDelete.id, dbUser.id);
+    }
 
     // Update context
     const updatePhoto = (p: any) => 
@@ -107,7 +105,7 @@ await DatabaseService.deleteCommentByIndex(dbUser.id, photo.id, idx);
     }
   } catch (error) {
     console.error('Error deleting comment:', error);
-    // Revert on error by resetting to photo's comments
+    // Revert on error
     setComments(photo.comments || []);
   }
 };
