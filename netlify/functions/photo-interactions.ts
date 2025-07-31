@@ -36,6 +36,9 @@ export const handler: Handler = async (event, context) => {
             
           if (error) throw error;
           
+          // Decrease like count
+          await supabase.rpc('decrement_likes', { photo_id: photoId });
+          
           return {
             statusCode: 200,
             body: JSON.stringify({ data: { liked: false } })
@@ -50,6 +53,9 @@ export const handler: Handler = async (event, context) => {
             });
             
           if (error) throw error;
+          
+          // Increase like count
+          await supabase.rpc('increment_likes', { photo_id: photoId });
           
           return {
             statusCode: 200,
