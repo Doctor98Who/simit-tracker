@@ -281,24 +281,22 @@ setTimeout(() => {
   }, [showCommentMenu]);
 
 return (
-  <div
-    className="modal active progress-photo-modal"
-    style={{
-      background: 'rgba(0, 0, 0, 0.95)',
-display: 'block', // Change from 'flex' to 'block'
-     alignItems: 'flex-start',
-      justifyContent: 'center',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 9999,
-      overflow: 'hidden', // CHANGED: from 'auto' to 'hidden' - prevents outer scroll
-    transform: 'none',
-    }}
-  >
-    <div className="modal-content" style={{
+<div
+  className="modal active progress-photo-modal"
+  style={{
+    background: 'rgba(0, 0, 0, 0.95)',
+    display: 'block',
+    position: 'fixed',
+    top: '0px !important',  // Force top position
+    left: '0px !important',  // Force left position
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+    overflow: 'hidden',
+    transform: 'translate3d(0, 0, 0)',  // Create new stacking context
+  }}
+>
+      <div className="modal-content" style={{
       width: '100%',
       maxWidth: '800px',
       height: '100vh', // CHANGED: from minHeight to height - fixed height
@@ -860,90 +858,88 @@ backgroundSize: 'cover',
 
 
 {dbUser && comment.user_id === dbUser.id && (
-  <>
-    <div
-      onClick={() => {
-        setShowCommentMenu(prev => prev === idx ? null : idx);
-      }}
-      style={{
-        background: 'none',
-        border: 'none',
-        color: 'var(--text-muted)',
-        cursor: 'pointer',
-        padding: '8px',
-        fontSize: '1.2em',
-        lineHeight: '0.5',
-        position: 'relative',  // Make sure this is relative
-        minHeight: '44px',
-        minWidth: '44px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      ⋯
-      {showCommentMenu === idx && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',  // Changed from '40px' to '100%' to position right below
-          right: 0,
-          background: 'var(--bg-dark)',
-          border: '1px solid var(--border)',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          minWidth: '120px',
-          zIndex: 10000,
-          overflow: 'hidden',
-        }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEditComment(idx);
-            }}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '10px 16px',
-              background: 'none',
-              border: 'none',
-              color: 'var(--text)',
-              fontSize: '0.9em',
-              textAlign: 'left',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-          >
-            Edit
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteComment(idx);
-            }}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '10px 16px',
-              background: 'none',
-              border: 'none',
-              borderTop: '1px solid var(--border)',
-              color: '#ef4444',
-              fontSize: '0.9em',
-              textAlign: 'left',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-          >
-            Delete
-          </button>
-        </div>
-      )}
-    </div>
-  </>
+  <div
+    onClick={() => {
+      setShowCommentMenu(prev => prev === idx ? null : idx);
+    }}
+    style={{
+      background: 'none',
+      border: 'none',
+      color: 'var(--text-muted)',
+      cursor: 'pointer',
+      padding: '8px',
+      fontSize: '1.2em',
+      lineHeight: '0.5',
+      position: 'relative',
+      minHeight: '44px',
+      minWidth: '44px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    ⋯
+    {showCommentMenu === idx && (
+      <div style={{
+        position: 'absolute',
+        top: '100%',
+        right: 0,
+        background: 'var(--bg-dark)',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        minWidth: '120px',
+        zIndex: 10000,
+        overflow: 'hidden',
+      }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEditComment(idx);
+          }}
+          style={{
+            display: 'block',
+            width: '100%',
+            padding: '10px 16px',
+            background: 'none',
+            border: 'none',
+            color: 'var(--text)',
+            fontSize: '0.9em',
+            textAlign: 'left',
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+        >
+          Edit
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDeleteComment(idx);
+          }}
+          style={{
+            display: 'block',
+            width: '100%',
+            padding: '10px 16px',
+            background: 'none',
+            border: 'none',
+            borderTop: '1px solid var(--border)',
+            color: '#ef4444',
+            fontSize: '0.9em',
+            textAlign: 'left',
+            cursor: 'pointer',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+        >
+          Delete
+        </button>
+      </div>
+    )}
+  </div>
 )}
 </div>
 <div style={{ fontSize: '0.9em', lineHeight: '1.5' }}>
