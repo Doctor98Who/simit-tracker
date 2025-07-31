@@ -301,136 +301,154 @@ return (
       <div className="profile-username">@{data.username}</div>
       <div className="profile-location" id="profile-location">{data.country}{data.state ? ', ' + data.state : ''}</div>
     </div>
-  <div className="profile-stats" style={{
+<div className="profile-info" style={{
+  padding: '20px',
   display: 'flex',
-  gap: '16px',
-  padding: '0 20px',
-  marginBottom: '24px',
+  flexDirection: 'column',
+  gap: '20px',
 }}>
-  <div className="stat-box" style={{
-    flex: 1,
-    background: 'var(--bg-lighter)',
-    borderRadius: '16px',
-    padding: '20px',
-    textAlign: 'center',
-    transition: 'all 0.3s ease',
-    cursor: 'default',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+  {/* Stats Row */}
+  <div style={{
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gap: '12px',
   }}>
-    <div className="stat-number" style={{
-      fontSize: '2em',
-      fontWeight: '700',
-      background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      marginBottom: '4px',
-    }}>{data.history.length}</div>
-    <div className="stat-label" style={{
-      color: 'var(--text-muted)',
-      fontSize: '0.9em',
-      fontWeight: '500',
-    }}>Workouts</div>
-  </div>
-  <div className="stat-box" 
-    onClick={() => setData(prev => ({ ...prev, showFriendsModal: true }))}
-    style={{
-      flex: 1,
-      background: 'var(--bg-lighter)',
-      borderRadius: '16px',
-      padding: '20px',
+    <div style={{
       textAlign: 'center',
-      transition: 'all 0.3s ease',
-      cursor: 'pointer',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-    }}>
-    <div className="stat-number" style={{
-      fontSize: '2em',
-      fontWeight: '700',
-      background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      marginBottom: '4px',
-    }}>{data.friends.length}</div>
-    <div className="stat-label" style={{
-      color: 'var(--text-muted)',
-      fontSize: '0.9em',
-      fontWeight: '500',
-    }}>Friends</div>
-  </div>
-</div>
-<div className="profile-actions" style={{
-  display: 'flex',
-  gap: '12px',
-  padding: '0 20px',
-  marginBottom: '24px',
-  alignItems: 'center',
-}}>
-  <button
-    onClick={openEditProfileModal}
-    style={{
+      padding: '16px 8px',
       background: 'var(--bg-lighter)',
-      color: 'var(--text)',
       borderRadius: '12px',
-      padding: '10px 20px',
-      cursor: 'pointer',
-      fontSize: '0.9em',
-      fontWeight: '600',
-      border: 'none',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    }}
-  >
-    Edit Profile
-  </button>
-  
-  <div
-    style={{
-      background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-      color: 'white',
-      borderRadius: '12px',
-      padding: '10px 20px',
-      fontSize: '0.9em',
-      fontWeight: '600',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    }}
-  >
-    <span style={{ fontSize: '0.85em', opacity: 0.9 }}>Total:</span>
-    <span>{totalVolume.toLocaleString()} {data.weightUnit || 'lbs'}</span>
-  </div>
-  
-<button
-    onClick={toggleHistorySection}
-    style={{
-      marginLeft: 'auto',
-      background: showHistory ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-      color: showHistory ? 'white' : 'var(--text)',
-      borderRadius: '12px',
-      padding: '8px 20px',
-      cursor: 'pointer',
-      border: 'none',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '2px',
-    }}
-  >
-    <span style={{ fontSize: '0.9em', fontWeight: '600' }}>
-      {showHistory ? 'Hide' : 'Show'} History
-    </span>
-    <span style={{ 
-      fontSize: '0.75em', 
-      fontWeight: '500',
-      opacity: showHistory ? 0.9 : 0.8,
+      transition: 'all 0.2s ease',
     }}>
-      {data.history.length}
-    </span>
-  </button>
-</div>
+      <div style={{
+        fontSize: '1.8em',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      }}>
+        {data.history.length}
+      </div>
+      <div style={{
+        fontSize: '0.8em',
+        color: 'var(--text-muted)',
+        fontWeight: '500',
+        marginTop: '2px',
+      }}>
+        Workouts
+      </div>
+    </div>
+
+    <div 
+      onClick={() => setData(prev => ({ ...prev, activeModal: 'friends-modal' }))}
+      style={{
+        textAlign: 'center',
+        padding: '16px 8px',
+        background: 'var(--bg-lighter)',
+        borderRadius: '12px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      <div style={{
+        fontSize: '1.8em',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      }}>
+        {data.friends.length}
+      </div>
+      <div style={{
+        fontSize: '0.8em',
+        color: 'var(--text-muted)',
+        fontWeight: '500',
+        marginTop: '2px',
+      }}>
+        Friends
+      </div>
+    </div>
+
+    <div style={{
+      textAlign: 'center',
+      padding: '16px 8px',
+      background: 'var(--bg-lighter)',
+      borderRadius: '12px',
+    }}>
+      <div style={{
+        fontSize: '1.8em',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      }}>
+        {totalVolume.toLocaleString()}
+      </div>
+      <div style={{
+        fontSize: '0.8em',
+        color: 'var(--text-muted)',
+        fontWeight: '500',
+        marginTop: '2px',
+      }}>
+        Total {data.weightUnit || 'lbs'}
+      </div>
+    </div>
+  </div>
+
+  {/* Action Buttons */}
+  <div style={{
+    display: 'flex',
+    gap: '12px',
+  }}>
+    <button
+      onClick={openEditProfileModal}
+      style={{
+        flex: 1,
+        background: 'var(--bg-lighter)',
+        color: 'var(--text)',
+        border: 'none',
+        borderRadius: '12px',
+        padding: '12px',
+        fontSize: '0.9em',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      Edit Profile
+    </button>
+
+    <button
+      onClick={toggleHistorySection}
+      style={{
+        flex: 1,
+        background: showHistory ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+        color: showHistory ? 'white' : 'var(--text)',
+        border: 'none',
+        borderRadius: '12px',
+        padding: '12px',
+        fontSize: '0.9em',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+      }}
+    >
+      <span>{showHistory ? 'Hide' : 'View'} History</span>
+      <span style={{
+        background: showHistory ? 'rgba(255,255,255,0.2)' : 'var(--bg-dark)',
+        padding: '2px 8px',
+        borderRadius: '8px',
+        fontSize: '0.8em',
+      }}>
+        {data.history.length}
+      </span>
+    </button>
+  </div>
+</div> 
     <div id="profile-history-section" className={showHistory ? '' : 'hidden'} style={{ padding: '0 20px' }}>
       <div id="history-list">{renderedHistory}</div>
     </div>

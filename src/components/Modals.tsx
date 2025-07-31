@@ -73,11 +73,22 @@ const Modals = () => {
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
   const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null, isEditingProgram: false }));
 
-  const goBack = () => {
-    if (activeModal === 'day-modal') openModal('week-modal');
-    else if (activeModal === 'week-modal') openModal('program-weeks-modal');
-    else if (activeModal === 'program-modal') openModal('start-workout-tab');
-    else closeModal();
+const goBack = () => {
+    if (activeModal === 'day-modal') {
+      openModal('week-modal');
+    } else if (activeModal === 'week-modal') {
+      // Check if we're editing - if so, go back to program modal
+      if (data.isEditingProgram) {
+        openModal('program-modal');
+      } else {
+        // If viewing, go back to program weeks
+        openModal('program-weeks-modal');
+      }
+    } else if (activeModal === 'program-modal') {
+      openModal('start-workout-tab');
+    } else {
+      closeModal();
+    }
   };
 
   const isSimitProgram = useMemo(
@@ -142,11 +153,12 @@ const Modals = () => {
       setData((prev: DataType) => ({
         ...prev,
         templates: newTemplates,
-        isEditingProgram: false  // Add this line
+        isEditingProgram: false
       }));
       closeModal();
     }
   };
+
   const addDayToWeek = () => {
     if (data.currentWeekIndex === null) return;
     setData((prev: DataType) => {
@@ -194,7 +206,6 @@ const Modals = () => {
       }
     }
   };
-
   const startWorkoutFromDay = () => {
     if (data.currentWeekIndex !== null && data.currentDayIndex !== null) {
       const day = data.currentProgram.weeks[data.currentWeekIndex].days[data.currentDayIndex];
@@ -283,34 +294,34 @@ const Modals = () => {
     setSelectSearchQuery('');
 
     // Create the new exercise with sets
-// Get previous sets for this exercise to carry over set types
-const getPreviousSetTypes = () => {
-  // Look for the most recent workout with this exercise
-  for (let i = data.history.length - 1; i >= 0; i--) {
-    const workout = data.history[i];
-    const matchingEx = workout.exercises.find((e: Exercise) => 
-      e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
-    );
-    if (matchingEx && matchingEx.sets) {
-      return matchingEx.sets.map((s: Set) => s.type);
-    }
-  }
-  return [];
-};
+    // Get previous sets for this exercise to carry over set types
+    const getPreviousSetTypes = () => {
+      // Look for the most recent workout with this exercise
+      for (let i = data.history.length - 1; i >= 0; i--) {
+        const workout = data.history[i];
+        const matchingEx = workout.exercises.find((e: Exercise) =>
+          e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
+        );
+        if (matchingEx && matchingEx.sets) {
+          return matchingEx.sets.map((s: Set) => s.type);
+        }
+      }
+      return [];
+    };
 
-const previousSetTypes = getPreviousSetTypes();
+    const previousSetTypes = getPreviousSetTypes();
 
-// Create the new exercise with sets, carrying over set types
-const newExercise = {
-  ...exercise,
-  sets: Array.from({ length: 3 }, (_, index) => ({
-    weight: '',
-    reps: '',
-    rpe: '',
-    completed: false,
-    type: previousSetTypes[index] || undefined,
-  })),
-};
+    // Create the new exercise with sets, carrying over set types
+    const newExercise = {
+      ...exercise,
+      sets: Array.from({ length: 3 }, (_, index) => ({
+        weight: '',
+        reps: '',
+        rpe: '',
+        completed: false,
+        type: previousSetTypes[index] || undefined,
+      })),
+    };
 
     if (exerciseSelectMode === 'workout') {
       // Adding to workout
@@ -1033,345 +1044,345 @@ const newExercise = {
 
   return (
     <>
-    <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    maxWidth: '450px',
-    width: '90%',
-    overflow: 'hidden',
-  }}>
-    {/* Header */}
-    <div style={{
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}>
-      <h2 style={{
-        margin: 0,
-        fontSize: '1.3em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        letterSpacing: '-0.5px',
-      }}>Create Program</h2>
-      {data.isEditingProgram && (
-        <span style={{
-          fontSize: '0.75em',
-          padding: '4px 12px',
-          background: 'rgba(59, 130, 246, 0.15)',
-          color: 'var(--accent-primary)',
-          borderRadius: '12px',
-          fontWeight: '500',
-        }}>
-          Editing
-        </span>
-      )}
-    </div>
-
-    {/* Content */}
-    <div style={{
-      padding: '24px',
-      overflowY: 'auto',
-      maxHeight: 'calc(90vh - 80px)',
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      {/* Program Name Input */}
-      <div style={{ marginBottom: '28px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--text-muted)',
-          fontSize: '0.85em',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Program Name
-        </label>
-        <input
-          type="text"
-          id="program-name"
-          placeholder="e.g., Push Pull Legs"
-          defaultValue={(data.currentProgram as any)?.name || ''}
-          style={{
-            width: '100%',
-            padding: '14px 16px',
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            color: 'var(--text)',
-            fontSize: '16px',
-            outline: 'none',
-            transition: 'all 0.3s ease',
-            backdropFilter: 'blur(10px)',
-            boxSizing: 'border-box',
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = 'var(--accent-primary)';
-            e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-          }}
-        />
-      </div>
-
-      {/* Number of Weeks */}
-      <div style={{ marginBottom: '28px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--text-muted)',
-          fontSize: '0.85em',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Program Duration
-        </label>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '14px 16px',
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+      <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '12px',
-          transition: 'all 0.3s ease',
+          maxWidth: '450px',
+          width: '90%',
+          overflow: 'hidden',
         }}>
-          <input
-            type="number"
-            id="mesocycle-length"
-            placeholder="4"
-            min="1"
-            max="52"
-            defaultValue={data.currentProgram.weeks.length || ''}
-            onInput={generateWeeks}
-            style={{
-              width: '80px',
-              padding: '8px 12px',
-              background: 'var(--bg-lighter)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              color: 'var(--text)',
-              fontSize: '16px',
-              textAlign: 'center',
-              outline: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-          />
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.95em' }}>weeks</span>
-        </div>
-        <p style={{
-          marginTop: '8px',
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          lineHeight: '1.4',
-        }}>
-          Each week will repeat with progressive overload
-        </p>
-      </div>
-
-      {/* Weeks Overview */}
-      {data.currentProgram.weeks.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+          {/* Header */}
           <div style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '16px',
           }}>
-            <h3 style={{
+            <h2 style={{
               margin: 0,
-              fontSize: '1em',
-              color: 'var(--text)',
-              fontWeight: '600',
-            }}>
-              Week Structure
-            </h3>
-            <span style={{
-              fontSize: '0.85em',
-              color: 'var(--accent-primary)',
-              fontWeight: '500',
-            }}>
-              {data.currentProgram.weeks.length} {data.currentProgram.weeks.length === 1 ? 'week' : 'weeks'}
-            </span>
+              fontSize: '1.3em',
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.5px',
+            }}>Create Program</h2>
+            {data.isEditingProgram && (
+              <span style={{
+                fontSize: '0.75em',
+                padding: '4px 12px',
+                background: 'rgba(59, 130, 246, 0.15)',
+                color: 'var(--accent-primary)',
+                borderRadius: '12px',
+                fontWeight: '500',
+              }}>
+                Editing
+              </span>
+            )}
           </div>
 
+          {/* Content */}
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
+            padding: '24px',
+            overflowY: 'auto',
+            maxHeight: 'calc(90vh - 80px)',
+            WebkitOverflowScrolling: 'touch',
           }}>
-            {data.currentProgram.weeks.map((_: Week, index: number) => (
-              <div
-                key={index}
-                onClick={() => setData((prev: DataType) => ({
-                  ...prev,
-                  currentWeekIndex: index,
-                  activeModal: 'week-modal',
-                  isEditingProgram: prev.isEditingProgram || false,
-                }))}
+            {/* Program Name Input */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-muted)',
+                fontSize: '0.85em',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Program Name
+              </label>
+              <input
+                type="text"
+                id="program-name"
+                placeholder="e.g., Push Pull Legs"
+                defaultValue={(data.currentProgram as any)?.name || ''}
                 style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent-primary)';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+                }}
+              />
+            </div>
+
+            {/* Number of Weeks */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-muted)',
+                fontSize: '0.85em',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Program Duration
+              </label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '14px 16px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+              }}>
+                <input
+                  type="number"
+                  id="mesocycle-length"
+                  placeholder="4"
+                  min="1"
+                  max="52"
+                  defaultValue={data.currentProgram.weeks.length || ''}
+                  onInput={generateWeeks}
+                  style={{
+                    width: '80px',
+                    padding: '8px 12px',
+                    background: 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    color: 'var(--text)',
+                    fontSize: '16px',
+                    textAlign: 'center',
+                    outline: 'none',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'textfield',
+                  }}
+                />
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.95em' }}>weeks</span>
+              </div>
+              <p style={{
+                marginTop: '8px',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                lineHeight: '1.4',
+              }}>
+                Each week will repeat with progressive overload
+              </p>
+            </div>
+
+            {/* Weeks Overview */}
+            {data.currentProgram.weeks.length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '16px',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  marginBottom: '16px',
+                }}>
+                  <h3 style={{
+                    margin: 0,
+                    fontSize: '1em',
+                    color: 'var(--text)',
+                    fontWeight: '600',
+                  }}>
+                    Week Structure
+                  </h3>
+                  <span style={{
+                    fontSize: '0.85em',
+                    color: 'var(--accent-primary)',
+                    fontWeight: '500',
+                  }}>
+                    {data.currentProgram.weeks.length} {data.currentProgram.weeks.length === 1 ? 'week' : 'weeks'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}>
+                  {data.currentProgram.weeks.map((_: Week, index: number) => (
+                    <div
+                      key={index}
+                      onClick={() => setData((prev: DataType) => ({
+                        ...prev,
+                        currentWeekIndex: index,
+                        activeModal: 'week-modal',
+                        isEditingProgram: prev.isEditingProgram || false,
+                      }))}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '16px',
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                        e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                        e.currentTarget.style.transform = 'translateX(0)';
+                      }}
+                    >
+                      <div>
+                        <div style={{
+                          fontSize: '1em',
+                          fontWeight: '600',
+                          marginBottom: '4px',
+                          color: 'var(--text)',
+                        }}>
+                          Week {index + 1}
+                        </div>
+                        <div style={{
+                          fontSize: '0.85em',
+                          color: 'var(--text-muted)'
+                        }}>
+                          {data.currentProgram.weeks[index].days.length} training days
+                        </div>
+                      </div>
+                      <div style={{
+                        color: 'var(--text-muted)',
+                        fontSize: '1.2em',
+                      }}>
+                        →
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={addWeek}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    marginTop: '12px',
+                    background: 'transparent',
+                    color: 'var(--accent-primary)',
+                    border: '1px dashed rgba(59, 130, 246, 0.3)',
+                    borderRadius: '12px',
+                    fontSize: '0.9em',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                  }}
+                >
+                  <span style={{ fontSize: '1.2em' }}>+</span> Add Week
+                </button>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              marginTop: '32px',
+            }}>
+              <button
+                onClick={saveProgram}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'var(--accent-gradient)',
+                  color: 'white',
+                  border: 'none',
                   borderRadius: '12px',
+                  fontSize: '1em',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                  transition: 'all 0.3s ease',
+                  opacity: data.currentProgram.weeks.length > 0 ? 1 : 0.5,
+                  pointerEvents: data.currentProgram.weeks.length > 0 ? 'auto' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (data.currentProgram.weeks.length > 0) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+                }}
+              >
+                Save Program
+              </button>
+
+              <button
+                className="secondary"
+                onClick={closeModal}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'transparent',
+                  color: 'var(--text-muted)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                  e.currentTarget.style.transform = 'translateX(4px)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.color = 'var(--text)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.transform = 'translateX(0)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.color = 'var(--text-muted)';
                 }}
               >
-                <div>
-                  <div style={{
-                    fontSize: '1em',
-                    fontWeight: '600',
-                    marginBottom: '4px',
-                    color: 'var(--text)',
-                  }}>
-                    Week {index + 1}
-                  </div>
-                  <div style={{
-                    fontSize: '0.85em',
-                    color: 'var(--text-muted)'
-                  }}>
-                    {data.currentProgram.weeks[index].days.length} training days
-                  </div>
-                </div>
-                <div style={{
-                  color: 'var(--text-muted)',
-                  fontSize: '1.2em',
-                }}>
-                  →
-                </div>
-              </div>
-            ))}
+                Cancel
+              </button>
+            </div>
           </div>
-
-          <button
-            onClick={addWeek}
-            style={{
-              width: '100%',
-              padding: '14px',
-              marginTop: '12px',
-              background: 'transparent',
-              color: 'var(--accent-primary)',
-              border: '1px dashed rgba(59, 130, 246, 0.3)',
-              borderRadius: '12px',
-              fontSize: '0.9em',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-            }}
-          >
-            <span style={{ fontSize: '1.2em' }}>+</span> Add Week
-          </button>
         </div>
-      )}
-
-      {/* Action Buttons */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        marginTop: '32px',
-      }}>
-        <button
-          onClick={saveProgram}
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'var(--accent-gradient)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '1em',
-            fontWeight: '600',
-            cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-            transition: 'all 0.3s ease',
-            opacity: data.currentProgram.weeks.length > 0 ? 1 : 0.5,
-            pointerEvents: data.currentProgram.weeks.length > 0 ? 'auto' : 'none',
-          }}
-          onMouseEnter={(e) => {
-            if (data.currentProgram.weeks.length > 0) {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-          }}
-        >
-          Save Program
-        </button>
-
-        <button
-          className="secondary"
-          onClick={closeModal}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'transparent',
-            color: 'var(--text-muted)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            fontSize: '0.9em',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.color = 'var(--text)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.color = 'var(--text-muted)';
-          }}
-        >
-          Cancel
-        </button>
       </div>
-    </div>
-  </div>
-</div>
       <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
@@ -1864,24 +1875,24 @@ const newExercise = {
               } else {
                 closeModal();
               }
-}}>Cancel</button>
+            }}>Cancel</button>
           </div>
         </div>
       </div>
-<div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
-  {data.currentWorkout && <WorkoutModal />}
-</div>
-{/* CommentsModal */}
-{data.showComments && data.selectedPhoto && (
-  <CommentsModal
-    photo={data.selectedPhoto}
-    isOwn={data.selectedPhoto.isOwn}
-    onClose={() => setData(prev => ({ ...prev, showComments: false, selectedPhoto: null }))}
-  />
-)}
-{data.currentWorkout && activeModal !== 'workout-modal' && (
-  <div id="minimized-workout"
-              className="minimized-workout"
+      <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
+        {data.currentWorkout && <WorkoutModal />}
+      </div>
+      {/* CommentsModal */}
+      {data.showComments && data.selectedPhoto && (
+        <CommentsModal
+          photo={data.selectedPhoto}
+          isOwn={data.selectedPhoto.isOwn}
+          onClose={() => setData(prev => ({ ...prev, showComments: false, selectedPhoto: null }))}
+        />
+      )}
+      {data.currentWorkout && activeModal !== 'workout-modal' && (
+        <div id="minimized-workout"
+          className="minimized-workout"
           style={{
             position: 'fixed',
             bottom: '0',
@@ -2696,853 +2707,854 @@ const newExercise = {
         </div>
       </div>
 
-<div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '420px',
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    overflow: 'hidden',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    display: 'flex',
-    flexDirection: 'column',
-  }}>
-    {/* Header */}
-    <div style={{
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-    }}>
-      <h2 style={{
-        margin: 0,
-        fontSize: '1.3em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        letterSpacing: '-0.5px',
-      }}>New Progress Photo</h2>
-    </div>
-
-    <div style={{
-      padding: '24px',
-      overflowY: 'auto',
-      flex: 1,
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      {data.tempBase64 ? (
-        <>
-          {/* Photo Preview */}
+      <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '420px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          overflow: 'hidden',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {/* Header */}
           <div style={{
-            marginBottom: '24px',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            background: '#000',
-            aspectRatio: '1',
-            position: 'relative',
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
           }}>
-            <img
-              src={data.tempBase64}
-              alt="Progress"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-            <button
-              onClick={() => setData(prev => ({ ...prev, tempBase64: null }))}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                background: 'rgba(0, 0, 0, 0.6)',
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '36px',
-                height: '36px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '1.2em',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 59, 48, 0.8)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)';
-              }}
-            >
-              ×
-            </button>
+            <h2 style={{
+              margin: 0,
+              fontSize: '1.3em',
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.5px',
+            }}>New Progress Photo</h2>
           </div>
 
-          {/* Caption Input */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Caption
-            </label>
-            <textarea
-              id="progress-caption"
-              placeholder="Share your progress..."
-              style={{
-                width: '100%',
-                minHeight: '80px',
-                padding: '14px 16px',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                color: 'var(--text)',
-                fontSize: '15px',
-                outline: 'none',
-                resize: 'vertical',
-                transition: 'all 0.3s ease',
-                backdropFilter: 'blur(10px)',
-                fontFamily: 'inherit',
-                lineHeight: '1.5',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = 'var(--accent-primary)';
-                e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-              }}
-            />
-          </div>
-
-          {/* Weight Input */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Body Weight
-            </label>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
-              padding: '12px 16px',
-              transition: 'all 0.3s ease',
-              backdropFilter: 'blur(10px)',
-            }}>
-              <input
-                type="number"
-                id="progress-weight"
-                placeholder="0"
-                style={{
-                  width: '80px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                  outline: 'none',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'textfield',
-                  textAlign: 'center',
-                }}
-              />
-              <span style={{
-                color: 'var(--text-muted)',
-                fontSize: '0.9em',
-                fontWeight: '500',
-              }}>
-                {data.weightUnit || 'lbs'}
-              </span>
-            </div>
-          </div>
-
-          {/* Pump Rating */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '12px',
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Pump Rating
-            </label>
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '16px',
-              padding: '20px',
-              backdropFilter: 'blur(10px)',
-            }}>
-              <div style={{ position: 'relative', marginBottom: '16px' }}>
-                <input
-                  type="range"
-                  id="progress-pump"
-                  min="0"
-                  max="100"
-                  defaultValue="50"
-                  style={{
-                    width: '100%',
-                    height: '40px',
-                    WebkitAppearance: 'none',
-                    appearance: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    zIndex: 2,
-                  }}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const label = document.getElementById('pump-value');
-                    if (label) label.textContent = value;
-                    
-                    const percent = (parseInt(value) / 100) * 100;
-                    const track = document.getElementById('pump-track-fill');
-                    if (track) track.style.width = `${percent}%`;
-                  }}
-                />
+          <div style={{
+            padding: '24px',
+            overflowY: 'auto',
+            flex: 1,
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            {data.tempBase64 ? (
+              <>
+                {/* Photo Preview */}
                 <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: 0,
-                  right: 0,
-                  height: '6px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '3px',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
+                  marginBottom: '24px',
+                  borderRadius: '16px',
                   overflow: 'hidden',
+                  background: '#000',
+                  aspectRatio: '1',
+                  position: 'relative',
                 }}>
-                  <div
-                    id="pump-track-fill"
+                  <img
+                    src={data.tempBase64}
+                    alt="Progress"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <button
+                    onClick={() => setData(prev => ({ ...prev, tempBase64: null }))}
                     style={{
                       position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      height: '100%',
-                      width: '50%',
-                      background: 'var(--accent-gradient)',
-                      borderRadius: '3px',
-                      transition: 'width 0.2s ease',
+                      top: '12px',
+                      right: '12px',
+                      background: 'rgba(0, 0, 0, 0.6)',
+                      backdropFilter: 'blur(10px)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '1.2em',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 59, 48, 0.8)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)';
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Caption Input */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Caption
+                  </label>
+                  <textarea
+                    id="progress-caption"
+                    placeholder="Share your progress..."
+                    style={{
+                      width: '100%',
+                      minHeight: '80px',
+                      padding: '14px 16px',
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px',
+                      color: 'var(--text)',
+                      fontSize: '15px',
+                      outline: 'none',
+                      resize: 'vertical',
+                      transition: 'all 0.3s ease',
+                      backdropFilter: 'blur(10px)',
+                      fontFamily: 'inherit',
+                      lineHeight: '1.5',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--accent-primary)';
+                      e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
                     }}
                   />
                 </div>
-              </div>
-              <div style={{
-                textAlign: 'center',
-                fontSize: '1.5em',
-                fontWeight: '700',
-                background: 'var(--accent-gradient)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                marginTop: '12px',
-              }}>
-                <span id="pump-value">50</span>
-                <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
-              </div>
+
+                {/* Weight Input */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Body Weight
+                  </label>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(10px)',
+                  }}>
+                    <input
+                      type="number"
+                      id="progress-weight"
+                      placeholder="0"
+                      style={{
+                        width: '80px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text)',
+                        fontSize: '16px',
+                        outline: 'none',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'textfield',
+                        textAlign: 'center',
+                      }}
+                    />
+                    <span style={{
+                      color: 'var(--text-muted)',
+                      fontSize: '0.9em',
+                      fontWeight: '500',
+                    }}>
+                      {data.weightUnit || 'lbs'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pump Rating */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '12px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Pump Rating
+                  </label>
+                  <div style={{
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    backdropFilter: 'blur(10px)',
+                  }}>
+                    <div style={{ position: 'relative', marginBottom: '16px' }}>
+                      <input
+                        type="range"
+                        id="progress-pump"
+                        min="0"
+                        max="100"
+                        defaultValue="50"
+                        style={{
+                          width: '100%',
+                          height: '40px',
+                          WebkitAppearance: 'none',
+                          appearance: 'none',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 2,
+                        }}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const label = document.getElementById('pump-value');
+                          if (label) label.textContent = value;
+
+                          const percent = (parseInt(value) / 100) * 100;
+                          const track = document.getElementById('pump-track-fill');
+                          if (track) track.style.width = `${percent}%`;
+                        }}
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: 0,
+                        right: 0,
+                        height: '6px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '3px',
+                        transform: 'translateY(-50%)',
+                        pointerEvents: 'none',
+                        overflow: 'hidden',
+                      }}>
+                        <div
+                          id="pump-track-fill"
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            height: '100%',
+                            width: '50%',
+                            background: 'var(--accent-gradient)',
+                            borderRadius: '3px',
+                            transition: 'width 0.2s ease',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{
+                      textAlign: 'center',
+                      fontSize: '1.5em',
+                      fontWeight: '700',
+                      background: 'var(--accent-gradient)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      marginTop: '12px',
+                    }}>
+                      <span id="pump-value">50</span>
+                      <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginTop: '10px',
+                      fontSize: '0.65em',
+                      color: 'var(--text-muted)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}>
+                      <span>No Pump</span>
+                      <span>Moderate</span>
+                      <span>Max Pump</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Privacy Toggle */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '12px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Visibility
+                  </label>
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                  }}>
+                    <button
+                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
+                      style={{
+                        flex: 1,
+                        padding: '14px',
+                        background: !data.tempIsPublic
+                          ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)'
+                          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                        color: !data.tempIsPublic ? 'white' : 'var(--text-muted)',
+                        border: '1px solid',
+                        borderColor: !data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        fontSize: '0.9em',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                      Private
+                    </button>
+                    <button
+                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
+                      style={{
+                        flex: 1,
+                        padding: '14px',
+                        background: data.tempIsPublic
+                          ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)'
+                          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                        color: data.tempIsPublic ? 'white' : 'var(--text-muted)',
+                        border: '1px solid',
+                        borderColor: data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        fontSize: '0.9em',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M2 12h20" />
+                        <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                      </svg>
+                      Public
+                    </button>
+                  </div>
+                  <p style={{
+                    marginTop: '8px',
+                    fontSize: '0.75em',
+                    color: 'var(--text-muted)',
+                    textAlign: 'center',
+                  }}>
+                    {data.tempIsPublic
+                      ? "Friends will see this in their feed"
+                      : "Only you will see this photo"}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}>
+                  <button
+                    onClick={() => {
+                      const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                      const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                      const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+
+                      if (data.tempBase64 && data.tempTimestamp) {
+                        const newPic = {
+                          base64: data.tempBase64,
+                          timestamp: data.tempTimestamp,
+                          caption,
+                          weight,
+                          pump,
+                          likes: 0,
+                          comments: [],
+                          isPublic: data.tempIsPublic || false,
+                        };
+                        const newProgressPics = [...data.progressPics, newPic];
+
+                        setData((prev: DataType) => ({
+                          ...prev,
+                          progressPics: newProgressPics,
+                          tempBase64: null,
+                          tempTimestamp: null,
+                          activeModal: null
+                        }));
+
+                        requestAnimationFrame(() => {
+                          setData((prev: DataType) => ({
+                            ...prev,
+                            activeTab: 'progress-tab'
+                          }));
+                        });
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: 'var(--accent-gradient)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '1em',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+                    }}
+                  >
+                    Share Progress
+                  </button>
+
+                  <button
+                    onClick={() => setData((prev: DataType) => ({
+                      ...prev,
+                      tempBase64: null,
+                      tempTimestamp: null,
+                      activeModal: null
+                    }))}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'transparent',
+                      color: 'var(--text-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px',
+                      fontSize: '0.9em',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                      e.currentTarget.style.color = 'var(--text)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.color = 'var(--text-muted)';
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              // Photo picker UI when no photo selected
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: '10px',
-                fontSize: '0.65em',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '300px',
+                textAlign: 'center',
               }}>
-                <span>No Pump</span>
-                <span>Moderate</span>
-                <span>Max Pump</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Privacy Toggle */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '12px',
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Visibility
-            </label>
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-            }}>
-              <button
-                onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: !data.tempIsPublic 
-                    ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)' 
-                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                  color: !data.tempIsPublic ? 'white' : 'var(--text-muted)',
-                  border: '1px solid',
-                  borderColor: !data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  fontSize: '0.9em',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
+                <div style={{
+                  width: '120px',
+                  height: '120px',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                  <path d="M7 11V7a5 5 0 0110 0v4"/>
-                </svg>
-                Private
-              </button>
-              <button
-                onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  background: data.tempIsPublic 
-                    ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)' 
-                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                  color: data.tempIsPublic ? 'white' : 'var(--text-muted)',
-                  border: '1px solid',
-                  borderColor: data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  fontSize: '0.9em',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M2 12h20"/>
-                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-                </svg>
-                Public
-              </button>
-            </div>
-            <p style={{
-              marginTop: '8px',
-              fontSize: '0.75em',
-              color: 'var(--text-muted)',
-              textAlign: 'center',
-            }}>
-              {data.tempIsPublic 
-                ? "Friends will see this in their feed"
-                : "Only you will see this photo"}
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-          }}>
-            <button
-              onClick={() => {
-                const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-                const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-                const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
-
-                if (data.tempBase64 && data.tempTimestamp) {
-                  const newPic = {
-                    base64: data.tempBase64,
-                    timestamp: data.tempTimestamp,
-                    caption,
-                    weight,
-                    pump,
-                    likes: 0,
-                    comments: [],
-                    isPublic: data.tempIsPublic || false,
-                  };
-                  const newProgressPics = [...data.progressPics, newPic];
-
-                  setData((prev: DataType) => ({
-                    ...prev,
-                    progressPics: newProgressPics,
-                    tempBase64: null,
-                    tempTimestamp: null,
-                    activeModal: null
-                  }));
-
-                  requestAnimationFrame(() => {
-                    setData((prev: DataType) => ({
-                      ...prev,
-                      activeTab: 'progress-tab'
-                    }));
-                  });
-                }
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'var(--accent-gradient)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1em',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-              }}
-            >
-              Share Progress
-            </button>
-
-            <button
-              onClick={() => setData((prev: DataType) => ({
-                ...prev,
-                tempBase64: null,
-                tempTimestamp: null,
-                activeModal: null
-              }))}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'transparent',
-                color: 'var(--text-muted)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                fontSize: '0.9em',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                e.currentTarget.style.color = 'var(--text)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.color = 'var(--text-muted)';
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      ) : (
-        // Photo picker UI when no photo selected
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '300px',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: '120px',
-            height: '120px',
-            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '24px',
-          }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-          </div>
-          <h3 style={{
-            fontSize: '1.1em',
-            fontWeight: '600',
-            marginBottom: '8px',
-            color: 'var(--text)',
-          }}>
-            Select a photo
-          </h3>
-          <p style={{
-            fontSize: '0.9em',
-            color: 'var(--text-muted)',
-            marginBottom: '24px',
-          }}>
-            Choose a photo to track your progress
-          </p>
-          <button
-            onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*';
-              input.onchange = (e: Event) => {
-                const target = e.target as HTMLInputElement;
-                if (target.files && target.files[0]) {
-                  const file = target.files[0];
-                  const reader = new FileReader();
-                  reader.onload = (event: ProgressEvent<FileReader>) => {
-                    if (event.target?.result) {
-                      setData(prev => ({
-                        ...prev,
-                        tempBase64: event.target!.result as string,
-                        tempTimestamp: Date.now(),
-                      }));
-                    }
-                  };
-                  reader.readAsDataURL(file);
-                }
-              };
-              input.click();
-            }}
-            style={{
-              padding: '12px 24px',
-              background: 'var(--accent-gradient)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '0.95em',
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-              transition: 'all 0.3s ease',
-            }}
-          >
-            Choose Photo
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
-</div>
-      <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxWidth: '400px',
-          background: 'var(--bg-dark)',
-          borderRadius: '0',
-          padding: '0',
-          overflow: 'hidden',
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          <div className="settings-header" style={{
-            padding: '15px 20px',
-            borderBottom: '1px solid var(--border)',
-            background: 'var(--bg-dark)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            <button
-              onClick={closeModal}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text)',
-                fontSize: '1.2em',
-                cursor: 'pointer',
-                padding: '0',
-                minHeight: 'auto',
-                width: '30px',
-              }}
-            >
-              ✕
-            </button>
-            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Settings</h2>
-            <div style={{ width: '30px' }}></div>
-          </div>
-
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            {/* APPEARANCE Section */}
-            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{
-                margin: '0 0 15px 0',
-                fontSize: '0.8em',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                APPEARANCE
-              </h3>
-{/* SOCIAL Section */}
-<div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-  <h3 style={{
-    margin: '0 0 15px 0',
-    fontSize: '0.8em',
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
-  }}>
-    SOCIAL
-  </h3>
-
-  <div
-    onClick={() => setData((prev: DataType) => ({
-      ...prev,
-      activeModal: 'find-friends-modal',
-      previousModal: 'settings-modal'
-    }))}
-    style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '12px 0',
-      cursor: 'pointer',
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <span style={{ fontSize: '1em' }}>Find Friends</span>
-    </div>
-    <span style={{ color: 'var(--text-muted)' }}>›</span>
-  </div>
-
-  <div
-    onClick={() => setData(prev => ({ 
-      ...prev, 
-      showFriendsModal: true,
-      activeModal: null 
-    }))}
-    style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '12px 0',
-      cursor: 'pointer',
-    }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-      <span style={{ fontSize: '1em' }}>My Friends</span>
-      <span style={{
-        background: 'var(--accent-primary)',
-        color: 'white',
-        padding: '2px 8px',
-        borderRadius: '12px',
-        fontSize: '0.75em',
-        fontWeight: '600',
-      }}>
-        {data.friends.length}
-      </span>
-    </div>
-    <span style={{ color: 'var(--text-muted)' }}>›</span>
-  </div>
-</div>
-              <div
-                onClick={() => setData((prev: DataType) => ({
-                  ...prev,
-                  activeModal: 'theme-select-modal',
-                  previousModal: 'settings-modal'
-                }))}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 0',
-                  cursor: 'pointer',
-                }}
-              >
-                <span style={{ fontSize: '1em' }}>Theme</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-                    {data.theme === 'dark' ? 'Dark' : 'Light'}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                  marginBottom: '24px',
+                }}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
                 </div>
-              </div>
-            </div>
-
-            {/* UNITS Section */}
-            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{
-                margin: '0 0 15px 0',
-                fontSize: '0.8em',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                UNITS
-              </h3>
-
-              <div
-                onClick={() => setData((prev: DataType) => ({
-                  ...prev,
-                  activeModal: 'weight-unit-modal',
-                  previousModal: 'settings-modal'
-                }))}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 0',
-                  cursor: 'pointer',
-                }}
-              >
-                <span style={{ fontSize: '1em' }}>Weight Unit</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-                    {data.weightUnit || 'lbs'}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>›</span>
-                </div>
-              </div>
-
-              <div
-                onClick={() => setData((prev: DataType) => ({
-                  ...prev,
-                  activeModal: 'distance-unit-modal',
-                  previousModal: 'settings-modal'
-                }))}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 0',
-                  cursor: 'pointer',
-                }}
-              >
-                <span style={{ fontSize: '1em' }}>Distance Unit</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-                    {data.distanceUnit || 'miles'}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>›</span>
-                </div>
-              </div>
-
-              <div
-                onClick={() => setData((prev: DataType) => ({
-                  ...prev,
-                  activeModal: 'intensity-metric-modal',
-                  previousModal: 'settings-modal'
-                }))}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 0',
-                  cursor: 'pointer',
-                }}
-              >
-                <span style={{ fontSize: '1em' }}>Intensity Metric</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-                    {data.intensityMetric.toUpperCase()}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>›</span>
-                </div>
-              </div>
-            </div>
-
-            {/* ACCOUNT Section */}
-            <div style={{ padding: '20px' }}>
-              <h3 style={{
-                margin: '0 0 15px 0',
-                fontSize: '0.8em',
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px'
-              }}>
-                ACCOUNT
-              </h3>
-
-              <button
-                onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-                style={{
-                  width: '100%',
-                  background: 'var(--bg-lighter)',
+                <h3 style={{
+                  fontSize: '1.1em',
+                  fontWeight: '600',
+                  marginBottom: '8px',
                   color: 'var(--text)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  padding: '12px',
+                }}>
+                  Select a photo
+                </h3>
+                <p style={{
                   fontSize: '0.9em',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  marginBottom: '20px',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--accent-primary)';
-                  e.currentTarget.style.color = 'white';
-                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--bg-lighter)';
-                  e.currentTarget.style.color = 'var(--text)';
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                }}
-              >
-                Log Out
-              </button>
+                  color: 'var(--text-muted)',
+                  marginBottom: '24px',
+                }}>
+                  Choose a photo to track your progress
+                </p>
+                <button
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e: Event) => {
+                      const target = e.target as HTMLInputElement;
+                      if (target.files && target.files[0]) {
+                        const file = target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (event: ProgressEvent<FileReader>) => {
+                          if (event.target?.result) {
+                            setData(prev => ({
+                              ...prev,
+                              tempBase64: event.target!.result as string,
+                              tempTimestamp: Date.now(),
+                            }));
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    };
+                    input.click();
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    background: 'var(--accent-gradient)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '0.95em',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Choose Photo
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+<div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    maxWidth: '400px',
+    background: 'var(--bg-dark)',
+    borderRadius: '0',
+    padding: '0',
+    overflow: 'hidden',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+  }}>
+    <div className="settings-header" style={{
+      padding: '15px 20px',
+      borderBottom: '1px solid var(--border)',
+      background: 'var(--bg-dark)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}>
+      <button
+        onClick={closeModal}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--text)',
+          fontSize: '1.2em',
+          cursor: 'pointer',
+          padding: '0',
+          minHeight: 'auto',
+          width: '30px',
+        }}
+      >
+        ✕
+      </button>
+      <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Settings</h2>
+      <div style={{ width: '30px' }}></div>
+    </div>
 
-              <button
-                className="delete-account-btn"
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.reload();
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  background: 'transparent',
-                  color: '#FF3B30',
-                  border: '1px solid #FF3B30',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  fontSize: '0.9em',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                }}
-              >
-                Delete Account
-              </button>
-            </div>
+    <div style={{ flex: 1, overflow: 'auto' }}>
+      {/* APPEARANCE Section */}
+      <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+        <h3 style={{
+          margin: '0 0 15px 0',
+          fontSize: '0.8em',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          APPEARANCE
+        </h3>
+
+        <div
+          onClick={() => setData((prev: DataType) => ({
+            ...prev,
+            activeModal: 'theme-select-modal',
+            previousModal: 'settings-modal'
+          }))}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 0',
+            cursor: 'pointer',
+          }}
+        >
+          <span style={{ fontSize: '1em' }}>Theme</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+              {data.theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+            </span>
+            <span style={{ color: 'var(--text-muted)' }}>›</span>
+          </div>
+        </div>
+
+        <div
+          onClick={() => setData((prev: DataType) => ({
+            ...prev,
+            activeModal: 'weight-unit-modal',
+            previousModal: 'settings-modal'
+          }))}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 0',
+            cursor: 'pointer',
+          }}
+        >
+          <span style={{ fontSize: '1em' }}>Weight Unit</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+              {data.weightUnit || 'lbs'}
+            </span>
+            <span style={{ color: 'var(--text-muted)' }}>›</span>
           </div>
         </div>
       </div>
 
+      {/* SOCIAL Section - SEPARATE from Appearance */}
+      <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+        <h3 style={{
+          margin: '0 0 15px 0',
+          fontSize: '0.8em',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          SOCIAL
+        </h3>
+
+        <div
+          onClick={() => setData((prev: DataType) => ({
+            ...prev,
+            activeModal: 'find-friends-modal',
+            previousModal: 'settings-modal'
+          }))}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 0',
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '1em' }}>Find Friends</span>
+          </div>
+          <span style={{ color: 'var(--text-muted)' }}>›</span>
+        </div>
+
+        <div
+          onClick={() => setData((prev: DataType) => ({
+            ...prev,
+            activeModal: 'friends-modal',
+            previousModal: 'settings-modal'
+          }))}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 0',
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '1em' }}>My Friends</span>
+            <span style={{
+              background: 'var(--accent-primary)',
+              color: 'white',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontSize: '0.75em',
+              fontWeight: '600',
+            }}>
+              {data.friends.length}
+            </span>
+          </div>
+          <span style={{ color: 'var(--text-muted)' }}>›</span>
+        </div>
+      </div>
+
+      {/* UNITS Section - Remove Weight Unit from here since it's in APPEARANCE */}
+      <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+        <h3 style={{
+          margin: '0 0 15px 0',
+          fontSize: '0.8em',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          UNITS
+        </h3>
+
+        <div
+          onClick={() => setData((prev: DataType) => ({
+            ...prev,
+            activeModal: 'distance-unit-modal',
+            previousModal: 'settings-modal'
+          }))}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 0',
+            cursor: 'pointer',
+          }}
+        >
+          <span style={{ fontSize: '1em' }}>Distance Unit</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+              {data.distanceUnit || 'miles'}
+            </span>
+            <span style={{ color: 'var(--text-muted)' }}>›</span>
+          </div>
+        </div>
+
+        <div
+          onClick={() => setData((prev: DataType) => ({
+            ...prev,
+            activeModal: 'intensity-metric-modal',
+            previousModal: 'settings-modal'
+          }))}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '12px 0',
+            cursor: 'pointer',
+          }}
+        >
+          <span style={{ fontSize: '1em' }}>Intensity Metric</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+              {data.intensityMetric.toUpperCase()}
+            </span>
+            <span style={{ color: 'var(--text-muted)' }}>›</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ACCOUNT Section */}
+      <div style={{ padding: '20px' }}>
+        <h3 style={{
+          margin: '0 0 15px 0',
+          fontSize: '0.8em',
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          ACCOUNT
+        </h3>
+
+        <button
+          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+          style={{
+            width: '100%',
+            background: 'var(--bg-lighter)',
+            color: 'var(--text)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            padding: '12px',
+            fontSize: '0.9em',
+            fontWeight: '500',
+            cursor: 'pointer',
+            marginBottom: '20px',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--accent-primary)';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--bg-lighter)';
+            e.currentTarget.style.color = 'var(--text)';
+            e.currentTarget.style.borderColor = 'var(--border)';
+          }}
+        >
+          Log Out
+        </button>
+
+        <button
+          className="delete-account-btn"
+          onClick={() => {
+            if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.reload();
+            }
+          }}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            color: '#FF3B30',
+            border: '1px solid #FF3B30',
+            borderRadius: '8px',
+            padding: '12px',
+            fontSize: '0.9em',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          Delete Account
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
       {/* Theme Selection Modal */}
       <div id="theme-select-modal" className={`modal ${activeModal === 'theme-select-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -4306,44 +4318,46 @@ const newExercise = {
           <button className="secondary" onClick={closeModal}>Later</button>
         </div>
       </div>
-      {/* Friends List Modal */}
-      <div id="friends-modal" className={`modal ${data.showFriendsModal ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxWidth: '400px',
-          maxHeight: '80vh',
-          overflowY: 'auto',
-          background: 'var(--bg-dark)',
-          borderRadius: '20px',
+{/* Friends List Modal */}
+<div id="friends-modal" className={`modal ${activeModal === 'friends-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    maxWidth: '400px',
+    maxHeight: '80vh',
+    overflowY: 'auto',
+    background: 'var(--bg-dark)',
+    borderRadius: '20px',
+    padding: '0',
+    overflow: 'hidden',
+  }}>
+    <div style={{
+      padding: '20px',
+      borderBottom: '1px solid var(--border)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}>
+      <button
+        onClick={() => setData((prev: DataType) => ({ 
+          ...prev, 
+          activeModal: 'settings-modal'
+        }))}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--text)',
+          fontSize: '1.2em',
+          cursor: 'pointer',
           padding: '0',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            padding: '20px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Friends</h2>
-            <button
-              onClick={() => setData(prev => ({ ...prev, showFriendsModal: false }))}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                fontSize: '1.2em',
-                cursor: 'pointer',
-                padding: '0',
-                minHeight: 'auto',
-                width: '24px',
-                height: '24px',
-              }}
-            >
-              ×
-            </button>
-          </div>
-
-          <div style={{ padding: '20px' }}>
+          minHeight: 'auto',
+        }}
+      >
+        ‹
+      </button>
+      <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600', flex: 1, textAlign: 'center' }}>
+        Friends
+      </h2>
+      <div style={{ width: '30px' }}></div>
+    </div>          <div style={{ padding: '20px' }}>
             {data.friendRequests.length > 0 && (
               <div style={{ marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '1em', marginBottom: '12px', color: 'var(--text-muted)' }}>
@@ -4500,119 +4514,119 @@ const newExercise = {
         </div>
       </div>
 
-{/* Find Friends Modal */}
-<div id="find-friends-modal" className={`modal ${activeModal === 'find-friends-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '400px',
-    background: 'var(--bg-dark)',
-    borderRadius: '0',
-    padding: '0',
-    overflow: 'hidden',
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-  }}>
-    <div style={{
-      padding: '15px 20px',
-      borderBottom: '1px solid var(--border)',
-      background: 'var(--bg-dark)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}>
-      <button
-        onClick={() => setData((prev: DataType) => ({ 
-          ...prev, 
-          activeModal: data.previousModal || 'settings-modal' 
-        }))}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text)',
-          fontSize: '1.2em',
-          cursor: 'pointer',
+      {/* Find Friends Modal */}
+      <div id="find-friends-modal" className={`modal ${activeModal === 'find-friends-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          background: 'var(--bg-dark)',
+          borderRadius: '0',
           padding: '0',
-          minHeight: 'auto',
-        }}
-      >
-        ‹
-      </button>
-      <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Find Friends</h2>
-      <div style={{ width: '30px' }}></div>
-    </div>
-
-    <div style={{ flex: 1, padding: '20px' }}>
-      <div style={{
-        background: 'var(--bg-lighter)',
-        borderRadius: '16px',
-        padding: '16px',
-        marginBottom: '20px',
-      }}>
-        <input
-          type="text"
-          id="friend-search-input"
-          placeholder="Enter username to send friend request"
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'var(--bg-dark)',
-            border: 'none',
-            borderRadius: '12px',
-            color: 'var(--text)',
-            fontSize: '16px',
-            marginBottom: '12px',
-          }}
-        />
-        <button
-          onClick={async () => {
-            const username = (document.getElementById('friend-search-input') as HTMLInputElement)?.value;
-            if (username && username.trim()) {
-              try {
-                await DatabaseService.sendFriendRequest(dbUser.id, username.trim());
-                alert('Friend request sent!');
-                (document.getElementById('friend-search-input') as HTMLInputElement).value = '';
-              } catch (error: any) {
-                alert(error.message || 'Failed to send friend request');
-              }
-            }
-          }}
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '1em',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          }}
-        >
-          Send Friend Request
-        </button>
-      </div>
-
-      <div style={{
-        marginTop: '30px',
-        padding: '20px',
-        background: 'var(--bg-lighter)',
-        borderRadius: '16px',
-        textAlign: 'center',
-      }}>
-        <p style={{
-          color: 'var(--text-muted)',
-          fontSize: '0.9em',
-          lineHeight: '1.5',
-          margin: 0,
+          overflow: 'hidden',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          Connect with friends to share workouts, track progress together, and stay motivated on your fitness journey.
-        </p>
+          <div style={{
+            padding: '15px 20px',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--bg-dark)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={() => setData((prev: DataType) => ({
+                ...prev,
+                activeModal: data.previousModal || 'settings-modal'
+              }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+              }}
+            >
+              ‹
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Find Friends</h2>
+            <div style={{ width: '30px' }}></div>
+          </div>
+
+          <div style={{ flex: 1, padding: '20px' }}>
+            <div style={{
+              background: 'var(--bg-lighter)',
+              borderRadius: '16px',
+              padding: '16px',
+              marginBottom: '20px',
+            }}>
+              <input
+                type="text"
+                id="friend-search-input"
+                placeholder="Enter username to send friend request"
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'var(--bg-dark)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  marginBottom: '12px',
+                }}
+              />
+              <button
+                onClick={async () => {
+                  const username = (document.getElementById('friend-search-input') as HTMLInputElement)?.value;
+                  if (username && username.trim()) {
+                    try {
+                      await DatabaseService.sendFriendRequest(dbUser.id, username.trim());
+                      alert('Friend request sent!');
+                      (document.getElementById('friend-search-input') as HTMLInputElement).value = '';
+                    } catch (error: any) {
+                      alert(error.message || 'Failed to send friend request');
+                    }
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '1em',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }}
+              >
+                Send Friend Request
+              </button>
+            </div>
+
+            <div style={{
+              marginTop: '30px',
+              padding: '20px',
+              background: 'var(--bg-lighter)',
+              borderRadius: '16px',
+              textAlign: 'center',
+            }}>
+              <p style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.9em',
+                lineHeight: '1.5',
+                margin: 0,
+              }}>
+                Connect with friends to share workouts, track progress together, and stay motivated on your fitness journey.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
     </>
   );
 };
