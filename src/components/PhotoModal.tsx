@@ -31,10 +31,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   
   // Update local photo when photo prop changes (for navigation between photos)
   useEffect(() => {
-    const newPhoto = getPhotoFromContext();
-    setLocalPhoto(newPhoto);
-    setEditCaption(newPhoto.caption || '');
-  }, [photo.id, isOwn]); // Add isOwn to dependencies too
+    setLocalPhoto(getPhotoFromContext());
+  }, [photo.id]);
   
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
@@ -351,8 +349,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           position: 'relative',
           width: '100%',
           flexShrink: 0,
-          height: '30vh', // Set fixed height instead of maxHeight
-          maxHeight: '30vh',
+          maxHeight: '35vh', // Reduced from 40vh
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -412,8 +409,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             alt="Progress"
             style={{
               width: '100%',
-              height: '100%',
-              maxHeight: '30vh',
+              height: 'auto',
+              maxHeight: '35vh',
               objectFit: 'contain',
               display: 'block',
             }}
@@ -579,9 +576,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             flexDirection: 'column',
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
-            minHeight: '200px', // Ensure minimum height
+            minHeight: 0,
             paddingBottom: '60px', // Add padding for bottom nav
-            overflow: 'hidden', // Prevent outer container scroll
           }}>
             {/* Comments header */}
             <div style={{
