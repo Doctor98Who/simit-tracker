@@ -839,19 +839,13 @@ backgroundSize: 'cover',
 
 
 {dbUser && comment.user_id === dbUser.id && (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      e.preventDefault();
-       console.log('3 dots clicked for comment:', idx);
+  <div
+    onClick={() => {
+      alert('Div clicked! Index: ' + idx);
       setShowCommentMenu(showCommentMenu === idx ? null : idx);
     }}
-    onTouchEnd={(e) => {
-      e.stopPropagation();
-      e.preventDefault();
-    }}
     style={{
-      background: 'none',
+      background: 'rgba(255, 0, 0, 0.3)',
       border: 'none',
       color: 'var(--text-muted)',
       cursor: 'pointer',
@@ -861,6 +855,9 @@ backgroundSize: 'cover',
       position: 'relative',
       minHeight: '44px',
       minWidth: '44px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     }}
   >
     ⋯
@@ -924,18 +921,18 @@ backgroundSize: 'cover',
         </button>
       </div>
     )}
-  </button>
-)}                         
- </div>
-                          <div style={{ fontSize: '0.9em', lineHeight: '1.5' }}>
-                            {comment.text}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
+  </div>
+)}                        
+</div>
+<div style={{ fontSize: '0.9em', lineHeight: '1.5' }}>
+  {comment.text}
+</div>
+</div>
+)}
+</div>
+</div>
+))
+)}
             </div>
           </div>
         </div>
