@@ -29,6 +29,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   // Use local state for immediate updates
   const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
   
+  // Update local photo when photo prop changes (for navigation between photos)
+  useEffect(() => {
+    setLocalPhoto(getPhotoFromContext());
+  }, [photo.id]);
+  
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
@@ -238,24 +243,26 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     <div 
       className="modal active progress-photo-modal"
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'stretch',
         justifyContent: 'center',
-        paddingTop: '0',
+        zIndex: 9999,
       }}
     >
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: 'calc(100vh - 60px)', // Changed to leave space only for bottom nav
-        maxHeight: 'calc(100vh - 60px)', // Match height
+        height: '100%',
         background: 'var(--bg-dark)',
         padding: 0,
-        borderRadius: 0, // Remove border radius for mobile
         display: 'flex',
         flexDirection: 'column',
-        margin: 0, // Remove margins for full height
         overflow: 'hidden',
       }}>
         {/* Header */}
@@ -563,13 +570,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
 
           {/* Comments section - expanded to fill remaining space */}
           <div style={{ 
-            flex: 1,
+            flex: '1 1 auto',
             display: 'flex',
             flexDirection: 'column',
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
-            minHeight: 0,
-            overflow: 'hidden', // Add this to contain children
+            overflow: 'hidden',
+            height: '100%',
           }}>
             {/* Comments header */}
             <div style={{
@@ -663,9 +670,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             
             {/* Comments list - scrollable area */}
             <div style={{ 
-              flex: 1,
+              flex: '1 1 auto',
               overflowY: 'auto',
+              overflowX: 'hidden',
               padding: '0 20px 20px',
+              height: '100%',
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
