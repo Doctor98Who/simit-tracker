@@ -122,7 +122,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   };
 
   return (
-    <div className="modal active comments-modal" onClick={onClose}>
+    <div className="modal active comments-modal" onClick={onClose} style={{ alignItems: 'flex-end' }}>
       <div 
         className="modal-content"
         style={{

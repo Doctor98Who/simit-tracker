@@ -751,7 +751,10 @@ body {
     min-height: 72px;
     padding: 16px;
 }
-
+/* Comments Modal - Bottom Sheet Style */
+.comments-modal {
+    align-items: flex-end !important;
+}
 #workout-modal {
     position: fixed;
     top: 0;
