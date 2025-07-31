@@ -18,46 +18,52 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   showNavigation = false
 }) => {
   const { data, setData, dbUser } = useContext(DataContext);
+  
+  // Get the current photo from context to ensure we have the latest data
+  const currentPhoto = isOwn 
+    ? data.progressPics.find(p => p.id === photo.id) || photo
+    : data.friendsFeed.find(p => p.id === photo.id) || photo;
+  
   const [isEditingCaption, setIsEditingCaption] = useState(false);
-  const [editCaption, setEditCaption] = useState(photo.caption || '');
+  const [editCaption, setEditCaption] = useState(currentPhoto.caption || '');
   const [comment, setComment] = useState('');
-
+  
   // Add these debug logs
   console.log('PhotoModal mounted');
   console.log('dbUser in PhotoModal:', dbUser);
-  console.log('photo data:', photo);
-
+  console.log('currentPhoto data:', currentPhoto);
+  
   const handleLike = async () => {
     console.log('handleLike called');
     console.log('dbUser:', dbUser);
-    console.log('photo.id:', photo.id);
-    
+    console.log('currentPhoto.id:', currentPhoto.id);
+   
     if (!dbUser) {
       console.log('No dbUser found!');
       return;
     }
-    
+   
     try {
       // Toggle like in database
-      const result = await DatabaseService.likePhoto(dbUser.id, photo.id);
+      const result = await DatabaseService.likePhoto(dbUser.id, currentPhoto.id);
       console.log('Like result:', result);
-      
+     
       // Update local state
       const updatedPhoto = {
-        ...photo,
-        likes: result.liked ? (photo.likes || 0) + 1 : Math.max((photo.likes || 0) - 1, 0),
+        ...currentPhoto,
+        likes: result.liked ? (currentPhoto.likes || 0) + 1 : Math.max((currentPhoto.likes || 0) - 1, 0),
         userHasLiked: result.liked
       };
      
       // Update in local data
       if (isOwn) {
         const newPics = data.progressPics.map(p =>
-          p.id === photo.id ? updatedPhoto : p
+          p.id === currentPhoto.id ? updatedPhoto : p
         );
         setData(prev => ({ ...prev, progressPics: newPics }));
       } else {
         const newFeed = data.friendsFeed.map(item =>
-          item.id === photo.id ? updatedPhoto : item
+          item.id === currentPhoto.id ? updatedPhoto : item
         );
         setData(prev => ({ ...prev, friendsFeed: newFeed }));
       }
@@ -65,7 +71,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       console.error('Error toggling like:', error);
     }
   };
-
   const handleComment = async () => {
     console.log('handleComment called');
     console.log('dbUser:', dbUser);
