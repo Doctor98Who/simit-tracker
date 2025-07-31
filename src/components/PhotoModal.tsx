@@ -269,16 +269,18 @@ setTimeout(() => {
   };
 
   // Click outside to close comment menu
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (showCommentMenu !== null) {
-        setShowCommentMenu(null);
-      }
-    };
+useEffect(() => {
+  const handleClickOutside = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    // Only close if clicking outside the menu AND the three dots button
+    if (!target.closest('[data-comment-menu]') && !target.closest('[data-dots-button]')) {
+      setShowCommentMenu(null);
+    }
+  };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showCommentMenu]);
+  document.addEventListener('click', handleClickOutside);
+  return () => document.removeEventListener('click', handleClickOutside);
+}, []);
 
 return (
 <div
@@ -287,9 +289,8 @@ return (
     background: 'rgba(0, 0, 0, 0.95)',
     display: 'block',
     position: 'fixed',
-    top: '0px !important',  // Force top position
-    left: '0px !important',  // Force left position
-    right: 0,
+top: '0px !important',  // This doesn't work in inline styles!
+left: '0px !important',  // This doesn't work either!    right: 0,
     bottom: 0,
     zIndex: 9999,
     overflow: 'hidden',
@@ -859,6 +860,7 @@ backgroundSize: 'cover',
 
 {dbUser && comment.user_id === dbUser.id && (
   <div
+  data-dots-button="true"
     onClick={() => {
       setShowCommentMenu(prev => prev === idx ? null : idx);
     }}
@@ -880,7 +882,9 @@ backgroundSize: 'cover',
   >
     ⋯
     {showCommentMenu === idx && (
-      <div style={{
+      <div 
+      data-comment-menu="true" 
+      style={{
         position: 'absolute',
         top: '100%',
         right: 0,

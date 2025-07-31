@@ -1230,8 +1230,10 @@ button.finish {
 .progress-photo-modal {
     background: var(--bg-dark);
     overflow: hidden !important; /* Prevent outer scroll */
+    top: 0 !important;
+    left: 0 !important;
+    transform: translateY(0) !important;
 }
-
 /* Modal content scrolling */
 .progress-photo-modal .modal-content {
     height: 100vh;
