@@ -824,6 +824,20 @@ backgroundSize: 'cover',
                                 {comment.edited && ' (edited)'}
                               </span>
                             </div>
+
+{(() => {
+  console.log('Checking comment:', {
+    commentIndex: idx,
+    comment: comment,
+    dbUser: dbUser,
+    dbUserId: dbUser?.id,
+    commentUserId: comment.user_id,
+    shouldShowButton: dbUser && comment.user_id === dbUser.id
+  });
+  return null;
+})()}
+
+
 {dbUser && comment.user_id === dbUser.id && (
   <button
     onClick={(e) => {
