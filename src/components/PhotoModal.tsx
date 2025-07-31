@@ -675,11 +675,10 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             
             {/* Comments list - scrollable area */}
             <div style={{ 
-              flex: 1,
+              height: '300px', // Fixed height - adjust this value as needed
               overflowY: 'auto',
               overflowX: 'hidden',
               padding: '0 20px 20px',
-              minHeight: 0, // Critical for flex to work properly
               display: 'flex',
               flexDirection: 'column',
             }}>
