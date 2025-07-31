@@ -17,28 +17,27 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   const [showMenu, setShowMenu] = useState<number | null>(null);
 
   useEffect(() => {
-    // Store current scroll position and lock body
+    // Store current scroll position
     const scrollY = window.scrollY;
     
-    // Add modal-open class
+    // Add modal-open class (this handles the body position fixed)
     document.body.classList.add('modal-open');
     
-    // Prevent body from scrolling and store position
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
+    // Store scroll position as data attribute
+    document.body.setAttribute('data-scroll-position', scrollY.toString());
     
     return () => {
+      // Get stored scroll position
+      const storedScrollY = parseInt(document.body.getAttribute('data-scroll-position') || '0');
+      
       // Remove modal-open class
       document.body.classList.remove('modal-open');
       
-      // Restore body scroll
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
+      // Remove data attribute
+      document.body.removeAttribute('data-scroll-position');
       
       // Return to original scroll position
-      window.scrollTo(0, scrollY);
+      window.scrollTo(0, storedScrollY);
     };
   }, []);
 
@@ -167,15 +166,16 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       <div style={{
         position: 'fixed',
         bottom: 0,
-        left: 0,
-        right: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: '428px', // Match app max-width
         height: '85vh',
         background: 'var(--bg-dark)',
         borderRadius: '16px 16px 0 0',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 9999,
-        transform: 'translateY(0)',
         transition: 'transform 0.3s ease-out',
       }}>
         {/* Drag handle */}
