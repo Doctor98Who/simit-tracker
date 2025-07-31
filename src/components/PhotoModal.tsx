@@ -30,23 +30,30 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
   
   // Update local photo when photo prop changes (for navigation between photos)
-  useEffect(() => {
-    const newPhoto = getPhotoFromContext();
-    setLocalPhoto(newPhoto);
-    setEditCaption(newPhoto.caption || '');
-  }, [photo.id, isOwn]); // Add isOwn to dependencies too
+useEffect(() => {
+  const newPhoto = getPhotoFromContext();
+  setLocalPhoto(newPhoto);
+  setEditCaption(newPhoto.caption || '');
+}, [photo.id, isOwn]); // Add isOwn to dependencies too
+
+// REPLACE the existing scroll lock useEffect with this more comprehensive version:
+useEffect(() => {
+  // Store the original position
+  const scrollY = window.scrollY;
   
-  // ADD THIS NEW USEEFFECT - This prevents background scrolling
-  useEffect(() => {
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-    
-    return () => {
-      // Re-enable body scroll when modal closes
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
+  // Prevent body scroll when modal is open
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.width = '100%';
   
+  return () => {
+    // Re-enable body scroll when modal closes
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, scrollY);
+  };
+}, []);  
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
@@ -257,8 +264,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
-        alignItems: 'flex-start', // Changed from 'center' to 'flex-start'
-        justifyContent: 'center',
+ alignItems: 'center',
+         justifyContent: 'center',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -266,6 +273,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
         bottom: 0,
         zIndex: 9999,
         overflowY: 'auto', // Add this to allow modal scrolling if needed
+         WebkitOverflowScrolling: 'touch',  // Add this for iOS smooth scrolling
       }}
       onClick={(e) => {
     // Close modal if clicking on backdrop
@@ -277,13 +285,15 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-height: '100vh',   
+        height: '90vh',   
+         maxHeight: '90vh',
      background: 'var(--bg-dark)',
         padding: 0,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         position: 'relative', // Add relative positioning
+        margin: '20px 0',  // Add some margin
       }}>
         {/* Header */}
         <div style={{
@@ -699,6 +709,7 @@ height: '100vh',
               flexDirection: 'column',
               minHeight: 0, // Important!
               paddingBottom: '80px', // ← ADD PADDING HERE INSTEAD
+               WebkitOverflowScrolling: 'touch',  // Add this for iOS
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
