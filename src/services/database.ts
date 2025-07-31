@@ -346,6 +346,7 @@ static async getProgressPhotos(userId: string) {
         return {
           ...photo,
           comments: comments.map((c: any) => ({
+            id: c.id,
             user_id: c.user_id,
             user_name: `${c.user.first_name} ${c.user.last_name}`,
             text: c.text,
