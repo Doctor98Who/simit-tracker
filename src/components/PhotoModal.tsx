@@ -29,7 +29,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   // Use local state for immediate updates
   const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
 
-  // Update local photo when photo prop changes (for navigation between photos)
 useEffect(() => {
   // Store the original position
   const scrollY = window.scrollY;
@@ -45,12 +44,22 @@ useEffect(() => {
   // Also lock html element for some browsers
   htmlStyle.overflowY = 'hidden';
   
-  // IMPORTANT: Use setTimeout to ensure DOM is ready
+  // Force viewport to top before showing modal content
+  window.scrollTo(0, 0);
+  
+  // Then scroll modal content to top
   setTimeout(() => {
-    // Scroll the modal content div to top
     const modalContent = document.querySelector('.progress-photo-modal .modal-content');
     if (modalContent) {
       modalContent.scrollTop = 0;
+    }
+    
+    // Force a reflow to ensure positioning is correct
+    const modal = document.querySelector('.progress-photo-modal');
+    if (modal) {
+      (modal as HTMLElement).style.display = 'none';
+      (modal as HTMLElement).offsetHeight; // Force reflow
+      (modal as HTMLElement).style.display = 'block';
     }
   }, 0);
   
@@ -285,6 +294,7 @@ display: 'block', // Change from 'flex' to 'block'
       bottom: 0,
       zIndex: 9999,
       overflow: 'hidden', // CHANGED: from 'auto' to 'hidden' - prevents outer scroll
+    transform: 'none',
     }}
   >
     <div className="modal-content" style={{
@@ -862,7 +872,7 @@ backgroundSize: 'cover',
         padding: '8px',
         fontSize: '1.2em',
         lineHeight: '0.5',
-        position: 'relative',
+        position: 'relative',  // Make sure this is relative
         minHeight: '44px',
         minWidth: '44px',
         display: 'flex',
@@ -871,69 +881,69 @@ backgroundSize: 'cover',
       }}
     >
       ⋯
+      {showCommentMenu === idx && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',  // Changed from '40px' to '100%' to position right below
+          right: 0,
+          background: 'var(--bg-dark)',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          minWidth: '120px',
+          zIndex: 10000,
+          overflow: 'hidden',
+        }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEditComment(idx);
+            }}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '10px 16px',
+              background: 'none',
+              border: 'none',
+              color: 'var(--text)',
+              fontSize: '0.9em',
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+          >
+            Edit
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteComment(idx);
+            }}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '10px 16px',
+              background: 'none',
+              border: 'none',
+              borderTop: '1px solid var(--border)',
+              color: '#ef4444',
+              fontSize: '0.9em',
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+          >
+            Delete
+          </button>
+        </div>
+      )}
     </div>
-    {showCommentMenu === idx && (
-      <div style={{
-        position: 'absolute',
-        top: '40px',
-        right: '0',
-        background: 'var(--bg-dark)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-        minWidth: '120px',
-        zIndex: 10000,
-        overflow: 'hidden',
-      }}>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEditComment(idx);
-          }}
-          style={{
-            display: 'block',
-            width: '100%',
-            padding: '10px 16px',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text)',
-            fontSize: '0.9em',
-            textAlign: 'left',
-            cursor: 'pointer',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-        >
-          Edit
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDeleteComment(idx);
-          }}
-          style={{
-            display: 'block',
-            width: '100%',
-            padding: '10px 16px',
-            background: 'none',
-            border: 'none',
-            borderTop: '1px solid var(--border)',
-            color: '#ef4444',
-            fontSize: '0.9em',
-            textAlign: 'left',
-            cursor: 'pointer',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-        >
-          Delete
-        </button>
-      </div>
-    )}
   </>
-)}                       
+)}
 </div>
 <div style={{ fontSize: '0.9em', lineHeight: '1.5' }}>
   {comment.text}
