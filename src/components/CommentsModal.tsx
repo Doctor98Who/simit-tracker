@@ -16,9 +16,25 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   const [editText, setEditText] = useState('');
   const [showMenu, setShowMenu] = useState<number | null>(null);
 
+// Prevent background scrolling when modal is open
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   const handleAddComment = async () => {
     if (!dbUser || !comment.trim()) return;
-
     try {
       const newComment = {
         user_id: dbUser.id,
@@ -27,18 +43,14 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
         text: comment,
         timestamp: Date.now()
       };
-
       // Optimistic update
       setComments([...comments, newComment]);
       setComment('');
-
       // API call
       await DatabaseService.addComment(dbUser.id, photo.id, comment);
-
       // Update context
-      const updatePhoto = (p: any) => 
+      const updatePhoto = (p: any) =>
         p.id === photo.id ? { ...p, comments: [...comments, newComment] } : p;
-
       if (isOwn) {
         setData((prev: any) => ({
           ...prev,
@@ -54,20 +66,16 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       console.error('Error adding comment:', error);
     }
   };
-
   const handleDeleteComment = async (idx: number) => {
     const commentToDelete = comments[idx];
     if (!dbUser || commentToDelete.user_id !== dbUser.id) return;
-
     try {
       const updatedComments = comments.filter((_: any, i: number) => i !== idx);
       setComments(updatedComments);
       setShowMenu(null);
-
       // Update context
-      const updatePhoto = (p: any) => 
+      const updatePhoto = (p: any) =>
         p.id === photo.id ? { ...p, comments: updatedComments } : p;
-
       if (isOwn) {
         setData((prev: any) => ({
           ...prev,
@@ -83,31 +91,25 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       console.error('Error deleting comment:', error);
     }
   };
-
   const handleEditComment = (idx: number) => {
     setEditingIdx(idx);
     setEditText(comments[idx].text);
     setShowMenu(null);
   };
-
   const saveEdit = () => {
     if (editingIdx === null || !editText.trim()) return;
-
     const updatedComments = [...comments];
     updatedComments[editingIdx] = {
       ...updatedComments[editingIdx],
       text: editText,
       edited: true
     };
-
     setComments(updatedComments);
     setEditingIdx(null);
     setEditText('');
-
     // Update context
-    const updatePhoto = (p: any) => 
+    const updatePhoto = (p: any) =>
       p.id === photo.id ? { ...p, comments: updatedComments } : p;
-
     if (isOwn) {
       setData((prev: any) => ({
         ...prev,
@@ -120,7 +122,6 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       }));
     }
   };
-
   return (
     <div 
       className="modal active" 
