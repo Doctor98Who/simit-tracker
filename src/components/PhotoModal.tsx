@@ -32,6 +32,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
+  const [editingCommentIdx, setEditingCommentIdx] = useState<number | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [showCommentMenu, setShowCommentMenu] = useState<number | null>(null);
   
   const handleLike = async () => {
     if (!dbUser) return;
@@ -120,6 +123,51 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     }
   };
 
+  const handleEditComment = (idx: number) => {
+    const comment = localPhoto.comments[idx];
+    setEditingCommentIdx(idx);
+    setEditingCommentText(comment.text);
+    setShowCommentMenu(null);
+  };
+
+  const saveEditedComment = () => {
+    if (editingCommentIdx === null || !editingCommentText.trim()) return;
+    
+    const updatedComments = [...localPhoto.comments];
+    updatedComments[editingCommentIdx] = {
+      ...updatedComments[editingCommentIdx],
+      text: editingCommentText,
+      edited: true,
+      editedAt: Date.now()
+    };
+    
+    const optimisticUpdate = {
+      ...localPhoto,
+      comments: updatedComments
+    };
+    
+    setLocalPhoto(optimisticUpdate);
+    setEditingCommentIdx(null);
+    setEditingCommentText('');
+    
+    // Update context
+    if (isOwn) {
+      setData((prev: any) => ({
+        ...prev,
+        progressPics: prev.progressPics.map((p: any) =>
+          p.id === localPhoto.id ? optimisticUpdate : p
+        )
+      }));
+    } else {
+      setData((prev: any) => ({
+        ...prev,
+        friendsFeed: prev.friendsFeed.map((item: any) =>
+          item.id === localPhoto.id ? optimisticUpdate : item
+        )
+      }));
+    }
+  };
+
   const handleDeleteComment = async (commentIdx: number) => {
     if (!dbUser) return;
     
@@ -136,9 +184,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Update local state immediately
       setLocalPhoto(optimisticUpdate);
-      
-      // For now, we'll just update locally since we don't have comment IDs
-      // In a real implementation, you'd call DatabaseService.deleteComment(commentId)
+      setShowCommentMenu(null);
       
       // Update context for persistence
       if (isOwn) {
@@ -171,9 +217,22 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     if (index !== -1) {
       newPics[index] = { ...newPics[index], caption: editCaption };
       setData((prev: any) => ({ ...prev, progressPics: newPics }));
+      setLocalPhoto({ ...localPhoto, caption: editCaption });
     }
     setIsEditingCaption(false);
   };
+
+  // Click outside to close comment menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showCommentMenu !== null) {
+        setShowCommentMenu(null);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showCommentMenu]);
 
   return (
     <div 
@@ -188,16 +247,15 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     >
       <div className="modal-content" style={{
         width: '100%',
-        maxWidth: '800px', // Add max width for better layout
-        height: '90vh', // Set specific height instead of 100%
-        maxHeight: '90vh',
+        maxWidth: '800px',
+        height: '100vh',
         background: 'var(--bg-dark)',
         padding: 0,
-        borderRadius: '12px', // Add some border radius
+        borderRadius: 0,
         display: 'flex',
         flexDirection: 'column',
-        margin: '5vh auto', // Center with margin
-        overflow: 'hidden', // Prevent content overflow
+        margin: 0,
+        overflow: 'hidden',
       }}>
         {/* Header */}
         <div style={{
@@ -208,6 +266,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           borderBottom: '1px solid var(--border)',
           background: 'var(--bg-dark)',
           backdropFilter: 'blur(10px)',
+          flexShrink: 0,
         }}>
           <button
             onClick={onClose}
@@ -281,7 +340,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           position: 'relative',
           width: '100%',
           flexShrink: 0,
-          maxHeight: '40vh', // Limit image height to ensure space for comments
+          maxHeight: '35vh',
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -342,27 +401,27 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             style={{
               width: '100%',
               height: 'auto',
-              maxHeight: '50vh',
+              maxHeight: '35vh',
               objectFit: 'contain',
               display: 'block',
             }}
           />              
         </div>
 
-        {/* Details */}
+        {/* Details - takes all remaining space */}
         <div style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
           overflow: 'hidden',
-          minHeight: 0, // Critical: allows flex child to shrink
+          minHeight: 0,
         }}>
-          {/* Like button and stats in one row */}
+          {/* Like button and stats */}
           <div style={{
             padding: '16px 20px',
             borderTop: '1px solid var(--border)',
-            flexShrink: 0, // Prevent this section from shrinking
+            flexShrink: 0,
           }}>
             <div style={{
               display: 'flex',
@@ -501,115 +560,328 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             )}
           </div>
 
-          {/* Comments section - takes remaining space */}
+          {/* Comments section - expanded to fill remaining space */}
           <div style={{ 
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            padding: '0 20px 20px',
+            background: 'var(--bg-darker)',
+            borderTop: '1px solid var(--border)',
             minHeight: 0,
           }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '1em' }}>
-              Comments {(localPhoto.comments || []).length > 0 && `(${localPhoto.comments.length})`}
-            </h4>
+            {/* Comments header */}
+            <div style={{
+              padding: '16px 20px 12px',
+              flexShrink: 0,
+            }}>
+              <h4 style={{ 
+                margin: 0, 
+                fontSize: '1.1em',
+                fontWeight: '600',
+                color: 'var(--text)',
+              }}>
+                Comments {(localPhoto.comments || []).length > 0 && (
+                  <span style={{ 
+                    fontSize: '0.9em', 
+                    fontWeight: '400',
+                    color: 'var(--text-muted)',
+                    marginLeft: '8px',
+                  }}>
+                    ({localPhoto.comments.length})
+                  </span>
+                )}
+              </h4>
+            </div>
+
+            {/* Comment input box */}
+            <div style={{ 
+              padding: '0 20px 16px',
+              flexShrink: 0,
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                gap: '12px',
+                alignItems: 'flex-start',
+              }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'var(--bg-lighter)',
+                  backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  flexShrink: 0,
+                }} />
+                <div style={{ 
+                  flex: 1,
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                  background: 'var(--bg-lighter)',
+                  borderRadius: '24px',
+                  padding: '8px 16px',
+                  border: '1px solid var(--border)',
+                }}>
+                  <input
+                    type="text"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleComment()}
+                    placeholder="Add a comment..."
+                    style={{
+                      flex: 1,
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text)',
+                      fontSize: '14px',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={handleComment}
+                    disabled={!comment.trim()}
+                    style={{
+                      background: comment.trim() ? 'var(--accent-primary)' : 'var(--bg-darker)',
+                      color: comment.trim() ? 'white' : 'var(--text-muted)',
+                      border: 'none',
+                      borderRadius: '16px',
+                      padding: '6px 16px',
+                      fontSize: '0.85em',
+                      fontWeight: '600',
+                      cursor: comment.trim() ? 'pointer' : 'default',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+            </div>
             
-            {/* Comments list - takes remaining space */}
+            {/* Comments list - scrollable area */}
             <div style={{ 
               flex: 1,
               overflowY: 'auto',
-              marginBottom: '12px',
-              minHeight: '100px',
+              padding: '0 20px 20px',
+              minHeight: 0,
             }}>
               {(localPhoto.comments || []).length === 0 ? (
-                <p style={{ 
-                  color: 'var(--text-muted)', 
-                  fontSize: '0.9em',
+                <div style={{ 
                   textAlign: 'center',
-                  padding: '20px',
+                  padding: '40px 20px',
                 }}>
-                  No comments yet. Be the first to comment!
-                </p>
+                  <p style={{ 
+                    color: 'var(--text-muted)', 
+                    fontSize: '0.9em',
+                    marginBottom: '8px',
+                  }}>
+                    No comments yet
+                  </p>
+                  <p style={{ 
+                    color: 'var(--text-muted)', 
+                    fontSize: '0.85em',
+                  }}>
+                    Be the first to share your thoughts!
+                  </p>
+                </div>
               ) : (
                 (localPhoto.comments || []).map((comment: any, idx: number) => (
                   <div key={idx} style={{
-                    marginBottom: '12px',
-                    padding: '8px',
-                    background: 'var(--bg-lighter)',
-                    borderRadius: '8px',
-                    position: 'relative',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    gap: '12px',
                   }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600', fontSize: '0.9em', marginBottom: '4px' }}>
-                          {comment.user_name}
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'var(--bg-lighter)',
+                      flexShrink: 0,
+                    }} />
+                    <div style={{ flex: 1 }}>
+                      {editingCommentIdx === idx ? (
+                        <div style={{
+                          background: 'var(--bg-lighter)',
+                          borderRadius: '12px',
+                          padding: '12px',
+                        }}>
+                          <textarea
+                            value={editingCommentText}
+                            onChange={(e) => setEditingCommentText(e.target.value)}
+                            style={{
+                              width: '100%',
+                              background: 'var(--bg-darker)',
+                              border: '1px solid var(--border)',
+                              borderRadius: '8px',
+                              padding: '8px 12px',
+                              color: 'var(--text)',
+                              fontSize: '14px',
+                              resize: 'vertical',
+                              minHeight: '60px',
+                              outline: 'none',
+                            }}
+                            autoFocus
+                          />
+                          <div style={{ 
+                            display: 'flex', 
+                            gap: '8px', 
+                            marginTop: '8px',
+                            justifyContent: 'flex-end',
+                          }}>
+                            <button
+                              onClick={saveEditedComment}
+                              style={{
+                                padding: '6px 16px',
+                                background: 'var(--accent-primary)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '0.8em',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingCommentIdx(null);
+                                setEditingCommentText('');
+                              }}
+                              style={{
+                                padding: '6px 16px',
+                                background: 'transparent',
+                                color: 'var(--text-muted)',
+                                border: '1px solid var(--border)',
+                                borderRadius: '8px',
+                                fontSize: '0.8em',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
-                        <div style={{ fontSize: '0.9em' }}>{comment.text}</div>
-                        <div style={{ fontSize: '0.75em', color: 'var(--text-muted)', marginTop: '4px' }}>
-                          {new Date(comment.timestamp).toLocaleDateString()}
+                      ) : (
+                        <div style={{
+                          background: 'var(--bg-lighter)',
+                          borderRadius: '12px',
+                          padding: '12px',
+                          position: 'relative',
+                        }}>
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            marginBottom: '4px',
+                          }}>
+                            <div style={{ 
+                              fontWeight: '600', 
+                              fontSize: '0.9em',
+                            }}>
+                              {comment.user_name}
+                              <span style={{ 
+                                fontSize: '0.85em', 
+                                color: 'var(--text-muted)', 
+                                fontWeight: '400',
+                                marginLeft: '8px',
+                              }}>
+                                {new Date(comment.timestamp).toLocaleDateString()}
+                                {comment.edited && ' (edited)'}
+                              </span>
+                            </div>
+                            {dbUser && comment.user_id === dbUser.id && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowCommentMenu(showCommentMenu === idx ? null : idx);
+                                }}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: 'var(--text-muted)',
+                                  cursor: 'pointer',
+                                  padding: '4px',
+                                  fontSize: '1.2em',
+                                  lineHeight: '0.5',
+                                  position: 'relative',
+                                }}
+                              >
+                                ⋯
+                                {showCommentMenu === idx && (
+                                  <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    right: 0,
+                                    background: 'var(--bg-dark)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                    minWidth: '120px',
+                                    zIndex: 100,
+                                    overflow: 'hidden',
+                                  }}>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditComment(idx);
+                                      }}
+                                      style={{
+                                        display: 'block',
+                                        width: '100%',
+                                        padding: '10px 16px',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text)',
+                                        fontSize: '0.9em',
+                                        textAlign: 'left',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s',
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-lighter)'}
+                                      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteComment(idx);
+                                      }}
+                                      style={{
+                                        display: 'block',
+                                        width: '100%',
+                                        padding: '10px 16px',
+                                        background: 'none',
+                                        border: 'none',
+                                        borderTop: '1px solid var(--border)',
+                                        color: '#ef4444',
+                                        fontSize: '0.9em',
+                                        textAlign: 'left',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s',
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                                      onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.9em', lineHeight: '1.5' }}>
+                            {comment.text}
+                          </div>
                         </div>
-                      </div>
-                      {dbUser && comment.user_id === dbUser.id && (
-                        <button
-                          onClick={() => handleDeleteComment(idx)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-muted)',
-                            cursor: 'pointer',
-                            padding: '4px',
-                            fontSize: '0.8em',
-                            opacity: 0.7,
-                            transition: 'opacity 0.2s',
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
-                        >
-                          ✕
-                        </button>
                       )}
                     </div>
                   </div>
                 ))
               )}
-            </div>
-            
-            {/* Comment input - fixed at bottom */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleComment()}
-                placeholder="Add a comment..."
-                style={{
-                  flex: 1,
-                  padding: '8px 12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '14px',
-                }}
-              />
-              <button
-                onClick={handleComment}
-                style={{
-                  padding: '8px 16px',
-                  background: 'var(--accent-primary)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '0.85em',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
-              >
-                Post
-              </button>
             </div>
           </div>
         </div>
