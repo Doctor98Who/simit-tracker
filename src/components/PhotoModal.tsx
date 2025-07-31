@@ -569,6 +569,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
             minHeight: 0,
+            overflow: 'hidden', // Add this to contain children
           }}>
             {/* Comments header */}
             <div style={{
@@ -665,7 +666,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               flex: 1,
               overflowY: 'auto',
               padding: '0 20px 20px',
-              minHeight: 0,
+              minHeight: '200px', // Changed from 0 to ensure minimum visible height
+              maxHeight: 'calc(100vh - 500px)', // Add explicit max height calculation
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
