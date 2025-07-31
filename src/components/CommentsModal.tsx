@@ -17,19 +17,12 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   const [showMenu, setShowMenu] = useState<number | null>(null);
 
   useEffect(() => {
-    // Prevent body scroll on mobile
-    const scrollY = window.scrollY;
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
+    // Add modal-open class to body
+    document.body.classList.add('modal-open');
     
     return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
-      window.scrollTo(0, scrollY);
+      // Remove modal-open class from body
+      document.body.classList.remove('modal-open');
     };
   }, []);
 
@@ -139,36 +132,22 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   };
 
   return (
-    <>
-      {/* Backdrop */}
+    <div className="modal active" onClick={onClose}>
       <div 
+        className="modal-content"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          zIndex: 9998,
-        }} 
-        onClick={onClose}
-      />
-      
-      {/* Modal Content */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '80vh',
-        background: 'var(--bg-dark)',
-        borderRadius: '16px 16px 0 0',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 9999,
-        transform: 'translateY(0)',
-        transition: 'transform 0.3s ease-out',
-      }}>
+          width: '100%',
+          maxWidth: '100%',
+          height: '85vh',
+          maxHeight: '85vh',
+          borderRadius: '20px 20px 0 0',
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--bg-dark)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Drag handle */}
         <div style={{
           width: '40px',
@@ -210,6 +189,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '50%',
+              minHeight: '40px',
             }}
           >
             ×
@@ -315,6 +295,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                           fontSize: '14px',
                           cursor: 'pointer',
                           whiteSpace: 'nowrap',
+                          minHeight: '36px',
                         }}
                       >
                         Save
@@ -391,6 +372,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                             fontSize: '14px',
                             textAlign: 'left',
                             cursor: 'pointer',
+                            minHeight: '44px',
                           }}
                         >
                           Edit
@@ -408,6 +390,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                             fontSize: '14px',
                             textAlign: 'left',
                             cursor: 'pointer',
+                            minHeight: '44px',
                           }}
                         >
                           Delete
@@ -485,6 +468,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                   cursor: comment.trim() ? 'pointer' : 'default',
                   transition: 'all 0.2s ease',
                   whiteSpace: 'nowrap',
+                  minHeight: '32px',
                 }}
               >
                 Post
@@ -493,7 +477,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

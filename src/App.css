@@ -1225,24 +1225,14 @@ button.finish {
         transform: scale(1);
     }
 }
-.progress-photo-modal.modal.active {
-    align-items: flex-start !important;  /* Force modal to start at top */
-    padding-top: 0 !important;
-}
+
 /* Progress Photo Modal */
 .progress-photo-modal {
     background: var(--bg-dark);
     overflow: hidden !important; /* Prevent outer scroll */
-    top: 0 !important;
-    left: 0 !important;
-    transform: translateY(0) !important;
 }
 /* Modal content scrolling */
 .progress-photo-modal .modal-content {
-    height: 100vh;
-    height: -webkit-fill-available;
-    max-height: 100vh;
-    max-height: -webkit-fill-available;
     overflow-y: auto !important; /* Scroll should be here */
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
