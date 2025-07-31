@@ -188,13 +188,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     >
       <div className="modal-content" style={{
         width: '100%',
-        maxWidth: '100%',
-        height: '100%',
+        maxWidth: '800px', // Add max width for better layout
+        height: '90vh', // Set specific height instead of 100%
+        maxHeight: '90vh',
         background: 'var(--bg-dark)',
         padding: 0,
-        borderRadius: 0,
+        borderRadius: '12px', // Add some border radius
         display: 'flex',
         flexDirection: 'column',
+        margin: '5vh auto', // Center with margin
+        overflow: 'hidden', // Prevent content overflow
       }}>
         {/* Header */}
         <div style={{
@@ -278,6 +281,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           position: 'relative',
           width: '100%',
           flexShrink: 0,
+          maxHeight: '40vh', // Limit image height to ensure space for comments
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -352,11 +356,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           flexDirection: 'column',
           background: 'var(--bg-dark)',
           overflow: 'hidden',
+          minHeight: 0, // Critical: allows flex child to shrink
         }}>
           {/* Like button and stats in one row */}
           <div style={{
             padding: '16px 20px',
             borderTop: '1px solid var(--border)',
+            flexShrink: 0, // Prevent this section from shrinking
           }}>
             <div style={{
               display: 'flex',
