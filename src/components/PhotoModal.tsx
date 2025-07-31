@@ -181,8 +181,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start', // Changed from center to flex-start
         justifyContent: 'center',
+        paddingTop: '0', // Remove any top padding
       }}
     >
       <div className="modal-content" style={{
@@ -275,10 +276,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           background: 'black',
           overflow: 'hidden',
           position: 'relative',
-          // Remove flex: 1 to prevent taking up extra space
           width: '100%',
-          height: 'auto',
-          maxHeight: '50vh', // Limit height on mobile
+          // Let image determine its own height
+          flexShrink: 0, // Prevent shrinking
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -337,9 +337,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             src={localPhoto.base64} 
             alt="Progress"
             style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
+              width: '100%',
+              height: 'auto',
+              maxHeight: '50vh',
               objectFit: 'contain',
+              display: 'block', // Remove any inline spacing
             }}
           />              
         </div>
