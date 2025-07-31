@@ -19,20 +19,29 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
 }) => {
   const { data, setData, dbUser } = useContext(DataContext);
   
-  // Use local state for the photo to ensure re-renders
-  const [localPhoto, setLocalPhoto] = useState(photo);
+  // Force update mechanism
+  const [updateKey, setUpdateKey] = useState(0);
+  const forceUpdate = () => setUpdateKey(prev => prev + 1);
+  
+  // Get current photo from context
+  const currentPhoto = isOwn 
+    ? data.progressPics.find(p => p.id === photo.id) || photo
+    : data.friendsFeed.find(p => p.id === photo.id) || photo;
+  
+  // Use local state that updates with key changes
+  const [localPhoto, setLocalPhoto] = useState(currentPhoto);
   
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
   
-  // Update local photo when context changes
+  // Update local photo when context or key changes
   useEffect(() => {
     const updatedPhoto = isOwn 
       ? data.progressPics.find(p => p.id === photo.id) || photo
       : data.friendsFeed.find(p => p.id === photo.id) || photo;
     setLocalPhoto(updatedPhoto);
-  }, [data.progressPics, data.friendsFeed, photo.id, isOwn]);
+  }, [data.progressPics, data.friendsFeed, photo.id, isOwn, updateKey]);
   
   // Add these debug logs
   console.log('PhotoModal mounted');
@@ -63,7 +72,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Update local state first for immediate UI update
       setLocalPhoto(updatedPhoto);
-      
+      forceUpdate(); // Add this line
       // Then update context
       if (isOwn) {
         const newPics = data.progressPics.map(p =>
@@ -110,7 +119,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Update local state first for immediate UI update
       setLocalPhoto(updatedPhoto);
-      
+      forceUpdate(); // Add this line
       // Then update context
       if (isOwn) {
         const newPics = data.progressPics.map(p =>
