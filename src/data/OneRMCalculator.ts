@@ -21,27 +21,33 @@ export interface OneRMData {
   programName?: string;
 }
 
-export function calculateOneRM(weight: number, reps: number, rpe?: number): number {
-  if (!weight || weight <= 0) return 0;
-  if (reps < 1 || reps > 10) return 0;
-  if (!rpe || rpe < 6.5 || rpe > 10) {
+export function calculateOneRM(weight: number | string, reps: number | string, rpe?: number | string): number {
+  // Convert all inputs to numbers
+  const weightNum = typeof weight === 'string' ? parseFloat(weight) : weight;
+  const repsNum = typeof reps === 'string' ? parseInt(reps) : reps;
+  let rpeNum = typeof rpe === 'string' ? parseFloat(rpe) : rpe;
+  
+  // Validate inputs
+  if (!weightNum || isNaN(weightNum) || weightNum <= 0) return 0;
+  if (!repsNum || isNaN(repsNum) || repsNum < 1 || repsNum > 10) return 0;
+  
+  if (!rpeNum || isNaN(rpeNum) || rpeNum < 6.5 || rpeNum > 10) {
     // If no RPE provided, assume RPE 10 (max effort)
-    rpe = 10;
+    rpeNum = 10;
   }
   
   // Round RPE to nearest 0.5
-  rpe = Math.round(rpe * 2) / 2;
+  rpeNum = Math.round(rpeNum * 2) / 2;
   
   // Get the percentage from the table
-  const rpeKey = rpe.toString();
-  const percentage = ONE_RM_TABLE[rpeKey]?.[reps];
+  const rpeKey = rpeNum.toString();
+  const percentage = ONE_RM_TABLE[rpeKey]?.[repsNum]; // <- Fixed: use repsNum instead of reps
   
   if (!percentage) return 0;
   
   // Calculate 1RM: weight / percentage
-  return Math.round(weight / percentage);
+  return Math.round(weightNum / percentage);
 }
-
 export function getOneRMHistory(history: any[], exerciseName: string, exerciseSubtype?: string): OneRMData[] {
   const oneRMHistory: OneRMData[] = [];
   
@@ -58,19 +64,26 @@ export function getOneRMHistory(history: any[], exerciseName: string, exerciseSu
           
           if (set.completed && set.weight && set.reps) {
             // Check for either RPE or RIR
-            let rpeValue = set.rpe;
+            let rpeValue: number | undefined;
             
-            // If using RIR, convert to RPE (RPE = 10 - RIR)
-            if (!rpeValue && set.rir !== undefined && set.rir !== '') {
-              rpeValue = (10 - parseFloat(set.rir)).toString();
-              console.log(`Converted RIR ${set.rir} to RPE ${rpeValue}`);
+            // Handle RPE
+            if (set.rpe !== undefined && set.rpe !== '') {
+              rpeValue = typeof set.rpe === 'string' ? parseFloat(set.rpe) : set.rpe;
+            }
+            // Handle RIR - convert to RPE
+            else if (set.rir !== undefined && set.rir !== '') {
+              const rirNum = typeof set.rir === 'string' ? parseFloat(set.rir) : set.rir;
+              if (!isNaN(rirNum)) {
+                rpeValue = 10 - rirNum;
+                console.log(`Converted RIR ${rirNum} to RPE ${rpeValue}`);
+              }
             }
             
-            if (rpeValue) {
+            if (rpeValue && !isNaN(rpeValue)) {
               const estimated1RM = calculateOneRM(
-                parseFloat(set.weight),
-                parseInt(set.reps),
-                parseFloat(rpeValue)
+                set.weight,
+                set.reps,
+                rpeValue
               );
               
               console.log(`Calculated 1RM: ${estimated1RM}`);
@@ -83,12 +96,12 @@ export function getOneRMHistory(history: any[], exerciseName: string, exerciseSu
                   estimated1RM,
                   weight: parseFloat(set.weight),
                   reps: parseInt(set.reps),
-                  rpe: parseFloat(rpeValue),
+                  rpe: rpeValue,
                   programName: workout.programName
                 });
               }
             } else {
-              console.log('Set missing intensity data (no RPE or RIR):', {
+              console.log('Set missing or invalid intensity data:', {
                 completed: set.completed,
                 weight: set.weight,
                 reps: set.reps,

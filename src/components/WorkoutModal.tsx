@@ -11,7 +11,7 @@ interface Exercise {
   subtype?: string;
   muscles?: string;
   sets: Set[];
-previousSets?: { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[];
+  previousSets?: { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[];
 }
 interface WorkoutExerciseItemProps {
   ex: Exercise;
@@ -557,53 +557,53 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   const toggleCompleted = (setIdx: number) => {
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
-const toggleSetType = (setIdx: number) => {
-  const currentSet = ex.sets[setIdx];
+  const toggleSetType = (setIdx: number) => {
+    const currentSet = ex.sets[setIdx];
 
-  // Don't allow changing type of auto-generated drop sets
-  if (isDropSet(setIdx)) return;
+    // Don't allow changing type of auto-generated drop sets
+    if (isDropSet(setIdx)) return;
 
-  // Cycle through: S (undefined) -> W -> D -> S
-  let newType: 'W' | 'D' | 'S' | undefined;
-  if (!currentSet.type || currentSet.type === 'S') {
-    newType = 'W';
-  } else if (currentSet.type === 'W') {
-    newType = 'D';
-    // Add drop set automatically when D is selected
-    addDropSet(idx, setIdx);
-  } else {
-    newType = 'S';
-    // When changing from 'D' to 'S', remove any drop sets that follow
-    const setsToRemove: number[] = [];
-    for (let i = setIdx + 1; i < ex.sets.length; i++) {
-      if ((ex.sets[i] as any).isDropSet) {
-        setsToRemove.push(i);
-      } else {
-        break; // Stop when we hit a non-drop set
+    // Cycle through: S (undefined) -> W -> D -> S
+    let newType: 'W' | 'D' | 'S' | undefined;
+    if (!currentSet.type || currentSet.type === 'S') {
+      newType = 'W';
+    } else if (currentSet.type === 'W') {
+      newType = 'D';
+      // Add drop set automatically when D is selected
+      addDropSet(idx, setIdx);
+    } else {
+      newType = 'S';
+      // When changing from 'D' to 'S', remove any drop sets that follow
+      const setsToRemove: number[] = [];
+      for (let i = setIdx + 1; i < ex.sets.length; i++) {
+        if ((ex.sets[i] as any).isDropSet) {
+          setsToRemove.push(i);
+        } else {
+          break; // Stop when we hit a non-drop set
+        }
+      }
+      // Remove drop sets in reverse order to maintain correct indices
+      for (let i = setsToRemove.length - 1; i >= 0; i--) {
+        deleteSet(idx, setsToRemove[i]);
       }
     }
-    // Remove drop sets in reverse order to maintain correct indices
-    for (let i = setsToRemove.length - 1; i >= 0; i--) {
-      deleteSet(idx, setsToRemove[i]);
-    }
-  }
 
-  updateSet(idx, setIdx, 'type', newType);
-};
-const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
-  if (set.type === 'W') return 'W';
-  if (set.type === 'D') return 'D';
-  if ((set as any).isDropSet) return 'DS';
+    updateSet(idx, setIdx, 'type', newType);
+  };
+  const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
+    if (set.type === 'W') return 'W';
+    if (set.type === 'D') return 'D';
+    if ((set as any).isDropSet) return 'DS';
 
-  // Count only non-warmup, non-drop sets before and including this one
-  let regularSetNumber = 0;
-  for (let i = 0; i <= setIdx; i++) {
-    if (!(allSets[i] as any).isDropSet && allSets[i].type !== 'W') {
-      regularSetNumber++;
+    // Count only non-warmup, non-drop sets before and including this one
+    let regularSetNumber = 0;
+    for (let i = 0; i <= setIdx; i++) {
+      if (!(allSets[i] as any).isDropSet && allSets[i].type !== 'W') {
+        regularSetNumber++;
+      }
     }
-  }
-  return regularSetNumber.toString();
-};
+    return regularSetNumber.toString();
+  };
   const isDropSet = (setIdx: number): boolean => {
     if (setIdx === 0) return false;
 
@@ -722,61 +722,61 @@ const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
-  <circle cx="8" cy="5" r="0.75" fill="currentColor" />
-  <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-</svg>
-</button>
-<button
-  onClick={(e) => {
-    e.stopPropagation();
-    setShow1RMProgress(true);
-    setSelected1RMExercise(ex);    
-  }}
-  style={{
-    background: 'transparent',
-    border: '1px solid var(--accent-primary)',
-    borderRadius: '4px',
-    padding: '1px 3px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    fontSize: '0.60em',
-    color: 'var(--accent-primary)',
-    minHeight: 'auto',
-    transition: 'all 0.2s ease',
-    fontWeight: '600',
-    letterSpacing: '-0.3px',
-    height: '20px',
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.background = 'var(--accent-primary)';
-    e.currentTarget.style.color = 'white';
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.background = 'transparent';
-    e.currentTarget.style.color = 'var(--accent-primary)';
-  }}
-  title="View 1RM Progress"
->
-  1RM
-</button>
-<span className="exercise-menu" onClick={(e) => {
-  e.stopPropagation();
-  openExerciseMenu(idx, e.currentTarget);
-}} style={{
-  fontSize: '1em',
-  padding: '2px 4px',
-  color: 'var(--text-muted)',
-  cursor: 'pointer',
-}}>⋯</span>
-</div>
-)}      </div>
-{!isCollapsed && (
-<div style={{ padding: '0 12px 10px' }}>
-            <div className="set-table-header" style={{
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="8" cy="5" r="0.75" fill="currentColor" />
+                <path d="M8 7.5V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShow1RMProgress(true);
+                setSelected1RMExercise(ex);
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--accent-primary)',
+                borderRadius: '4px',
+                padding: '1px 3px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '0.60em',
+                color: 'var(--accent-primary)',
+                minHeight: 'auto',
+                transition: 'all 0.2s ease',
+                fontWeight: '600',
+                letterSpacing: '-0.3px',
+                height: '20px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--accent-primary)';
+                e.currentTarget.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--accent-primary)';
+              }}
+              title="View 1RM Progress"
+            >
+              1RM
+            </button>
+            <span className="exercise-menu" onClick={(e) => {
+              e.stopPropagation();
+              openExerciseMenu(idx, e.currentTarget);
+            }} style={{
+              fontSize: '1em',
+              padding: '2px 4px',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+            }}>⋯</span>
+          </div>
+        )}      </div>
+      {!isCollapsed && (
+        <div style={{ padding: '0 12px 10px' }}>
+          <div className="set-table-header" style={{
             display: 'grid',
             gridTemplateColumns: '32px 1fr 48px 48px 48px 22px',
             gap: '6px',
@@ -860,79 +860,79 @@ const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
                     ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}`
                     : '—'}
                 </div>
-            <input
-  value={s.weight}
-  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
-  type="number"
-  inputMode="decimal"
-  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
-  style={{
-    background: 'var(--bg-dark)',
-    border: '1px solid var(--border)',
-    borderRadius: '6px',
-    textAlign: 'center',
-    fontSize: '0.75em',
-    fontWeight: '600',
-    color: s.completed ? '#22C55E' : 'var(--text)',
-    padding: '5px 2px',
-    height: '28px',
-    width: '100%',
-    WebkitAppearance: 'none',
-    MozAppearance: 'textfield',
-    transition: 'all 0.2s ease',
-    outline: 'none',
-  }} 
-  onFocus={(e) => {
-    e.target.style.borderColor = 'var(--accent-primary)';
-    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-    // Bug 17 fix: Auto-populate weight from previous if empty
-    if (!s.weight && ex.previousSets?.[sIdx]?.weight) {
-      updateSet(idx, sIdx, 'weight', ex.previousSets[sIdx].weight);
-    }
-    // Move cursor to end of input
-    const value = e.target.value;
-    e.target.setSelectionRange(value.length, value.length);
-  }}
-  onBlur={(e) => {
-    e.target.style.borderColor = 'var(--border)';
-    e.target.style.background = 'var(--bg-dark)';
-  }}
-/>
+                <input
+                  value={s.weight}
+                  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
+                  type="number"
+                  inputMode="decimal"
+                  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
+                  style={{
+                    background: 'var(--bg-dark)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    fontSize: '0.75em',
+                    fontWeight: '600',
+                    color: s.completed ? '#22C55E' : 'var(--text)',
+                    padding: '5px 2px',
+                    height: '28px',
+                    width: '100%',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'textfield',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--accent-primary)';
+                    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+                    // Bug 17 fix: Auto-populate weight from previous if empty
+                    if (!s.weight && ex.previousSets?.[sIdx]?.weight) {
+                      updateSet(idx, sIdx, 'weight', ex.previousSets[sIdx].weight);
+                    }
+                    // Move cursor to end of input
+                    const value = e.target.value;
+                    e.target.setSelectionRange(value.length, value.length);
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'var(--border)';
+                    e.target.style.background = 'var(--bg-dark)';
+                  }}
+                />
                 <div style={{ position: 'relative' }}>
-<input
-  value={s.reps}
-  onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
-  type="number"
-  inputMode="numeric"
-  placeholder="0"
-  style={{
-    background: 'var(--bg-dark)',
-    border: '1px solid var(--border)',
-    borderRadius: '6px',
-    textAlign: 'center',
-    fontSize: '0.75em',
-    fontWeight: '600',
-    color: s.completed ? '#22C55E' : 'var(--text)',
-    padding: '5px 2px',
-    height: '28px',
-    width: '100%',
-    WebkitAppearance: 'none',
-    MozAppearance: 'textfield',
-    transition: 'all 0.2s ease',
-    outline: 'none',
-  }}
-  onFocus={(e) => {
-    e.target.style.borderColor = 'var(--accent-primary)';
-    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-    // Move cursor to end of input
-    const value = e.target.value;
-    e.target.setSelectionRange(value.length, value.length);
-  }}
-  onBlur={(e) => {
-    e.target.style.borderColor = 'var(--border)';
-    e.target.style.background = 'var(--bg-dark)';
-  }}
-/>
+                  <input
+                    value={s.reps}
+                    onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    style={{
+                      background: 'var(--bg-dark)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      textAlign: 'center',
+                      fontSize: '0.75em',
+                      fontWeight: '600',
+                      color: s.completed ? '#22C55E' : 'var(--text)',
+                      padding: '5px 2px',
+                      height: '28px',
+                      width: '100%',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'textfield',
+                      transition: 'all 0.2s ease',
+                      outline: 'none',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--accent-primary)';
+                      e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+                      // Move cursor to end of input
+                      const value = e.target.value;
+                      e.target.setSelectionRange(value.length, value.length);
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.background = 'var(--bg-dark)';
+                    }}
+                  />
                   {/* Bug 16 fix: Remove ghost effect */}
                   {!s.reps && ex.previousSets?.[sIdx]?.reps && (
                     <div style={{
@@ -949,42 +949,42 @@ const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
                     </div>
                   )}
                 </div>
-<input
-  value={s[intensityMetric] || ''}
-  onChange={(e) => updateSet(idx, sIdx, intensityMetric, e.target.value)}
-  type="number"
-  inputMode="decimal"
-  step="0.5"
-  min={intensityMetric === 'rir' ? "0" : "1"}
-  max={intensityMetric === 'rir' ? "10" : "10"}
-  placeholder="0"
-  style={{
-    background: 'var(--bg-dark)',
-    border: '1px solid var(--border)',
-    borderRadius: '6px',
-    textAlign: 'center',
-    fontSize: '0.7em',
-    color: s.completed ? '#22C55E' : 'var(--text)',
-    padding: '5px 2px',
-    height: '28px',
-    width: '100%',
-    WebkitAppearance: 'none',
-    MozAppearance: 'textfield',
-    transition: 'all 0.2s ease',
-    outline: 'none',
-  }}
-  onFocus={(e) => {
-    e.target.style.borderColor = 'var(--accent-primary)';
-    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-    // Move cursor to end of input
-    const value = e.target.value;
-    e.target.setSelectionRange(value.length, value.length);
-  }}
-  onBlur={(e) => {
-    e.target.style.borderColor = 'var(--border)';
-    e.target.style.background = 'var(--bg-dark)';
-  }}
-/>
+                <input
+                  value={s[intensityMetric] || ''}
+                  onChange={(e) => updateSet(idx, sIdx, intensityMetric, e.target.value)}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.5"
+                  min={intensityMetric === 'rir' ? "0" : "1"}
+                  max={intensityMetric === 'rir' ? "10" : "10"}
+                  placeholder="0"
+                  style={{
+                    background: 'var(--bg-dark)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    fontSize: '0.7em',
+                    color: s.completed ? '#22C55E' : 'var(--text)',
+                    padding: '5px 2px',
+                    height: '28px',
+                    width: '100%',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'textfield',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--accent-primary)';
+                    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+                    // Move cursor to end of input
+                    const value = e.target.value;
+                    e.target.setSelectionRange(value.length, value.length);
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'var(--border)';
+                    e.target.style.background = 'var(--bg-dark)';
+                  }}
+                />
                 <div
                   className={`log-square ${s.completed ? 'completed' : ''}`}
                   onClick={() => toggleCompleted(sIdx)}
@@ -1272,7 +1272,7 @@ const WorkoutModal: React.FC = () => {
   const addSet = useCallback((exIdx: number) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
-    newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '',rir: '',completed: false, type: undefined }];
+    newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '', rir: '', completed: false, type: undefined }];
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
 
@@ -1303,32 +1303,32 @@ const WorkoutModal: React.FC = () => {
     exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
-const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[] => {
-  const previous: { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[] = [];
+  const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[] => {
+    const previous: { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[] = [];
 
-  // Bug 17 fix: Look for the most recent workout with this exercise
-  for (let i = data.history.length - 1; i >= 0; i--) {
-    const workout = data.history[i];
-    const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
-    if (matchingEx && matchingEx.sets) {
-      const completedSets = matchingEx.sets
-        .filter((s: Set) => s.completed && s.weight && s.reps)
-        .map((s: Set) => ({
-          weight: s.weight || '0',
-          reps: s.reps || '0',
-          type: s.type
-        }));
-      if (completedSets.length > 0) {
-        // Pad with empty values if needed
-        while (completedSets.length < ex.sets.length) {
-completedSets.push({ weight: '', reps: '', type: undefined });
+    // Bug 17 fix: Look for the most recent workout with this exercise
+    for (let i = data.history.length - 1; i >= 0; i--) {
+      const workout = data.history[i];
+      const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
+      if (matchingEx && matchingEx.sets) {
+        const completedSets = matchingEx.sets
+          .filter((s: Set) => s.completed && s.weight && s.reps)
+          .map((s: Set) => ({
+            weight: s.weight || '0',
+            reps: s.reps || '0',
+            type: s.type
+          }));
+        if (completedSets.length > 0) {
+          // Pad with empty values if needed
+          while (completedSets.length < ex.sets.length) {
+            completedSets.push({ weight: '', reps: '', type: undefined });
+          }
+          return completedSets;
         }
-        return completedSets;
       }
     }
-  }
-return Array(ex.sets.length).fill({ weight: '', reps: '', type: undefined });
-}, [data.history]);
+    return Array(ex.sets.length).fill({ weight: '', reps: '', type: undefined });
+  }, [data.history]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(duration / 60000);
@@ -1417,14 +1417,14 @@ return Array(ex.sets.length).fill({ weight: '', reps: '', type: undefined });
             flexShrink: 0,
           }}
         >
-<div className="drag-indicator" style={{
-  width: '32px',
-  height: '3px',
-  background: data.theme === 'light' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)',
-  borderRadius: '2px',
-  margin: '0 auto',
-  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-}}></div>
+          <div className="drag-indicator" style={{
+            width: '32px',
+            height: '3px',
+            background: data.theme === 'light' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)',
+            borderRadius: '2px',
+            margin: '0 auto',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+          }}></div>
         </div>
 
         <div className="workout-header" style={{

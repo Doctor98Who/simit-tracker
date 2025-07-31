@@ -34,6 +34,10 @@ const OneRMProgressModal: React.FC<OneRMProgressModalProps> = ({ exercise, onClo
   
   const maxOneRM = chartDataToUse.length > 0 ? Math.max(...chartDataToUse.map(d => d.estimated1RM)) : 100;
   const minOneRM = chartDataToUse.length > 0 ? Math.min(...chartDataToUse.map(d => d.estimated1RM)) * 0.9 : 0;
+  // Add padding when only one data point
+const range = maxOneRM - minOneRM;
+const paddedMax = maxOneRM + (range === 0 ? maxOneRM * 0.2 : 0);
+const paddedMin = minOneRM - (range === 0 ? minOneRM * 0.2 : 0);
   const dateRange = chartDataToUse.length > 0
     ? { min: chartDataToUse[0].date, max: chartDataToUse[chartDataToUse.length - 1].date }
     : { min: Date.now(), max: Date.now() };
