@@ -51,7 +51,6 @@ useEffect(() => {
     const modalContent = document.querySelector('.progress-photo-modal .modal-content');
     if (modalContent) {
       modalContent.scrollTop = 0;
-      modalContent.scrollIntoView({ behavior: 'instant', block: 'start' });
     }
   }, 0);
   
