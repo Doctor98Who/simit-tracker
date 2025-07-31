@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { DataContext } from '../DataContext';
 import { DatabaseService } from '../services/database';
 
@@ -19,51 +19,60 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
 }) => {
   const { data, setData, dbUser } = useContext(DataContext);
   
-  // Get the current photo from context to ensure we have the latest data
-  const currentPhoto = isOwn 
-    ? data.progressPics.find(p => p.id === photo.id) || photo
-    : data.friendsFeed.find(p => p.id === photo.id) || photo;
+  // Use local state for the photo to ensure re-renders
+  const [localPhoto, setLocalPhoto] = useState(photo);
   
   const [isEditingCaption, setIsEditingCaption] = useState(false);
-  const [editCaption, setEditCaption] = useState(currentPhoto.caption || '');
+  const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
+  
+  // Update local photo when context changes
+  useEffect(() => {
+    const updatedPhoto = isOwn 
+      ? data.progressPics.find(p => p.id === photo.id) || photo
+      : data.friendsFeed.find(p => p.id === photo.id) || photo;
+    setLocalPhoto(updatedPhoto);
+  }, [data.progressPics, data.friendsFeed, photo.id, isOwn]);
   
   // Add these debug logs
   console.log('PhotoModal mounted');
   console.log('dbUser in PhotoModal:', dbUser);
-  console.log('currentPhoto data:', currentPhoto);
+  console.log('localPhoto data:', localPhoto);
   
   const handleLike = async () => {
     console.log('handleLike called');
     console.log('dbUser:', dbUser);
-    console.log('currentPhoto.id:', currentPhoto.id);
-   
+    console.log('localPhoto.id:', localPhoto.id);
+    
     if (!dbUser) {
       console.log('No dbUser found!');
       return;
     }
-   
+    
     try {
       // Toggle like in database
-      const result = await DatabaseService.likePhoto(dbUser.id, currentPhoto.id);
+      const result = await DatabaseService.likePhoto(dbUser.id, localPhoto.id);
       console.log('Like result:', result);
-     
-      // Update local state
+      
+      // Update local state immediately for instant UI feedback
       const updatedPhoto = {
-        ...currentPhoto,
-        likes: result.liked ? (currentPhoto.likes || 0) + 1 : Math.max((currentPhoto.likes || 0) - 1, 0),
+        ...localPhoto,
+        likes: result.liked ? (localPhoto.likes || 0) + 1 : Math.max((localPhoto.likes || 0) - 1, 0),
         userHasLiked: result.liked
       };
-     
-      // Update in local data
+      
+      // Update local state first for immediate UI update
+      setLocalPhoto(updatedPhoto);
+      
+      // Then update context
       if (isOwn) {
         const newPics = data.progressPics.map(p =>
-          p.id === currentPhoto.id ? updatedPhoto : p
+          p.id === localPhoto.id ? updatedPhoto : p
         );
         setData(prev => ({ ...prev, progressPics: newPics }));
       } else {
         const newFeed = data.friendsFeed.map(item =>
-          item.id === currentPhoto.id ? updatedPhoto : item
+          item.id === localPhoto.id ? updatedPhoto : item
         );
         setData(prev => ({ ...prev, friendsFeed: newFeed }));
       }
@@ -71,6 +80,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       console.error('Error toggling like:', error);
     }
   };
+  
   const handleComment = async () => {
     console.log('handleComment called');
     console.log('dbUser:', dbUser);
@@ -80,7 +90,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       console.log('No dbUser or empty comment!');
       return;
     }
-   
+    
     try {
       const newComment = {
         user_id: dbUser.id,
@@ -88,28 +98,32 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
         text: comment,
         timestamp: Date.now()
       };
-     
+      
       // Update in database
-      await DatabaseService.addComment(dbUser.id, photo.id, comment);
-     
-      // Update local state
+      await DatabaseService.addComment(dbUser.id, localPhoto.id, comment);
+      
+      // Update local state immediately
       const updatedPhoto = {
-        ...photo,
-        comments: [...(photo.comments || []), newComment]
+        ...localPhoto,
+        comments: [...(localPhoto.comments || []), newComment]
       };
-     
+      
+      // Update local state first for immediate UI update
+      setLocalPhoto(updatedPhoto);
+      
+      // Then update context
       if (isOwn) {
         const newPics = data.progressPics.map(p =>
-          p.id === photo.id ? updatedPhoto : p
+          p.id === localPhoto.id ? updatedPhoto : p
         );
         setData(prev => ({ ...prev, progressPics: newPics }));
       } else {
         const newFeed = data.friendsFeed.map(item =>
-          item.id === photo.id ? updatedPhoto : item
+          item.id === localPhoto.id ? updatedPhoto : item
         );
         setData(prev => ({ ...prev, friendsFeed: newFeed }));
       }
-     
+      
       setComment('');
     } catch (error) {
       console.error('Error adding comment:', error);
