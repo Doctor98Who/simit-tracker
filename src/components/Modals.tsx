@@ -3,6 +3,7 @@ import { DataContext, DataType, Exercise, Template, ProgressPhoto } from '../Dat
 import WorkoutModal from './WorkoutModal';
 import { useAuth0 } from '@auth0/auth0-react';
 import EXIF from 'exif-js';
+import { DatabaseService } from '../services/database';
 
 
 interface Day {
@@ -39,8 +40,7 @@ interface ExerciseFromDatabase {
 }
 
 const Modals = () => {
-  const { data, setData, exerciseDatabase, simitPrograms } = useContext(DataContext);
-  const { logout } = useAuth0();
+  const { data, setData, exerciseDatabase, simitPrograms, dbUser } = useContext(DataContext); const { logout } = useAuth0();
   const activeModal = data.activeModal;
   const [exerciseSelectMode, setExerciseSelectMode] = useState<'workout' | 'program' | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -722,17 +722,17 @@ const Modals = () => {
     }
   };
 
-const deleteHistoryEntry = async () => {
-  if (data.currentHistoryIdx !== null && window.confirm("Are you sure you want to delete this workout?")) {
-    const newHistory = [...data.history];
-    newHistory.splice(data.currentHistoryIdx, 1);
-    setData((prev: DataType) => ({
-      ...prev,
-      history: newHistory,
-      activeModal: null,
-    }));
-  }
-};
+  const deleteHistoryEntry = async () => {
+    if (data.currentHistoryIdx !== null && window.confirm("Are you sure you want to delete this workout?")) {
+      const newHistory = [...data.history];
+      newHistory.splice(data.currentHistoryIdx, 1);
+      setData((prev: DataType) => ({
+        ...prev,
+        history: newHistory,
+        activeModal: null,
+      }));
+    }
+  };
   // Edit profile handlers
   const saveProfile = () => {
     const firstName = (document.getElementById('edit-first-name') as HTMLInputElement)?.value || '';
@@ -781,80 +781,80 @@ const deleteHistoryEntry = async () => {
     }
   };
   // Custom exercise handlers
-const saveCustomExercise = () => {
-  const name = (document.getElementById('custom-exercise-name') as HTMLInputElement)?.value;
-  const subtype = (document.getElementById('custom-exercise-subtype') as HTMLInputElement)?.value;
-  const muscles = (document.getElementById('custom-exercise-muscles') as HTMLSelectElement)?.value;
-  const customMuscle = (document.getElementById('custom-muscle-input') as HTMLInputElement)?.value;
-  const instructions = (document.getElementById('custom-exercise-instructions') as HTMLTextAreaElement)?.value;
-  const equipment = (document.getElementById('custom-exercise-equipment') as HTMLInputElement)?.value;
+  const saveCustomExercise = () => {
+    const name = (document.getElementById('custom-exercise-name') as HTMLInputElement)?.value;
+    const subtype = (document.getElementById('custom-exercise-subtype') as HTMLInputElement)?.value;
+    const muscles = (document.getElementById('custom-exercise-muscles') as HTMLSelectElement)?.value;
+    const customMuscle = (document.getElementById('custom-muscle-input') as HTMLInputElement)?.value;
+    const instructions = (document.getElementById('custom-exercise-instructions') as HTMLTextAreaElement)?.value;
+    const equipment = (document.getElementById('custom-exercise-equipment') as HTMLInputElement)?.value;
 
-  const finalMuscles = muscles === 'Other' && customMuscle ? customMuscle : muscles;
+    const finalMuscles = muscles === 'Other' && customMuscle ? customMuscle : muscles;
 
-  if (name && finalMuscles) {
-    const exerciseData: Exercise = {
-      name,
-      subtype: subtype || '',
-      muscles: finalMuscles,
-      instructions: instructions || '',
-      equipment: equipment || '',
-      sets: []
-    };
-
-    if (data.isEditingCustomExercise && data.currentCustomIdx !== null) {
-      // Update existing exercise
-      const updatedCustomExercises = [...data.customExercises];
-      updatedCustomExercises[data.currentCustomIdx] = {
-        ...updatedCustomExercises[data.currentCustomIdx],
-        ...exerciseData,
-        id: updatedCustomExercises[data.currentCustomIdx].id // Preserve the ID
+    if (name && finalMuscles) {
+      const exerciseData: Exercise = {
+        name,
+        subtype: subtype || '',
+        muscles: finalMuscles,
+        instructions: instructions || '',
+        equipment: equipment || '',
+        sets: []
       };
 
-      setData((prev: DataType) => ({
-        ...prev,
-        customExercises: updatedCustomExercises,
-        activeModal: null,
-        isEditingCustomExercise: false,
-        editingCustomExerciseData: null,
-        currentCustomIdx: null,
-      }));
-    } else {
-      // Add new exercise (existing code)
-      const updatedCustomExercises = [...data.customExercises, exerciseData];
-
-      if (data.returnModal === 'exercise-select-modal' && data.isWorkoutSelect && data.currentWorkout) {
-        const workoutExercise = {
+      if (data.isEditingCustomExercise && data.currentCustomIdx !== null) {
+        // Update existing exercise
+        const updatedCustomExercises = [...data.customExercises];
+        updatedCustomExercises[data.currentCustomIdx] = {
+          ...updatedCustomExercises[data.currentCustomIdx],
           ...exerciseData,
-          sets: Array.from({ length: 3 }, () => ({
-            weight: '',
-            reps: '',
-            rpe: '',
-            completed: false,
-          })),
+          id: updatedCustomExercises[data.currentCustomIdx].id // Preserve the ID
         };
 
         setData((prev: DataType) => ({
           ...prev,
           customExercises: updatedCustomExercises,
-          currentWorkout: {
-            ...prev.currentWorkout!,
-            exercises: [...prev.currentWorkout!.exercises, workoutExercise]
-          },
-          activeModal: 'workout-modal',
-          returnModal: null,
-          isWorkoutSelect: false,
+          activeModal: null,
+          isEditingCustomExercise: false,
+          editingCustomExerciseData: null,
+          currentCustomIdx: null,
         }));
       } else {
-        setData((prev: DataType) => ({
-          ...prev,
-          customExercises: updatedCustomExercises,
-          activeModal: prev.returnModal || null,
-          returnModal: null,
-        }));
+        // Add new exercise (existing code)
+        const updatedCustomExercises = [...data.customExercises, exerciseData];
+
+        if (data.returnModal === 'exercise-select-modal' && data.isWorkoutSelect && data.currentWorkout) {
+          const workoutExercise = {
+            ...exerciseData,
+            sets: Array.from({ length: 3 }, () => ({
+              weight: '',
+              reps: '',
+              rpe: '',
+              completed: false,
+            })),
+          };
+
+          setData((prev: DataType) => ({
+            ...prev,
+            customExercises: updatedCustomExercises,
+            currentWorkout: {
+              ...prev.currentWorkout!,
+              exercises: [...prev.currentWorkout!.exercises, workoutExercise]
+            },
+            activeModal: 'workout-modal',
+            returnModal: null,
+            isWorkoutSelect: false,
+          }));
+        } else {
+          setData((prev: DataType) => ({
+            ...prev,
+            customExercises: updatedCustomExercises,
+            activeModal: prev.returnModal || null,
+            returnModal: null,
+          }));
+        }
       }
     }
-  }
-};
+  };
   // Delete custom exercise
   const deleteCustomExercise = () => {
     if (data.currentCustomIdx !== null && window.confirm("Are you sure you want to delete this custom exercise?")) {
@@ -1014,850 +1014,850 @@ const saveCustomExercise = () => {
 
   return (
     <>
-<div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxHeight: '90vh',
-    overflow: 'hidden',
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    maxWidth: '450px',
-    width: '90%',
-  }}>
-    {/* Header */}
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button
-          onClick={goBack}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '1.2em',
-            cursor: 'pointer',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 'auto',
-            transition: 'color 0.2s ease',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
-        >
-          ←
-        </button>
-        <h2 style={{
-          margin: 0,
-          fontSize: '1.3em',
-          fontWeight: '700',
-          background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          letterSpacing: '-0.5px',
-        }}>Create Program</h2>
-      </div>
-    </div>
-
-    {/* Content */}
-    <div style={{
-      padding: '24px',
-      overflowY: 'auto',
-      maxHeight: 'calc(90vh - 80px)',
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      {/* Program Name Input */}
-      <div style={{ marginBottom: '28px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--text-muted)',
-          fontSize: '0.85em',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Program Name
-        </label>
-        <input
-          type="text"
-          id="program-name"
-          placeholder="e.g., Push Pull Legs"
-          style={{
-            width: '100%',
-            padding: '14px 16px',
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            color: 'var(--text)',
-            fontSize: '16px',
-            outline: 'none',
-            transition: 'all 0.3s ease',
-            backdropFilter: 'blur(10px)',
-            boxSizing: 'border-box',
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = 'var(--accent-primary)';
-            e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-          }}
-        />
-      </div>
-
-      {/* Number of Weeks */}
-      <div style={{ marginBottom: '28px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--text-muted)',
-          fontSize: '0.85em',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Program Duration
-        </label>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '14px 16px',
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+      <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '12px',
-          transition: 'all 0.3s ease',
+          maxWidth: '450px',
+          width: '90%',
         }}>
-          <input
-            type="number"
-            id="mesocycle-length"
-            placeholder="4"
-            min="1"
-            max="52"
-            onInput={generateWeeks}
-            style={{
-              width: '80px',
-              padding: '8px 12px',
-              background: 'var(--bg-lighter)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              color: 'var(--text)',
-              fontSize: '16px',
-              textAlign: 'center',
-              outline: 'none',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-          />
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.95em' }}>weeks</span>
-        </div>
-        <p style={{
-          marginTop: '8px',
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          lineHeight: '1.4',
-        }}>
-          Each week will repeat with progressive overload
-        </p>
-      </div>
-
-      {/* Weeks Overview */}
-      {data.currentProgram.weeks.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
+          {/* Header */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '16px',
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
           }}>
-            <h3 style={{
-              margin: 0,
-              fontSize: '1em',
-              color: 'var(--text)',
-              fontWeight: '600',
-            }}>
-              Week Structure
-            </h3>
-            <span style={{
-              fontSize: '0.85em',
-              color: 'var(--accent-primary)',
-              fontWeight: '500',
-            }}>
-              {data.currentProgram.weeks.length} {data.currentProgram.weeks.length === 1 ? 'week' : 'weeks'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                onClick={goBack}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '1.2em',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 'auto',
+                  transition: 'color 0.2s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+              >
+                ←
+              </button>
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.3em',
+                fontWeight: '700',
+                background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.5px',
+              }}>Create Program</h2>
+            </div>
           </div>
 
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '10px',
+          {/* Content */}
+          <div style={{
+            padding: '24px',
+            overflowY: 'auto',
+            maxHeight: 'calc(90vh - 80px)',
+            WebkitOverflowScrolling: 'touch',
           }}>
-            {data.currentProgram.weeks.map((_: any, index: number) => (
-              <div
-                key={index}
-                onClick={() => setData((prev: DataType) => ({
-                  ...prev,
-                  currentWeekIndex: index,
-                  activeModal: 'week-modal',
-                  isEditingProgram: prev.isEditingProgram || false,
-                }))}
+            {/* Program Name Input */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-muted)',
+                fontSize: '0.85em',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Program Name
+              </label>
+              <input
+                type="text"
+                id="program-name"
+                placeholder="e.g., Push Pull Legs"
                 style={{
-                  padding: '16px',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  width: '100%',
+                  padding: '14px 16px',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent-primary)';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+                }}
+              />
+            </div>
+
+            {/* Number of Weeks */}
+            <div style={{ marginBottom: '28px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-muted)',
+                fontSize: '0.85em',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Program Duration
+              </label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '14px 16px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+              }}>
+                <input
+                  type="number"
+                  id="mesocycle-length"
+                  placeholder="4"
+                  min="1"
+                  max="52"
+                  onInput={generateWeeks}
+                  style={{
+                    width: '80px',
+                    padding: '8px 12px',
+                    background: 'var(--bg-lighter)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '8px',
+                    color: 'var(--text)',
+                    fontSize: '16px',
+                    textAlign: 'center',
+                    outline: 'none',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'textfield',
+                  }}
+                />
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.95em' }}>weeks</span>
+              </div>
+              <p style={{
+                marginTop: '8px',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                lineHeight: '1.4',
+              }}>
+                Each week will repeat with progressive overload
+              </p>
+            </div>
+
+            {/* Weeks Overview */}
+            {data.currentProgram.weeks.length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  marginBottom: '16px',
+                }}>
+                  <h3 style={{
+                    margin: 0,
+                    fontSize: '1em',
+                    color: 'var(--text)',
+                    fontWeight: '600',
+                  }}>
+                    Week Structure
+                  </h3>
+                  <span style={{
+                    fontSize: '0.85em',
+                    color: 'var(--accent-primary)',
+                    fontWeight: '500',
+                  }}>
+                    {data.currentProgram.weeks.length} {data.currentProgram.weeks.length === 1 ? 'week' : 'weeks'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}>
+                  {data.currentProgram.weeks.map((_: any, index: number) => (
+                    <div
+                      key={index}
+                      onClick={() => setData((prev: DataType) => ({
+                        ...prev,
+                        currentWeekIndex: index,
+                        activeModal: 'week-modal',
+                        isEditingProgram: prev.isEditingProgram || false,
+                      }))}
+                      style={{
+                        padding: '16px',
+                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                        e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))';
+                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                        e.currentTarget.style.transform = 'translateX(0)';
+                      }}
+                    >
+                      <div>
+                        <div style={{
+                          fontSize: '1em',
+                          fontWeight: '600',
+                          marginBottom: '4px',
+                          color: 'var(--text)',
+                        }}>
+                          Week {index + 1}
+                        </div>
+                        <div style={{
+                          fontSize: '0.85em',
+                          color: 'var(--text-muted)'
+                        }}>
+                          {data.currentProgram.weeks[index].days.length} training days
+                        </div>
+                      </div>
+                      <div style={{
+                        color: 'var(--text-muted)',
+                        fontSize: '1.2em',
+                      }}>
+                        →
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={addWeek}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    marginTop: '12px',
+                    background: 'transparent',
+                    color: 'var(--accent-primary)',
+                    border: '1px dashed rgba(59, 130, 246, 0.3)',
+                    borderRadius: '12px',
+                    fontSize: '0.9em',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                  }}
+                >
+                  <span style={{ fontSize: '1.2em' }}>+</span> Add Week
+                </button>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              marginTop: '32px',
+            }}>
+              <button
+                onClick={saveProgram}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'var(--accent-gradient)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '1em',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                  transition: 'all 0.3s ease',
+                  opacity: data.currentProgram.weeks.length > 0 ? 1 : 0.5,
+                  pointerEvents: data.currentProgram.weeks.length > 0 ? 'auto' : 'none',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                  e.currentTarget.style.transform = 'translateX(4px)';
+                  if (data.currentProgram.weeks.length > 0) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.transform = 'translateX(0)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
                 }}
               >
-                <div>
-                  <div style={{ 
-                    fontSize: '1em', 
-                    fontWeight: '600', 
-                    marginBottom: '4px',
-                    color: 'var(--text)',
-                  }}>
-                    Week {index + 1}
-                  </div>
-                  <div style={{ 
-                    fontSize: '0.85em', 
-                    color: 'var(--text-muted)' 
-                  }}>
-                    {data.currentProgram.weeks[index].days.length} training days
-                  </div>
-                </div>
-                <div style={{
-                  color: 'var(--text-muted)',
-                  fontSize: '1.2em',
-                }}>
-                  →
-                </div>
-              </div>
-            ))}
-          </div>
+                Save Program
+              </button>
 
-          <button 
-            onClick={addWeek} 
-            style={{
+              <button
+                className="secondary"
+                onClick={closeModal}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'transparent',
+                  color: 'var(--text-muted)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                  e.currentTarget.style.color = 'var(--text)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.currentTarget.style.color = 'var(--text-muted)';
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          maxWidth: '450px',
+          width: '90%',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <h2 style={{
+              margin: 0,
+              fontSize: '1.3em',
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.5px',
+            }}>{(data.currentProgram as any)?.name || 'Program'}</h2>
+          </div>
+          <div style={{ padding: '24px' }}>
+            <div id="program-weeks">{isSimitProgram ? renderSimitProgramWeeks : renderProgramWeeks}</div>
+            <button className="secondary" onClick={closeModal} style={{
               width: '100%',
-              padding: '14px',
-              marginTop: '12px',
+              padding: '12px',
               background: 'transparent',
-              color: 'var(--accent-primary)',
-              border: '1px dashed rgba(59, 130, 246, 0.3)',
+              color: 'var(--text-muted)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '12px',
               fontSize: '0.9em',
               fontWeight: '500',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-            }}
-          >
-            <span style={{ fontSize: '1.2em' }}>+</span> Add Week
-          </button>
+              marginTop: '16px',
+            }}>Close</button>
+          </div>
         </div>
-      )}
-
-      {/* Action Buttons */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        marginTop: '32px',
-      }}>
-        <button 
-          onClick={saveProgram} 
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'var(--accent-gradient)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: '1em',
-            fontWeight: '600',
-            cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-            transition: 'all 0.3s ease',
-            opacity: data.currentProgram.weeks.length > 0 ? 1 : 0.5,
-            pointerEvents: data.currentProgram.weeks.length > 0 ? 'auto' : 'none',
-          }}
-          onMouseEnter={(e) => {
-            if (data.currentProgram.weeks.length > 0) {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-          }}
-        >
-          Save Program
-        </button>
-        
-        <button 
-          className="secondary" 
-          onClick={closeModal} 
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: 'transparent',
-            color: 'var(--text-muted)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            fontSize: '0.9em',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.color = 'var(--text)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.color = 'var(--text-muted)';
-          }}
-        >
-          Cancel
-        </button>
       </div>
-    </div>
-  </div>
-</div>
-<div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    maxWidth: '450px',
-    width: '90%',
-    overflow: 'hidden',
-  }}>
-    <div style={{
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-    }}>
-      <h2 style={{
-        margin: 0,
-        fontSize: '1.3em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        letterSpacing: '-0.5px',
-      }}>{(data.currentProgram as any)?.name || 'Program'}</h2>
-    </div>
-    <div style={{ padding: '24px' }}>
-      <div id="program-weeks">{isSimitProgram ? renderSimitProgramWeeks : renderProgramWeeks}</div>
-      <button className="secondary" onClick={closeModal} style={{
-        width: '100%',
-        padding: '12px',
-        background: 'transparent',
-        color: 'var(--text-muted)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '12px',
-        fontSize: '0.9em',
-        fontWeight: '500',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        marginTop: '16px',
-      }}>Close</button>
-    </div>
-  </div>
-</div>
 
-<div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    maxWidth: '450px',
-    width: '90%',
-    maxHeight: '90vh',
-    overflow: 'hidden',
-  }}>
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button
-          onClick={goBack}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '1.2em',
-            cursor: 'pointer',
-            padding: '4px',
+      <div id="week-modal" className={`modal ${activeModal === 'week-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          maxWidth: '450px',
+          width: '90%',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+        }}>
+          <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 'auto',
-            transition: 'color 0.2s ease',
-          }}
-        >
-          ←
-        </button>
-        <h2 style={{
-          margin: 0,
-          fontSize: '1.2em',
-          fontWeight: '700',
-          color: 'var(--text)',
-        }}>
-          {data.isEditingProgram ? 'Edit' : 'View'} Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}
-        </h2>
-      </div>
-    </div>
-    
-    <div style={{
-      padding: '24px',
-      overflowY: 'auto',
-      maxHeight: 'calc(90vh - 80px)',
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      {!isSimitProgram && data.isEditingProgram && (
-        <button onClick={addDayToWeek} style={{
-          width: '100%',
-          padding: '14px',
-          marginBottom: '20px',
-          background: 'transparent',
-          color: 'var(--accent-primary)',
-          border: '1px dashed rgba(59, 130, 246, 0.3)',
-          borderRadius: '12px',
-          fontSize: '0.9em',
-          fontWeight: '500',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-          e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-        }}
-        >
-          <span style={{ fontSize: '1.2em' }}>+</span> Add Training Day
-        </button>
-      )}
-      
-      <div id="week-days">{renderWeekDays}</div>
-      
-      {!isSimitProgram && data.isEditingProgram && (
-        <button onClick={saveWeek} style={{
-          width: '100%',
-          padding: '14px',
-          background: 'var(--accent-gradient)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '12px',
-          fontSize: '1em',
-          fontWeight: '600',
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-          transition: 'all 0.3s ease',
-          marginTop: '20px',
-        }}>
-          Save Week
-        </button>
-      )}
-      
-      <button className="secondary" onClick={closeModal} style={{
-        width: '100%',
-        padding: '12px',
-        background: 'transparent',
-        color: 'var(--text-muted)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '12px',
-        fontSize: '0.9em',
-        fontWeight: '500',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        marginTop: '12px',
-      }}>Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    maxWidth: '450px',
-    width: '90%',
-    maxHeight: '90vh',
-    overflow: 'hidden',
-  }}>
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button
-          onClick={goBack}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            fontSize: '1.2em',
-            cursor: 'pointer',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: 'auto',
-            transition: 'color 0.2s ease',
-          }}
-        >
-          ←
-        </button>
-        <h2 style={{
-          margin: 0,
-          fontSize: '1.2em',
-          fontWeight: '700',
-          color: 'var(--text)',
-        }}>Edit Training Day</h2>
-      </div>
-    </div>
-    
-    <div style={{
-      padding: '24px',
-      overflowY: 'auto',
-      maxHeight: 'calc(90vh - 80px)',
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      <div style={{ marginBottom: '24px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--text-muted)',
-          fontSize: '0.85em',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Day Name
-        </label>
-        <input
-          type="text"
-          id="day-name"
-          placeholder="e.g., Push Day, Pull Day, Leg Day"
-          style={{
-            width: '100%',
-            padding: '14px 16px',
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            color: 'var(--text)',
-            fontSize: '16px',
-            outline: 'none',
-            transition: 'all 0.3s ease',
+            justifyContent: 'space-between',
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
             backdropFilter: 'blur(10px)',
-            boxSizing: 'border-box',
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = 'var(--accent-primary)';
-            e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-            e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-            
-            if (data.currentWeekIndex !== null && data.currentDayIndex !== null) {
-              const newDays = [...data.currentProgram.weeks[data.currentWeekIndex].days];
-              newDays[data.currentDayIndex] = {
-                ...newDays[data.currentDayIndex],
-                name: e.target.value
-              };
-              const newWeeks = [...data.currentProgram.weeks];
-              newWeeks[data.currentWeekIndex] = { days: newDays };
-              setData((prev: DataType) => ({
-                ...prev,
-                currentProgram: { ...prev.currentProgram, weeks: newWeeks }
-              }));
-            }
-          }}
-        />
-      </div>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '12px',
-        }}>
-          <h3 style={{
-            margin: 0,
-            fontSize: '1em',
-            color: 'var(--text)',
-            fontWeight: '600',
-          }}>Exercises</h3>
-          <span style={{
-            fontSize: '0.85em',
-            color: 'var(--accent-primary)',
-            fontWeight: '500',
           }}>
-            {data.currentDayExercises.length} exercises
-          </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                onClick={goBack}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '1.2em',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 'auto',
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                ←
+              </button>
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.2em',
+                fontWeight: '700',
+                color: 'var(--text)',
+              }}>
+                {data.isEditingProgram ? 'Edit' : 'View'} Week {data.currentWeekIndex !== null ? data.currentWeekIndex + 1 : ''}
+              </h2>
+            </div>
+          </div>
+
+          <div style={{
+            padding: '24px',
+            overflowY: 'auto',
+            maxHeight: 'calc(90vh - 80px)',
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            {!isSimitProgram && data.isEditingProgram && (
+              <button onClick={addDayToWeek} style={{
+                width: '100%',
+                padding: '14px',
+                marginBottom: '20px',
+                background: 'transparent',
+                color: 'var(--accent-primary)',
+                border: '1px dashed rgba(59, 130, 246, 0.3)',
+                borderRadius: '12px',
+                fontSize: '0.9em',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                }}
+              >
+                <span style={{ fontSize: '1.2em' }}>+</span> Add Training Day
+              </button>
+            )}
+
+            <div id="week-days">{renderWeekDays}</div>
+
+            {!isSimitProgram && data.isEditingProgram && (
+              <button onClick={saveWeek} style={{
+                width: '100%',
+                padding: '14px',
+                background: 'var(--accent-gradient)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1em',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                transition: 'all 0.3s ease',
+                marginTop: '20px',
+              }}>
+                Save Week
+              </button>
+            )}
+
+            <button className="secondary" onClick={closeModal} style={{
+              width: '100%',
+              padding: '12px',
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              fontSize: '0.9em',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              marginTop: '12px',
+            }}>Cancel</button>
+          </div>
         </div>
-        
-        <button onClick={addExerciseToDay} style={{
+      </div>
+
+      <div id="day-modal" className={`modal ${activeModal === 'day-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          maxWidth: '450px',
+          width: '90%',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                onClick={goBack}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '1.2em',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 'auto',
+                  transition: 'color 0.2s ease',
+                }}
+              >
+                ←
+              </button>
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.2em',
+                fontWeight: '700',
+                color: 'var(--text)',
+              }}>Edit Training Day</h2>
+            </div>
+          </div>
+
+          <div style={{
+            padding: '24px',
+            overflowY: 'auto',
+            maxHeight: 'calc(90vh - 80px)',
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-muted)',
+                fontSize: '0.85em',
+                fontWeight: '500',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Day Name
+              </label>
+              <input
+                type="text"
+                id="day-name"
+                placeholder="e.g., Push Day, Pull Day, Leg Day"
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  transition: 'all 0.3s ease',
+                  backdropFilter: 'blur(10px)',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--accent-primary)';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+
+                  if (data.currentWeekIndex !== null && data.currentDayIndex !== null) {
+                    const newDays = [...data.currentProgram.weeks[data.currentWeekIndex].days];
+                    newDays[data.currentDayIndex] = {
+                      ...newDays[data.currentDayIndex],
+                      name: e.target.value
+                    };
+                    const newWeeks = [...data.currentProgram.weeks];
+                    newWeeks[data.currentWeekIndex] = { days: newDays };
+                    setData((prev: DataType) => ({
+                      ...prev,
+                      currentProgram: { ...prev.currentProgram, weeks: newWeeks }
+                    }));
+                  }
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '1em',
+                  color: 'var(--text)',
+                  fontWeight: '600',
+                }}>Exercises</h3>
+                <span style={{
+                  fontSize: '0.85em',
+                  color: 'var(--accent-primary)',
+                  fontWeight: '500',
+                }}>
+                  {data.currentDayExercises.length} exercises
+                </span>
+              </div>
+
+              <button onClick={addExerciseToDay} style={{
+                width: '100%',
+                padding: '14px',
+                marginBottom: '16px',
+                background: 'transparent',
+                color: 'var(--accent-primary)',
+                border: '1px dashed rgba(59, 130, 246, 0.3)',
+                borderRadius: '12px',
+                fontSize: '0.9em',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                }}
+              >
+                <span style={{ fontSize: '1.2em' }}>+</span> Add Exercise
+              </button>
+
+              <div id="day-exercises" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}>{renderDayExercises}</div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              marginTop: '24px',
+            }}>
+              <button onClick={saveDayToWeek} style={{
+                width: '100%',
+                padding: '14px',
+                background: 'var(--accent-gradient)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1em',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                transition: 'all 0.3s ease',
+              }}>
+                Save Day
+              </button>
+
+              <button className="secondary" onClick={closeModal} style={{
+                width: '100%',
+                padding: '12px',
+                background: 'transparent',
+                color: 'var(--text-muted)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                fontSize: '0.9em',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`} style={{ alignItems: 'stretch' }}>
+        <div className="modal-content exercise-select-content" style={{
+          height: '-webkit-fill-available',
+          maxHeight: '-webkit-fill-available',
+          borderRadius: 0,
+          margin: 0,
           width: '100%',
-          padding: '14px',
-          marginBottom: '16px',
-          background: 'transparent',
-          color: 'var(--accent-primary)',
-          border: '1px dashed rgba(59, 130, 246, 0.3)',
-          borderRadius: '12px',
-          fontSize: '0.9em',
-          fontWeight: '500',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-          e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-        }}
-        >
-          <span style={{ fontSize: '1.2em' }}>+</span> Add Exercise
-        </button>
-        
-        <div id="day-exercises" style={{
+          maxWidth: '100%',
+          paddingBottom: 'env(safe-area-inset-bottom)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px',
-        }}>{renderDayExercises}</div>
+          overflow: 'hidden',
+        } as React.CSSProperties}>
+          <div className="exercise-select-header" style={{
+            paddingTop: 'env(safe-area-inset-top)',
+          }}>
+            <h2>Select Exercise</h2>
+          </div>
+          <div className="exercise-select-search" style={{
+            padding: '10px 20px 15px',
+            background: 'var(--bg-dark)',
+            position: 'sticky',
+            top: '60px',
+            zIndex: 10,
+          }}>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                className="search-bar"
+                id="exercise-search-select"
+                placeholder="Search exercises..."
+                value={selectSearchQuery}
+                onChange={(e) => setSelectSearchQuery(e.target.value)}
+                style={{
+                  background: 'var(--bg-lighter)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  paddingRight: selectSearchQuery ? '40px' : '16px',
+                  marginBottom: '8px',
+                  fontSize: '16px',
+                  color: 'var(--text)',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}
+              />
+              {selectSearchQuery && (
+                <button
+                  onClick={() => setSelectSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '12px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    fontSize: '1.2em',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    minHeight: 'auto',
+                    width: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <div
+              onClick={() => {
+                setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'custom-exercise-modal',
+                  returnModal: 'exercise-select-modal'
+                }));
+              }}
+              style={{
+                color: 'var(--accent-primary)',
+                fontSize: '0.9em',
+                cursor: 'pointer',
+                textAlign: 'center',
+                padding: '8px 0',
+                fontWeight: '500',
+              }}
+            >
+              + Exercise
+            </div>
+          </div>
+          <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>
+            {renderExerciseSelectList}
+          </div>
+          <div className="exercise-select-footer">
+            <button className="secondary" onClick={() => {
+              setSelectSearchQuery('');
+              setExerciseSelectMode(null);
+              if (exerciseSelectMode === 'workout') {
+                setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'workout-modal',
+                  isWorkoutSelect: false
+                }));
+              } else if (exerciseSelectMode === 'program') {
+                setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'day-modal'
+                }));
+              } else {
+                closeModal();
+              }
+            }}>Cancel</button>
+          </div>
+        </div>
       </div>
-      
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        marginTop: '24px',
-      }}>
-        <button onClick={saveDayToWeek} style={{
-          width: '100%',
-          padding: '14px',
-          background: 'var(--accent-gradient)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '12px',
-          fontSize: '1em',
-          fontWeight: '600',
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-          transition: 'all 0.3s ease',
-        }}>
-          Save Day
-        </button>
-        
-        <button className="secondary" onClick={closeModal} style={{
-          width: '100%',
-          padding: '12px',
-          background: 'transparent',
-          color: 'var(--text-muted)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '12px',
-          fontSize: '0.9em',
-          fontWeight: '500',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-        }}>
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="exercise-select-modal" className={`modal exercise-select-modal ${activeModal === 'exercise-select-modal' ? 'active' : ''}`} style={{ alignItems: 'stretch' }}>
-  <div className="modal-content exercise-select-content" style={{
-    height: '-webkit-fill-available',
-    maxHeight: '-webkit-fill-available',
-    borderRadius: 0,
-    margin: 0,
-    width: '100%',
-    maxWidth: '100%',
-    paddingBottom: 'env(safe-area-inset-bottom)',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  } as React.CSSProperties}>
-    <div className="exercise-select-header" style={{
-      paddingTop: 'env(safe-area-inset-top)',
-    }}>
-      <h2>Select Exercise</h2>
-    </div>
-    <div className="exercise-select-search" style={{
-      padding: '10px 20px 15px',
-      background: 'var(--bg-dark)',
-      position: 'sticky',
-      top: '60px',
-      zIndex: 10,
-    }}>
-      <div style={{ position: 'relative' }}>
-        <input
-          type="text"
-          className="search-bar"
-          id="exercise-search-select"
-          placeholder="Search exercises..."
-          value={selectSearchQuery}
-          onChange={(e) => setSelectSearchQuery(e.target.value)}
-          style={{
-            background: 'var(--bg-lighter)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            paddingRight: selectSearchQuery ? '40px' : '16px',
-            marginBottom: '8px',
-            fontSize: '16px',
-            color: 'var(--text)',
-            width: '100%',
-            boxSizing: 'border-box',
-          }}
-        />
-        {selectSearchQuery && (
-          <button
-            onClick={() => setSelectSearchQuery('')}
-            style={{
-              position: 'absolute',
-              right: '12px',
-              top: '12px',
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              fontSize: '1.2em',
-              cursor: 'pointer',
-              padding: '4px',
-              minHeight: 'auto',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            ×
-          </button>
-        )}
-      </div>
-      <div
-        onClick={() => {
-          setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'custom-exercise-modal',
-            returnModal: 'exercise-select-modal'
-          }));
-        }}
-        style={{
-          color: 'var(--accent-primary)',
-          fontSize: '0.9em',
-          cursor: 'pointer',
-          textAlign: 'center',
-          padding: '8px 0',
-          fontWeight: '500',
-        }}
-      >
-        + Exercise
-      </div>
-    </div>
-    <div className="exercise-select-list" id="exercise-list-select" style={{ paddingBottom: '80px' }}>
-      {renderExerciseSelectList}
-    </div>
-    <div className="exercise-select-footer">
-      <button className="secondary" onClick={() => {
-        setSelectSearchQuery('');
-        setExerciseSelectMode(null);
-        if (exerciseSelectMode === 'workout') {
-          setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'workout-modal',
-            isWorkoutSelect: false
-          }));
-        } else if (exerciseSelectMode === 'program') {
-          setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'day-modal'
-          }));
-        } else {
-          closeModal();
-        }
-      }}>Cancel</button>
-    </div>
-  </div>
-</div>
       <div id="workout-modal" className={`modal ${activeModal === 'workout-modal' && data.currentWorkout ? 'active' : ''}`}>
         {data.currentWorkout && <WorkoutModal />}
       </div>
@@ -2035,69 +2035,69 @@ const saveCustomExercise = () => {
         </div>
       </div>
 
-<div id="custom-menu-modal" className={`modal ${activeModal === 'custom-menu-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '300px',
-    background: '#1a1a1a',
-    borderRadius: '16px',
-    padding: '8px',
-  }}>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: 'white',
-      }}
-      onClick={() => {
-        // Set the exercise data for editing
-        const exercise = data.customExercises[data.currentCustomIdx!];
-        setData((prev: DataType) => ({
-          ...prev,
-          isEditingCustomExercise: true,
-          editingCustomExerciseData: exercise,
-          activeModal: 'custom-exercise-modal',
-        }));
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Edit Exercise
-    </div>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: '#ef4444',
-      }}
-      onClick={deleteCustomExercise}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Delete Exercise
-    </div>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: 'var(--text-muted)',
-      }}
-      onClick={closeModal}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Cancel
-    </div>
-  </div>
-</div>
+      <div id="custom-menu-modal" className={`modal ${activeModal === 'custom-menu-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'white',
+            }}
+            onClick={() => {
+              // Set the exercise data for editing
+              const exercise = data.customExercises[data.currentCustomIdx!];
+              setData((prev: DataType) => ({
+                ...prev,
+                isEditingCustomExercise: true,
+                editingCustomExerciseData: exercise,
+                activeModal: 'custom-exercise-modal',
+              }));
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Edit Exercise
+          </div>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={deleteCustomExercise}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Delete Exercise
+          </div>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={closeModal}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
+        </div>
+      </div>
       <div id="exercise-detail-modal" className={`modal ${activeModal === 'exercise-detail-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>{data.currentExercise?.name} {data.currentExercise?.subtype ? `(${data.currentExercise.subtype})` : ''}</h2>
@@ -2118,67 +2118,67 @@ const saveCustomExercise = () => {
         </div>
       </div>
 
-<div id="custom-exercise-modal" className={`modal ${activeModal === 'custom-exercise-modal' ? 'active' : ''}`}>
-  <div className="modal-content">
-    <h2>{data.isEditingCustomExercise ? 'Edit' : 'Create'} Custom Exercise</h2>
-    <input 
-      type="text" 
-      id="custom-exercise-name" 
-      placeholder="Exercise Name" 
-      defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.name : ''}
-    />
-    <input 
-      type="text" 
-      id="custom-exercise-subtype" 
-      placeholder="Subtype (optional)" 
-      defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.subtype : ''}
-    />
-    <select 
-      id="custom-exercise-muscles" 
-      defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.muscles : ''}
-      onChange={(e) => {
-        const customInput = document.getElementById('custom-muscle-input');
-        if (customInput) {
-          customInput.style.display = e.target.value === 'Other' ? 'block' : 'none';
-        }
-      }}
-    >
-      <option value="">Select Muscle Group</option>
-      {muscleGroups.map(muscle => (
-        <option key={muscle} value={muscle}>{muscle}</option>
-      ))}
-    </select>
-    <input
-      type="text"
-      id="custom-muscle-input"
-      placeholder="Enter muscle group"
-      style={{ display: 'none' }}
-    />
-    <textarea 
-      id="custom-exercise-instructions" 
-      placeholder="Instructions (optional)"
-      defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.instructions : ''}
-    />
-    <input 
-      type="text" 
-      id="custom-exercise-equipment" 
-      placeholder="Equipment (optional)"
-      defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.equipment : ''}
-    />
-    <button onClick={saveCustomExercise}>
-      {data.isEditingCustomExercise ? 'Update' : 'Save'} Exercise
-    </button>
-    <button className="secondary" onClick={() => {
-      setData((prev: DataType) => ({
-        ...prev,
-        activeModal: prev.returnModal || null,
-        returnModal: null,
-        isEditingCustomExercise: false,
-        editingCustomExerciseData: null,
-      }));
-    }}>Cancel</button>
-  </div>
-</div>
+      <div id="custom-exercise-modal" className={`modal ${activeModal === 'custom-exercise-modal' ? 'active' : ''}`}>
+        <div className="modal-content">
+          <h2>{data.isEditingCustomExercise ? 'Edit' : 'Create'} Custom Exercise</h2>
+          <input
+            type="text"
+            id="custom-exercise-name"
+            placeholder="Exercise Name"
+            defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.name : ''}
+          />
+          <input
+            type="text"
+            id="custom-exercise-subtype"
+            placeholder="Subtype (optional)"
+            defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.subtype : ''}
+          />
+          <select
+            id="custom-exercise-muscles"
+            defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.muscles : ''}
+            onChange={(e) => {
+              const customInput = document.getElementById('custom-muscle-input');
+              if (customInput) {
+                customInput.style.display = e.target.value === 'Other' ? 'block' : 'none';
+              }
+            }}
+          >
+            <option value="">Select Muscle Group</option>
+            {muscleGroups.map(muscle => (
+              <option key={muscle} value={muscle}>{muscle}</option>
+            ))}
+          </select>
+          <input
+            type="text"
+            id="custom-muscle-input"
+            placeholder="Enter muscle group"
+            style={{ display: 'none' }}
+          />
+          <textarea
+            id="custom-exercise-instructions"
+            placeholder="Instructions (optional)"
+            defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.instructions : ''}
+          />
+          <input
+            type="text"
+            id="custom-exercise-equipment"
+            placeholder="Equipment (optional)"
+            defaultValue={data.isEditingCustomExercise ? data.editingCustomExerciseData?.equipment : ''}
+          />
+          <button onClick={saveCustomExercise}>
+            {data.isEditingCustomExercise ? 'Update' : 'Save'} Exercise
+          </button>
+          <button className="secondary" onClick={() => {
+            setData((prev: DataType) => ({
+              ...prev,
+              activeModal: prev.returnModal || null,
+              returnModal: null,
+              isEditingCustomExercise: false,
+              editingCustomExerciseData: null,
+            }));
+          }}>Cancel</button>
+        </div>
+      </div>
       <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '400px',
@@ -2917,8 +2917,8 @@ const saveCustomExercise = () => {
                       textAlign: 'center',
                       fontSize: '1.5em',
                       fontWeight: '700',
- background: 'var(--accent-gradient)',  // Changed to blue gradient                         
- WebkitBackgroundClip: 'text',
+                      background: 'var(--accent-gradient)',  // Changed to blue gradient                         
+                      WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       marginTop: '12px',
                     }}>
@@ -2940,7 +2940,79 @@ const saveCustomExercise = () => {
                     </div>
                   </div>
                 </div>
-
+                {/* Public/Private Toggle */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '10px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Privacy
+                  </label>
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                  }}>
+                    <button
+                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        background: !data.tempIsPublic ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                        color: !data.tempIsPublic ? 'white' : 'var(--text-muted)',
+                        border: '1px solid',
+                        borderColor: !data.tempIsPublic ? 'var(--accent-primary)' : 'var(--border)',
+                        borderRadius: '8px',
+                        fontSize: '0.9em',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <span>🔒</span> Private
+                    </button>
+                    <button
+                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        background: data.tempIsPublic ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                        color: data.tempIsPublic ? 'white' : 'var(--text-muted)',
+                        border: '1px solid',
+                        borderColor: data.tempIsPublic ? 'var(--accent-primary)' : 'var(--border)',
+                        borderRadius: '8px',
+                        fontSize: '0.9em',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      <span>🌍</span> Public
+                    </button>
+                  </div>
+                  <p style={{
+                    marginTop: '8px',
+                    fontSize: '0.75em',
+                    color: 'var(--text-muted)',
+                    textAlign: 'center',
+                  }}>
+                    {data.tempIsPublic
+                      ? "Friends will see this in their feed"
+                      : "Only you will see this photo"}
+                  </p>
+                </div>
                 {/* Action Buttons */}
                 <div style={{
                   display: 'flex',
@@ -2962,8 +3034,8 @@ const saveCustomExercise = () => {
                           pump,
                           likes: 0,
                           comments: [],
+                          isPublic: data.tempIsPublic || false,
                         };
-
                         const newProgressPics = [...data.progressPics, newPic];
 
                         setData((prev: DataType) => ({
@@ -3736,472 +3808,749 @@ const saveCustomExercise = () => {
           </div>
         </div>
       </div>
-<div id="photo-menu-modal" className={`modal ${activeModal === 'photo-menu-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '300px',
-    background: '#1a1a1a',
-    borderRadius: '16px',
-    padding: '8px',
-  }}>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: 'white',
-      }}
-      onClick={() => {
-        // Get the selected photo data
-        const selectedPhoto = data.progressPics.find((p: any) => p.base64 === data.tempBase64);
-        if (selectedPhoto) {
-          setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'edit-progress-photo-modal',
-            editingPhotoData: selectedPhoto,
-          }));
-        }
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Edit
-    </div>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: '#ef4444',
-      }}
-      onClick={() => {
-        const selectedPhotoData = data.tempBase64;
-        const pics = data.progressPics;
-        const photoToDelete = pics.find((p: any) => p.base64 === selectedPhotoData);
-
-        if (photoToDelete && window.confirm("Are you sure you want to delete this photo?")) {
-          // Remove from local state
-          const newPics = pics.filter((p: any) => p.id !== photoToDelete.id);
-          setData((prev: DataType) => ({
-            ...prev,
-            progressPics: newPics,
-            activeModal: null,
-            tempBase64: null,
-            tempTimestamp: null,
-          }));
-        }
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Delete
-    </div>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: 'var(--text-muted)',
-      }}
-      onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'progress-photo-modal' }))}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Cancel
-    </div>
-  </div>
-</div>
-
-<div id="progress-menu-modal" className={`modal ${activeModal === 'progress-menu-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '300px',
-    background: '#1a1a1a',
-    borderRadius: '16px',
-    padding: '8px',
-  }}>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: '#ef4444',
-      }}
-      onClick={() => {
-        if (data.currentProgName && window.confirm("Are you sure you want to remove this program from progress?")) {
-          const newCompletedPrograms = { ...data.completedPrograms };
-          delete newCompletedPrograms[data.currentProgName];
-          setData((prev: DataType) => ({
-            ...prev,
-            completedPrograms: newCompletedPrograms,
-            activeModal: null,
-          }));
-        }
-      }}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Remove from Progress
-    </div>
-    <div
-      style={{
-        padding: '12px 16px',
-        cursor: 'pointer',
-        borderRadius: '8px',
-        transition: 'background 0.15s',
-        fontSize: '0.9em',
-        color: 'var(--text-muted)',
-      }}
-      onClick={closeModal}
-      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-    >
-      Cancel
-    </div>
-  </div>
-</div>
-
-{/* Add this new modal after the progress-menu-modal */}
-<div id="edit-progress-photo-modal" className={`modal ${activeModal === 'edit-progress-photo-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{ 
-    maxWidth: '400px',
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-    borderRadius: '24px',
-    padding: '0',
-    overflow: 'hidden',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    display: 'flex',
-    flexDirection: 'column',
-  }}>
-    {/* Header */}
-    <div style={{
-      padding: '20px 24px',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-      background: 'rgba(0, 0, 0, 0.2)',
-      backdropFilter: 'blur(10px)',
-    }}>
-      <h2 style={{
-        margin: 0,
-        fontSize: '1.3em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        letterSpacing: '-0.5px',
-      }}>Edit Progress Photo</h2>
-    </div>
-
-    <div style={{ 
-      padding: '24px',
-      overflowY: 'auto',
-      flex: 1,
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      {data.editingPhotoData && (
-        <>
-          {/* Photo Preview */}
-          <div style={{
-            width: '100%',
-            height: '200px',
-            marginBottom: '20px',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-dark))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-          }}>
-            <img
-              src={data.editingPhotoData.base64}
-              alt="Edit preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '100%',
-                width: 'auto',
-                height: 'auto',
-                objectFit: 'contain',
-              }}
-            />
-          </div>
-
-          {/* Caption Input */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Caption
-            </label>
-            <textarea
-              id="edit-progress-caption"
-              placeholder="Write a caption..."
-              defaultValue={data.editingPhotoData.caption || ''}
-              style={{
-                width: '100%',
-                minHeight: '80px',
-                padding: '14px 16px',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                color: 'var(--text)',
-                fontSize: '15px',
-                resize: 'vertical',
-                boxSizing: 'border-box',
-                outline: 'none',
-                transition: 'all 0.3s ease',
-                backdropFilter: 'blur(10px)',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = 'var(--accent-primary)';
-                e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-              }}
-            />
-          </div>
-
-          {/* Weight Input */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '8px', 
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Weight
-            </label>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '12px',
+      <div id="photo-menu-modal" className={`modal ${activeModal === 'photo-menu-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div
+            style={{
               padding: '12px 16px',
-              transition: 'all 0.3s ease',
-            }}>
-              <input
-                type="number"
-                id="edit-progress-weight"
-                placeholder="0"
-                defaultValue={data.editingPhotoData.weight || ''}
-                style={{
-                  width: '60px',
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text)',
-                  fontSize: '15px',
-                  outline: 'none',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'textfield',
-                  textAlign: 'center',
-                }}
-              />
-              <span style={{ 
-                color: 'var(--text-muted)', 
-                fontSize: '0.9em',
-                fontWeight: '500',
-              }}>
-                {data.weightUnit || 'lbs'}
-              </span>
-            </div>
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'white',
+            }}
+            onClick={() => {
+              // Get the selected photo data
+              const selectedPhoto = data.progressPics.find((p: any) => p.base64 === data.tempBase64);
+              if (selectedPhoto) {
+                setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'edit-progress-photo-modal',
+                  editingPhotoData: selectedPhoto,
+                }));
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Edit
+          </div>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={() => {
+              const selectedPhotoData = data.tempBase64;
+              const pics = data.progressPics;
+              const photoToDelete = pics.find((p: any) => p.base64 === selectedPhotoData);
+
+              if (photoToDelete && window.confirm("Are you sure you want to delete this photo?")) {
+                // Remove from local state
+                const newPics = pics.filter((p: any) => p.id !== photoToDelete.id);
+                setData((prev: DataType) => ({
+                  ...prev,
+                  progressPics: newPics,
+                  activeModal: null,
+                  tempBase64: null,
+                  tempTimestamp: null,
+                }));
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Delete
+          </div>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={() => setData((prev: DataType) => ({ ...prev, activeModal: 'progress-photo-modal' }))}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
+        </div>
+      </div>
+
+      <div id="progress-menu-modal" className={`modal ${activeModal === 'progress-menu-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '300px',
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          padding: '8px',
+        }}>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: '#ef4444',
+            }}
+            onClick={() => {
+              if (data.currentProgName && window.confirm("Are you sure you want to remove this program from progress?")) {
+                const newCompletedPrograms = { ...data.completedPrograms };
+                delete newCompletedPrograms[data.currentProgName];
+                setData((prev: DataType) => ({
+                  ...prev,
+                  completedPrograms: newCompletedPrograms,
+                  activeModal: null,
+                }));
+              }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Remove from Progress
+          </div>
+          <div
+            style={{
+              padding: '12px 16px',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'background 0.15s',
+              fontSize: '0.9em',
+              color: 'var(--text-muted)',
+            }}
+            onClick={closeModal}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            Cancel
+          </div>
+        </div>
+      </div>
+
+      {/* Add this new modal after the progress-menu-modal */}
+      <div id="edit-progress-photo-modal" className={`modal ${activeModal === 'edit-progress-photo-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+          borderRadius: '24px',
+          padding: '0',
+          overflow: 'hidden',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {/* Header */}
+          <div style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <h2 style={{
+              margin: 0,
+              fontSize: '1.3em',
+              fontWeight: '700',
+              background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.5px',
+            }}>Edit Progress Photo</h2>
           </div>
 
-          {/* Pump Rating */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '10px',
-              color: 'var(--text-muted)',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
-              Pump Rating
-            </label>
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '16px',
-              padding: '16px',
-              backdropFilter: 'blur(10px)',
-            }}>
-              <div style={{ position: 'relative', marginBottom: '12px' }}>
-                <input
-                  type="range"
-                  id="edit-progress-pump"
-                  min="0"
-                  max="100"
-                  defaultValue={data.editingPhotoData.pump || 50}
-                  style={{
-                    width: '100%',
-                    height: '40px',
-                    WebkitAppearance: 'none',
-                    appearance: 'none',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    zIndex: 2,
-                  }}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const label = document.getElementById('edit-pump-value');
-                    if (label) label.textContent = value;
-                    
-                    const percent = (parseInt(value) / 100) * 100;
-                    const track = document.getElementById('edit-pump-track-fill');
-                    if (track) track.style.width = `${percent}%`;
-                  }}
-                />
+          <div style={{
+            padding: '24px',
+            overflowY: 'auto',
+            flex: 1,
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            {data.editingPhotoData && (
+              <>
+                {/* Photo Preview */}
                 <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: 0,
-                  right: 0,
-                  height: '6px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '3px',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
+                  width: '100%',
+                  height: '200px',
+                  marginBottom: '20px',
+                  borderRadius: '16px',
                   overflow: 'hidden',
+                  background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-dark))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
                 }}>
-                  <div
-                    id="edit-pump-track-fill"
+                  <img
+                    src={data.editingPhotoData.base64}
+                    alt="Edit preview"
                     style={{
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      height: '100%',
-                      width: `${data.editingPhotoData.pump || 50}%`,
-                      background: 'var(--accent-gradient)',
-                      borderRadius: '3px',
-                      transition: 'width 0.2s ease',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
                     }}
                   />
                 </div>
-              </div>
-              <div style={{ 
-                textAlign: 'center', 
-                fontSize: '1.5em',
-                fontWeight: '700',
-                background: 'var(--accent-gradient)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                marginTop: '8px',
-              }}>
-                <span id="edit-pump-value">{data.editingPhotoData.pump || 50}</span>
-                <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}>
-            <button
-              onClick={() => {
-                const caption = (document.getElementById('edit-progress-caption') as HTMLTextAreaElement)?.value || '';
-                const weight = (document.getElementById('edit-progress-weight') as HTMLInputElement)?.value || '';
-                const pump = parseInt((document.getElementById('edit-progress-pump') as HTMLInputElement)?.value || '50');
+                {/* Caption Input */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Caption
+                  </label>
+                  <textarea
+                    id="edit-progress-caption"
+                    placeholder="Write a caption..."
+                    defaultValue={data.editingPhotoData.caption || ''}
+                    style={{
+                      width: '100%',
+                      minHeight: '80px',
+                      padding: '14px 16px',
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px',
+                      color: 'var(--text)',
+                      fontSize: '15px',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      transition: 'all 0.3s ease',
+                      backdropFilter: 'blur(10px)',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--accent-primary)';
+                      e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+                    }}
+                  />
+                </div>
 
-                if (data.editingPhotoData) {
-                  const photoIndex = data.progressPics.findIndex((p: ProgressPhoto) => 
-                    p.base64 === data.editingPhotoData!.base64 && 
-                    p.timestamp === data.editingPhotoData!.timestamp
-                  );
+                {/* Weight Input */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Weight
+                  </label>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    transition: 'all 0.3s ease',
+                  }}>
+                    <input
+                      type="number"
+                      id="edit-progress-weight"
+                      placeholder="0"
+                      defaultValue={data.editingPhotoData.weight || ''}
+                      style={{
+                        width: '60px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text)',
+                        fontSize: '15px',
+                        outline: 'none',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'textfield',
+                        textAlign: 'center',
+                      }}
+                    />
+                    <span style={{
+                      color: 'var(--text-muted)',
+                      fontSize: '0.9em',
+                      fontWeight: '500',
+                    }}>
+                      {data.weightUnit || 'lbs'}
+                    </span>
+                  </div>
+                </div>
 
-                  if (photoIndex !== -1) {
-                    const updatedPics = [...data.progressPics];
-                    updatedPics[photoIndex] = {
-                      ...updatedPics[photoIndex],
-                      caption,
-                      weight,
-                      pump,
-                    };
+                {/* Pump Rating */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '10px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Pump Rating
+                  </label>
+                  <div style={{
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    backdropFilter: 'blur(10px)',
+                  }}>
+                    <div style={{ position: 'relative', marginBottom: '12px' }}>
+                      <input
+                        type="range"
+                        id="edit-progress-pump"
+                        min="0"
+                        max="100"
+                        defaultValue={data.editingPhotoData.pump || 50}
+                        style={{
+                          width: '100%',
+                          height: '40px',
+                          WebkitAppearance: 'none',
+                          appearance: 'none',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 2,
+                        }}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const label = document.getElementById('edit-pump-value');
+                          if (label) label.textContent = value;
 
-                    setData((prev: DataType) => ({
+                          const percent = (parseInt(value) / 100) * 100;
+                          const track = document.getElementById('edit-pump-track-fill');
+                          if (track) track.style.width = `${percent}%`;
+                        }}
+                      />
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: 0,
+                        right: 0,
+                        height: '6px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '3px',
+                        transform: 'translateY(-50%)',
+                        pointerEvents: 'none',
+                        overflow: 'hidden',
+                      }}>
+                        <div
+                          id="edit-pump-track-fill"
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            height: '100%',
+                            width: `${data.editingPhotoData.pump || 50}%`,
+                            background: 'var(--accent-gradient)',
+                            borderRadius: '3px',
+                            transition: 'width 0.2s ease',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{
+                      textAlign: 'center',
+                      fontSize: '1.5em',
+                      fontWeight: '700',
+                      background: 'var(--accent-gradient)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      marginTop: '8px',
+                    }}>
+                      <span id="edit-pump-value">{data.editingPhotoData.pump || 50}</span>
+                      <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}>
+                  <button
+                    onClick={() => {
+                      const caption = (document.getElementById('edit-progress-caption') as HTMLTextAreaElement)?.value || '';
+                      const weight = (document.getElementById('edit-progress-weight') as HTMLInputElement)?.value || '';
+                      const pump = parseInt((document.getElementById('edit-progress-pump') as HTMLInputElement)?.value || '50');
+
+                      if (data.editingPhotoData) {
+                        const photoIndex = data.progressPics.findIndex((p: ProgressPhoto) =>
+                          p.base64 === data.editingPhotoData!.base64 &&
+                          p.timestamp === data.editingPhotoData!.timestamp
+                        );
+
+                        if (photoIndex !== -1) {
+                          const updatedPics = [...data.progressPics];
+                          updatedPics[photoIndex] = {
+                            ...updatedPics[photoIndex],
+                            caption,
+                            weight,
+                            pump,
+                          };
+
+                          setData((prev: DataType) => ({
+                            ...prev,
+                            progressPics: updatedPics,
+                            activeModal: 'progress-photo-modal',
+                            editingPhotoData: null,
+                          }));
+                        }
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: 'var(--accent-gradient)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '1em',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    Save Changes
+                  </button>
+
+                  <button
+                    onClick={() => setData((prev: DataType) => ({
                       ...prev,
-                      progressPics: updatedPics,
-                      activeModal: 'progress-photo-modal',
+                      activeModal: 'photo-menu-modal',
                       editingPhotoData: null,
-                    }));
-                  }
-                }
-              }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'var(--accent-gradient)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1em',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              Save Changes
-            </button>
-
-            <button
-              onClick={() => setData((prev: DataType) => ({
-                ...prev,
-                activeModal: 'photo-menu-modal',
-                editingPhotoData: null,
-              }))}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'transparent',
-                color: 'var(--text-muted)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                fontSize: '0.9em',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              Cancel
-            </button>
+                    }))}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'transparent',
+                      color: 'var(--text-muted)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px',
+                      fontSize: '0.9em',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </>
-      )}
-    </div>
-  </div>
-</div>
+        </div>
+      </div>
       <div id="update-modal" className={`modal ${activeModal === 'update-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>Update Available</h2>
           <p>A new version of Pump Inc. is available!</p>
           <button className="update-button" onClick={() => window.location.reload()}>Update Now</button>
           <button className="secondary" onClick={closeModal}>Later</button>
+        </div>
+      </div>
+      {/* Friends List Modal */}
+      <div id="friends-modal" className={`modal ${data.showFriendsModal ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '0',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Friends</h2>
+            <button
+              onClick={() => setData(prev => ({ ...prev, showFriendsModal: false }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+                width: '24px',
+                height: '24px',
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={{ padding: '20px' }}>
+            {data.friendRequests.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1em', marginBottom: '12px', color: 'var(--text-muted)' }}>
+                  Friend Requests ({data.friendRequests.length})
+                </h3>
+                {data.friendRequests.map((request: any) => (
+                  <div key={request.id} style={{
+                    padding: '12px',
+                    background: 'var(--bg-lighter)',
+                    borderRadius: '8px',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'var(--bg-dark)',
+                        backgroundImage: request.sender.profile_pic ? `url(${request.sender.profile_pic})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }} />
+                      <div>
+                        <div style={{ fontWeight: '600' }}>
+                          {request.sender.first_name} {request.sender.last_name}
+                        </div>
+                        <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                          @{request.sender.username}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await DatabaseService.acceptFriendRequest(request.id, dbUser.id);
+                            // Refresh friends and requests
+                            const [friends, friendRequests] = await Promise.all([
+                              DatabaseService.getFriends(dbUser.id),
+                              DatabaseService.getPendingFriendRequests(dbUser.id)
+                            ]);
+                            setData(prev => ({ ...prev, friends, friendRequests }));
+                          } catch (error) {
+                            console.error('Error accepting friend request:', error);
+                          }
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: 'var(--accent-primary)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '0.85em',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await DatabaseService.rejectFriendRequest(request.id, dbUser.id);
+                            const friendRequests = await DatabaseService.getPendingFriendRequests(dbUser.id);
+                            setData(prev => ({ ...prev, friendRequests }));
+                          } catch (error) {
+                            console.error('Error rejecting friend request:', error);
+                          }
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          background: 'transparent',
+                          color: 'var(--text-muted)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '6px',
+                          fontSize: '0.85em',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h3 style={{ fontSize: '1em', marginBottom: '12px', color: 'var(--text-muted)' }}>
+              Your Friends ({data.friends.length})
+            </h3>
+            {data.friends.length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px' }}>
+                No friends yet. Find friends to see their progress!
+              </div>
+            ) : (
+              data.friends.map((friend: any) => (
+                <div key={friend.id} style={{
+                  padding: '12px',
+                  background: 'var(--bg-lighter)',
+                  borderRadius: '8px',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: 'var(--bg-dark)',
+                      backgroundImage: friend.profile_pic ? `url(${friend.profile_pic})` : 'none',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }} />
+                    <div>
+                      <div style={{ fontWeight: '600' }}>
+                        {friend.first_name} {friend.last_name}
+                      </div>
+                      <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                        @{friend.username}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (window.confirm(`Remove ${friend.username} from friends?`)) {
+                        try {
+                          await DatabaseService.removeFriend(dbUser.id, friend.id);
+                          const friends = await DatabaseService.getFriends(dbUser.id);
+                          setData(prev => ({ ...prev, friends }));
+                        } catch (error) {
+                          console.error('Error removing friend:', error);
+                        }
+                      }
+                    }}
+                    style={{
+                      padding: '6px',
+                      background: 'transparent',
+                      color: 'var(--text-muted)',
+                      border: 'none',
+                      fontSize: '0.85em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Find Friends Modal */}
+      <div id="find-friends-modal" className={`modal ${data.showFindFriendsModal ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '0',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Find Friends</h2>
+            <button
+              onClick={() => setData(prev => ({ ...prev, showFindFriendsModal: false }))}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+                width: '24px',
+                height: '24px',
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={{ padding: '20px' }}>
+            <input
+              type="text"
+              id="friend-search-input"
+              placeholder="Enter username"
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                color: 'var(--text)',
+                fontSize: '16px',
+                marginBottom: '16px',
+              }}
+            />
+            <button
+              onClick={async () => {
+                const username = (document.getElementById('friend-search-input') as HTMLInputElement)?.value;
+                if (username && username.trim()) {
+                  try {
+                    await DatabaseService.sendFriendRequest(dbUser.id, username.trim());
+                    alert('Friend request sent!');
+                    (document.getElementById('friend-search-input') as HTMLInputElement).value = '';
+                  } catch (error: any) {
+                    alert(error.message || 'Failed to send friend request');
+                  }
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1em',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Send Friend Request
+            </button>
+          </div>
         </div>
       </div>
     </>

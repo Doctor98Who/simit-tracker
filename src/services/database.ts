@@ -90,8 +90,8 @@ export class DatabaseService {
           intensity_metric: updates.intensityMetric,
           weight_unit: updates.weightUnit,
           distance_unit: updates.distanceUnit,
-          current_workout: updates.currentWorkout || null,  // Add this line
-           history: updates.history || [],
+          current_workout: updates.currentWorkout || null,
+          history: updates.history || [],
           updated_at: new Date().toISOString()
         })
         .eq('auth0_id', auth0Id);
@@ -262,98 +262,136 @@ export class DatabaseService {
     }));
   }
 
-  static async saveProgressPhoto(userId: string, photo: any) {
-    try {
-      let photoUrl = photo.base64;
-
-      // Upload image if it's base64
-      if (photo.base64 && photo.base64.startsWith('data:')) {
-        const path = StorageService.generateFilePath(userId, 'progress');
-        photoUrl = await StorageService.uploadImage('progress', path, photo.base64);
-      }
-
-      const { data, error } = await supabase
-        .from('progress_photos')
-        .insert({
-          user_id: userId,
-          photo_url: photoUrl,
-          timestamp: photo.timestamp,
-          weight: photo.weight,
-          caption: photo.caption,
-          pump: photo.pump,
-          likes: photo.likes || 0
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error saving progress photo:', error);
-      throw error;
+static async saveProgressPhoto(userId: string, photo: any) {
+  try {
+    let photoUrl = photo.base64;
+    // Upload image if it's base64
+    if (photo.base64 && photo.base64.startsWith('data:')) {
+      const path = StorageService.generateFilePath(userId, 'progress');
+      photoUrl = await StorageService.uploadImage('progress', path, photo.base64);
     }
-  }
-
-  static async deleteProgressPhoto(userId: string, photoId: string, photoUrl: string) {
-    try {
-      // Delete from storage
-      const path = StorageService.getFilePathFromUrl(photoUrl, 'progress');
-      if (path) {
-        await StorageService.deleteImage('progress', path);
-      }
-
-      // Delete from database
-      const { error } = await supabase
-        .from('progress_photos')
-        .delete()
-        .eq('id', photoId)
-        .eq('user_id', userId);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting progress photo:', error);
-      throw error;
-    }
-  }
-
-  static async getProgressPhotos(userId: string) {
     const { data, error } = await supabase
       .from('progress_photos')
-      .select('*')
-      .eq('user_id', userId)
-      .order('timestamp', { ascending: false });
-
-    if (error) throw error;
-    
-    return data.map(photo => ({
-      id: photo.id,
-      base64: photo.photo_url, // Keep as 'base64' for compatibility
-      timestamp: photo.timestamp,
-      weight: photo.weight,
-      caption: photo.caption,
-      pump: photo.pump,
-      likes: photo.likes,
-      comments: []
-    }));
-  }
-
-  static async saveProgramTemplate(userId: string, template: any) {
-    const { data, error } = await supabase
-      .from('program_templates')
       .insert({
         user_id: userId,
-        name: template.name,
-        mesocycle_length: template.mesocycleLength,
-        weeks: template.weeks,
-        last_used: template.lastUsed
+        photo_url: photoUrl,
+        timestamp: photo.timestamp,
+        weight: photo.weight,
+        caption: photo.caption,
+        pump: photo.pump,
+        likes: photo.likes || 0,
+       visibility: photo.isPublic ? 'public' : 'private',
       })
       .select()
       .single();
-
     if (error) throw error;
     return data;
+  } catch (error) {
+    console.error('Error saving progress photo:', error);
+    throw error;
   }
+}
 
+static async deleteProgressPhoto(userId: string, photoId: string, photoUrl: string) {
+  try {
+    // Delete from storage
+    const path = StorageService.getFilePathFromUrl(photoUrl, 'progress');
+    if (path) {
+      await StorageService.deleteImage('progress', path);
+    }
+    // Delete from database
+    const { error } = await supabase
+      .from('progress_photos')
+      .delete()
+      .eq('id', photoId)
+      .eq('user_id', userId);
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting progress photo:', error);
+    throw error;
+  }
+}
+
+static async getProgressPhotos(userId: string) {
+  const { data, error } = await supabase
+    .from('progress_photos')
+    .select('*')
+    .eq('user_id', userId)
+    .order('timestamp', { ascending: false });
+  if (error) throw error;
+ 
+  return data.map(photo => ({
+    id: photo.id,
+    base64: photo.photo_url, // Keep as 'base64' for compatibility
+    timestamp: photo.timestamp,
+    weight: photo.weight,
+    caption: photo.caption,
+    pump: photo.pump,
+    likes: photo.likes,
+   isPublic: photo.visibility === 'public',  // Add this line
+    comments: []
+  }));
+}
+
+static async getPublicFriendPhotos(userId: string): Promise<any[]> {
+  // First get all friend IDs
+  const { data: friendships, error: friendError } = await supabase
+    .from('friendships')
+    .select('friend_id, user_id')
+    .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+    .eq('status', 'accepted');
+    
+  if (friendError) throw friendError;
+  
+  // Extract friend IDs
+  const friendIds = friendships?.map(f => 
+    f.user_id === userId ? f.friend_id : f.user_id
+  ) || [];
+  
+  if (friendIds.length === 0) return [];
+  
+  // Get public photos from friends
+  const { data: photos, error: photoError } = await supabase
+    .from('progress_photos')
+    .select(`
+      *,
+      user:users(id, username, first_name, last_name, profile_pic)
+    `)
+    .in('user_id', friendIds)
+    .eq('visibility', 'public')  // Changed from 'is_public' to 'visibility'    
+    .order('created_at', { ascending: false })
+    .limit(50);
+    
+  if (photoError) throw photoError;
+  
+  return photos?.map(photo => ({
+    id: photo.id,
+    base64: photo.photo_url,
+    timestamp: photo.timestamp,
+    weight: photo.weight,
+    caption: photo.caption,
+    pump: photo.pump,
+    likes: photo.likes,
+    isPublic: photo.visibility === 'public',
+    user: photo.user
+  })) || [];
+}
+
+static async saveProgramTemplate(userId: string, template: any) {
+  const { data, error } = await supabase
+    .from('program_templates')
+    .insert({
+      user_id: userId,
+      name: template.name,
+      mesocycle_length: template.mesocycleLength,
+      weeks: template.weeks,
+      last_used: template.lastUsed
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
   static async updateProgramTemplate(userId: string, templateId: string, updates: any) {
     const { data, error } = await supabase
       .from('program_templates')
@@ -396,5 +434,233 @@ export class DatabaseService {
       weeks: template.weeks,
       lastUsed: template.last_used
     }));
+  }
+  
+
+  // Friend-related methods
+  static async searchUsers(currentUserId: string, searchQuery: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, first_name, last_name, profile_pic')
+      .neq('id', currentUserId)
+      .or(`username.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
+      .limit(20);
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async sendFriendRequest(senderId: string, receiverUsername: string) {
+    // First, find the receiver by username
+    const { data: receiver, error: receiverError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', receiverUsername)
+      .single();
+
+    if (receiverError || !receiver) {
+      throw new Error('User not found');
+    }
+
+    // Check if request already exists
+    const { data: existingRequest } = await supabase
+      .from('friend_requests')
+      .select('id')
+      .eq('sender_id', senderId)
+      .eq('receiver_id', receiver.id)
+      .single();
+
+    if (existingRequest) {
+      throw new Error('Friend request already sent');
+    }
+
+    // Check if already friends
+    const { data: existingFriend } = await supabase
+      .from('friends')
+      .select('id')
+      .eq('user_id', senderId)
+      .eq('friend_id', receiver.id)
+      .single();
+
+    if (existingFriend) {
+      throw new Error('Already friends with this user');
+    }
+
+    // Send friend request
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .insert({
+        sender_id: senderId,
+        receiver_id: receiver.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async acceptFriendRequest(requestId: string, userId: string) {
+    // Get the friend request
+    const { data: request, error: requestError } = await supabase
+      .from('friend_requests')
+      .select('*')
+      .eq('id', requestId)
+      .eq('receiver_id', userId)
+      .single();
+
+    if (requestError || !request) {
+      throw new Error('Friend request not found');
+    }
+
+    // Update request status
+    await supabase
+      .from('friend_requests')
+      .update({ status: 'accepted', updated_at: new Date().toISOString() })
+      .eq('id', requestId);
+
+    // Create bidirectional friend relationships
+    const { error: friendError } = await supabase
+      .from('friends')
+      .insert([
+        {
+          user_id: request.sender_id,
+          friend_id: request.receiver_id,
+          status: 'accepted'
+        },
+        {
+          user_id: request.receiver_id,
+          friend_id: request.sender_id,
+          status: 'accepted'
+        }
+      ]);
+
+    if (friendError) throw friendError;
+    return true;
+  }
+
+  static async rejectFriendRequest(requestId: string, userId: string) {
+    const { error } = await supabase
+      .from('friend_requests')
+      .update({ status: 'rejected', updated_at: new Date().toISOString() })
+      .eq('id', requestId)
+      .eq('receiver_id', userId);
+
+    if (error) throw error;
+    return true;
+  }
+
+  static async getFriends(userId: string) {
+    const { data, error } = await supabase
+      .from('friends')
+      .select(`
+        *,
+        friend:friend_id(
+          id,
+          username,
+          first_name,
+          last_name,
+          profile_pic
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('status', 'accepted');
+
+    if (error) throw error;
+    return data.map(f => f.friend);
+  }
+
+  static async getPendingFriendRequests(userId: string) {
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select(`
+        *,
+        sender:sender_id(
+          id,
+          username,
+          first_name,
+          last_name,
+          profile_pic
+        )
+      `)
+      .eq('receiver_id', userId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async removeFriend(userId: string, friendId: string) {
+    // Remove both directions of the friendship
+    const { error } = await supabase
+      .from('friends')
+      .delete()
+      .or(`user_id.eq.${userId},user_id.eq.${friendId}`)
+      .or(`friend_id.eq.${userId},friend_id.eq.${friendId}`);
+
+    if (error) throw error;
+    return true;
+  }
+
+  static async getFriendsFeed(userId: string) {
+    // First get all friend IDs
+    const { data: friends, error: friendsError } = await supabase
+      .from('friends')
+      .select('friend_id')
+      .eq('user_id', userId)
+      .eq('status', 'accepted');
+
+    if (friendsError) throw friendsError;
+
+    const friendIds = friends.map(f => f.friend_id);
+
+    if (friendIds.length === 0) {
+      return [];
+    }
+
+    // Get public progress photos from friends
+    const { data: photos, error: photosError } = await supabase
+      .from('progress_photos')
+      .select(`
+        *,
+        user:user_id(
+          id,
+          username,
+          first_name,
+          last_name,
+          profile_pic
+        )
+      `)
+      .in('user_id', friendIds)
+      .eq('visibility', 'public')
+      .order('timestamp', { ascending: false })
+      .limit(50);
+
+    if (photosError) throw photosError;
+
+    return photos.map(photo => ({
+      id: photo.id,
+      base64: photo.photo_url,
+      timestamp: photo.timestamp,
+      weight: photo.weight,
+      caption: photo.caption,
+      pump: photo.pump,
+      likes: photo.likes,
+      visibility: photo.visibility,
+      user: photo.user,
+      comments: []
+    }));
+  }
+
+  static async updateProgressPhotoVisibility(userId: string, photoId: string, visibility: 'private' | 'public') {
+    const { error } = await supabase
+      .from('progress_photos')
+      .update({ visibility })
+      .eq('id', photoId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return true;
   }
 }

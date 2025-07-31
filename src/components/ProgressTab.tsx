@@ -10,8 +10,9 @@ interface ProgressPic {
   pump?: number;
   likes?: number;
   comments?: { user: string; text: string; timestamp: number }[];
+  isPublic?: boolean;
+  id?: string;
 }
-
 const ProgressTab = () => {
   const { data, setData } = useContext(DataContext);
   const [selectedPhoto, setSelectedPhoto] = useState<ProgressPic | null>(null);
@@ -77,7 +78,8 @@ const uploadProgressPic = () => {
     activeModal: 'progress-upload-modal',
     tempBase64: null,
     tempTimestamp: null,
-    activeTab: 'progress-tab' // Ensure we're on right tab
+    activeTab: 'progress-tab',
+    tempIsPublic: false // Add this to track public/private state
   }));
 };
   const saveEditedCaption = () => {

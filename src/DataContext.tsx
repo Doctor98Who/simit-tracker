@@ -6,6 +6,7 @@ import { createContext, useState, useEffect } from 'react';
 import { exerciseDatabase } from './data/ExerciseDatabase';
 import { simitPrograms } from './data/SimitPrograms';
 import { supabase } from './lib/supabase';
+
 export interface Set {
   weight: string;
   reps: string;
@@ -39,13 +40,14 @@ interface Workout {
 }
 
 export interface ProgressPhoto {
-    id?: string;
+  id?: string;
   base64: string; // This will now be a URL or base64
   timestamp: number;
   weight?: string;
   caption?: string;
   pump?: number;
   likes?: number;
+  visibility?: 'private' | 'public';
   comments?: { user: string; text: string; timestamp: number }[];
 }
 
@@ -55,6 +57,27 @@ export interface Template {
   mesocycleLength: number;
   weeks: any[];
   lastUsed?: number;
+}
+
+export interface Friend {
+  id: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  profilePic?: string;
+}
+
+export interface FriendRequest {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  status: string;
+  createdAt: string;
+  sender: Friend;
+}
+
+export interface FeedItem extends ProgressPhoto {
+  user: Friend;
 }
 
 export interface DataType {
@@ -91,14 +114,20 @@ export interface DataType {
   returnModal: string | null;
   tempBase64: string | null;
   tempTimestamp: number | null;
+  tempIsPublic: boolean;  // Add this line
   intensityMetric: 'rpe' | 'rir';
   theme: 'dark' | 'light';
   weightUnit: 'kg' | 'lbs';
   distanceUnit: 'km' | 'miles';
   previousModal?: string;
-  isEditingCustomExercise: boolean;      // Add this line
-  editingCustomExerciseData: Exercise | null;  // Add this line
+  isEditingCustomExercise: boolean;
+  editingCustomExerciseData: Exercise | null;
   editingPhotoData: ProgressPhoto | null;
+  friends: Friend[];
+  friendRequests: FriendRequest[];
+  friendsFeed: FeedItem[];
+  showFriendsModal: boolean;
+  showFindFriendsModal: boolean;
 }
 interface DataContextType {
   data: DataType;
@@ -129,6 +158,7 @@ const initialData: DataType = {
   currentExerciseIdx: null,
   tempBase64: null,
   tempTimestamp: null,
+  tempIsPublic: false,  // Add this line
   currentProgram: { weeks: [] },
   currentWeekIndex: null,
   currentDayIndex: null,
@@ -148,10 +178,14 @@ const initialData: DataType = {
   distanceUnit: 'miles',
   isEditingProgram: false,
   isEditingCustomExercise: false,
-editingCustomExerciseData: null,
-editingPhotoData: null,
+  editingCustomExerciseData: null,
+  editingPhotoData: null,
+  friends: [],
+  friendRequests: [],
+  friendsFeed: [],
+  showFriendsModal: false,
+  showFindFriendsModal: false,
 };
-
 export const DataContext = createContext<DataContextType>({
   data: initialData,
   setData: () => {},
@@ -178,38 +212,46 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const userProfile = await DatabaseService.syncUserProfile(user.sub, user.email);
       setDbUser(userProfile);
       
-  // Load user data from Supabase
-const [history, customExercises, progressPhotos, templates] = await Promise.all([
-  DatabaseService.getWorkoutHistory(userProfile.id),
-  DatabaseService.getCustomExercises(userProfile.id),
-  DatabaseService.getProgressPhotos(userProfile.id),
-  DatabaseService.getProgramTemplates(userProfile.id)
-]);
+      // Load user data from Supabase
+      const [history, customExercises, progressPhotos, templates, friends, friendRequests] = await Promise.all([
+        DatabaseService.getWorkoutHistory(userProfile.id),
+        DatabaseService.getCustomExercises(userProfile.id),
+        DatabaseService.getProgressPhotos(userProfile.id),
+        DatabaseService.getProgramTemplates(userProfile.id),
+        DatabaseService.getFriends(userProfile.id),
+        DatabaseService.getPendingFriendRequests(userProfile.id)
+      ]);
 
-// Add this to load current workout
-const currentWorkout = userProfile.current_workout || null;
+      // Load friends feed separately
+      const friendsFeed = await DatabaseService.getFriendsFeed(userProfile.id);
 
-setData(prev => ({
-  ...prev,
-  username: userProfile.username || prev.username,
-  firstName: userProfile.first_name || prev.firstName,
-  lastName: userProfile.last_name || prev.lastName,
-  bio: userProfile.bio || prev.bio,
-  email: userProfile.email || prev.email,
-  country: userProfile.country || prev.country,
-  state: userProfile.state || prev.state,
-  profilePic: userProfile.profile_pic || prev.profilePic,
-  coverPhoto: userProfile.cover_photo || prev.coverPhoto,
-  theme: userProfile.theme || prev.theme,
-  intensityMetric: userProfile.intensity_metric || prev.intensityMetric,
-  weightUnit: userProfile.weight_unit || prev.weightUnit,
-  distanceUnit: userProfile.distance_unit || prev.distanceUnit,
-  history,
-  customExercises,
-  progressPics: progressPhotos,
-  templates,
-  currentWorkout  // Add this line
-}));
+      // Add this to load current workout
+      const currentWorkout = userProfile.current_workout || null;
+
+      setData(prev => ({
+        ...prev,
+        username: userProfile.username || prev.username,
+        firstName: userProfile.first_name || prev.firstName,
+        lastName: userProfile.last_name || prev.lastName,
+        bio: userProfile.bio || prev.bio,
+        email: userProfile.email || prev.email,
+        country: userProfile.country || prev.country,
+        state: userProfile.state || prev.state,
+        profilePic: userProfile.profile_pic || prev.profilePic,
+        coverPhoto: userProfile.cover_photo || prev.coverPhoto,
+        theme: userProfile.theme || prev.theme,
+        intensityMetric: userProfile.intensity_metric || prev.intensityMetric,
+        weightUnit: userProfile.weight_unit || prev.weightUnit,
+        distanceUnit: userProfile.distance_unit || prev.distanceUnit,
+        history,
+        customExercises,
+        progressPics: progressPhotos,
+        templates,
+        currentWorkout,
+        friends,
+        friendRequests,
+        friendsFeed,
+      }));
     } catch (error) {
       console.error('Error syncing user data:', error);
     } finally {
@@ -226,71 +268,70 @@ setData(prev => ({
       // Sync specific changes to Supabase
       if (dbUser && !isSyncing && user?.sub) {
         // Profile updates
-       // Profile updates
-if (newData.username !== prev.username || 
-    newData.firstName !== prev.firstName ||
-    newData.lastName !== prev.lastName ||
-    newData.bio !== prev.bio ||
-    newData.country !== prev.country ||
-    newData.state !== prev.state ||
-    newData.profilePic !== prev.profilePic ||
-    newData.coverPhoto !== prev.coverPhoto ||
-    newData.theme !== prev.theme ||
-    newData.intensityMetric !== prev.intensityMetric ||
-    newData.weightUnit !== prev.weightUnit ||
-    newData.distanceUnit !== prev.distanceUnit ||
-    JSON.stringify(newData.currentWorkout) !== JSON.stringify(prev.currentWorkout)) {  // Add this line
-  DatabaseService.updateUserProfile(user.sub, newData).catch(console.error);
-}
+        if (newData.username !== prev.username || 
+            newData.firstName !== prev.firstName ||
+            newData.lastName !== prev.lastName ||
+            newData.bio !== prev.bio ||
+            newData.country !== prev.country ||
+            newData.state !== prev.state ||
+            newData.profilePic !== prev.profilePic ||
+            newData.coverPhoto !== prev.coverPhoto ||
+            newData.theme !== prev.theme ||
+            newData.intensityMetric !== prev.intensityMetric ||
+            newData.weightUnit !== prev.weightUnit ||
+            newData.distanceUnit !== prev.distanceUnit ||
+            JSON.stringify(newData.currentWorkout) !== JSON.stringify(prev.currentWorkout)) {
+          DatabaseService.updateUserProfile(user.sub, newData).catch(console.error);
+        }
         
-// Workout completion
-if (newData.history.length > prev.history.length) {
-  const newWorkout = newData.history[newData.history.length - 1];
-  DatabaseService.saveWorkout(dbUser.id, newWorkout).catch(console.error);
-}
+        // Workout completion
+        if (newData.history.length > prev.history.length) {
+          const newWorkout = newData.history[newData.history.length - 1];
+          DatabaseService.saveWorkout(dbUser.id, newWorkout).catch(console.error);
+        }
 
-// Workout deletion
-if (newData.history.length < prev.history.length) {
-  // Find which workout was deleted
-  const deletedIndex = prev.history.findIndex((workout, index) => 
-    !newData.history[index] || newData.history[index].startTime !== workout.startTime
-  );
-  
-  if (deletedIndex !== -1) {
-    const deletedWorkout = prev.history[deletedIndex];
-    
-    // Create an async function to handle the deletion
-    const deleteWorkoutFromSupabase = async () => {
-      try {
-        const { data: workoutToDelete, error } = await supabase
-          .from('workouts')
-          .select('id')
-          .eq('user_id', dbUser.id)
-          .eq('start_time', deletedWorkout.startTime)
-          .eq('name', deletedWorkout.name)
-          .single();
-        
-        if (!error && workoutToDelete) {
-          const { error: deleteError } = await supabase
-            .from('workouts')
-            .delete()
-            .eq('id', workoutToDelete.id);
+        // Workout deletion
+        if (newData.history.length < prev.history.length) {
+          // Find which workout was deleted
+          const deletedIndex = prev.history.findIndex((workout, index) => 
+            !newData.history[index] || newData.history[index].startTime !== workout.startTime
+          );
           
-          if (deleteError) {
-            console.error('Error deleting workout:', deleteError);
+          if (deletedIndex !== -1) {
+            const deletedWorkout = prev.history[deletedIndex];
+            
+            // Create an async function to handle the deletion
+            const deleteWorkoutFromSupabase = async () => {
+              try {
+                const { data: workoutToDelete, error } = await supabase
+                  .from('workouts')
+                  .select('id')
+                  .eq('user_id', dbUser.id)
+                  .eq('start_time', deletedWorkout.startTime)
+                  .eq('name', deletedWorkout.name)
+                  .single();
+                
+                if (!error && workoutToDelete) {
+                  const { error: deleteError } = await supabase
+                    .from('workouts')
+                    .delete()
+                    .eq('id', workoutToDelete.id);
+                  
+                  if (deleteError) {
+                    console.error('Error deleting workout:', deleteError);
+                  }
+                }
+              } catch (error) {
+                console.error('Error in workout deletion:', error);
+              }
+            };
+            
+            // Call the async function
+            deleteWorkoutFromSupabase();
           }
         }
-      } catch (error) {
-        console.error('Error in workout deletion:', error);
-      }
-    };
-    
-    // Call the async function
-    deleteWorkoutFromSupabase();
-  }
-}
 
-// Progress photo addition
+        // Progress photo addition
         if (newData.progressPics.length > prev.progressPics.length) {
           const newPhoto = newData.progressPics[newData.progressPics.length - 1];
           DatabaseService.saveProgressPhoto(dbUser.id, newPhoto)
@@ -317,6 +358,15 @@ if (newData.history.length < prev.history.length) {
             DatabaseService.deleteProgressPhoto(dbUser.id, deletedPhoto.id, deletedPhoto.base64)
               .catch(console.error);
           }
+        }
+        
+        // Progress photo update (visibility change)
+        const updatedPhoto = newData.progressPics.find((p: ProgressPhoto, idx: number) => 
+          p.id && prev.progressPics[idx] && p.visibility !== prev.progressPics[idx].visibility
+        );
+        if (updatedPhoto && updatedPhoto.id) {
+          DatabaseService.updateProgressPhotoVisibility(dbUser.id, updatedPhoto.id, updatedPhoto.visibility || 'private')
+            .catch(console.error);
         }
         
         // Custom exercise addition
@@ -425,6 +475,26 @@ if (newData.history.length < prev.history.length) {
       }
     }
   }, []);
+
+  // Refresh friends feed periodically
+  useEffect(() => {
+    if (dbUser && isAuthenticated) {
+      const refreshFeed = async () => {
+        try {
+          const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
+          setData(prev => ({ ...prev, friendsFeed }));
+        } catch (error) {
+          console.error('Error refreshing friends feed:', error);
+        }
+      };
+
+      // Refresh on mount and every 30 seconds
+      refreshFeed();
+      const interval = setInterval(refreshFeed, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [dbUser, isAuthenticated]);
 
   return (
     <DataContext.Provider value={{ 
