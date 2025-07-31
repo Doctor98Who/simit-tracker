@@ -298,6 +298,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     console.log('Like button clicked!');
     console.log('dbUser:', dbUser);
     console.log('photo.id:', photo.id);
+    alert('Button clicked!');
     handleLike();
   }}
 >
