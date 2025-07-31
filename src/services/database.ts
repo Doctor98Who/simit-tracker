@@ -1,14 +1,8 @@
 import { supabase, supabaseService } from '../lib/supabase';
-console.log('DatabaseService loaded');
-console.log('supabaseService exists:', !!supabaseService);
-console.log('Service key in supabaseService:', !!(supabaseService as any).supabaseKey);
 import { StorageService } from './storage';
 import { DataType } from '../DataContext';
-console.log('Supabase Service Key exists:', !!process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY);
-console.log('Service key first 10 chars:', process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY?.substring(0, 10));
 
-export class DatabaseService {
-  static async syncUserProfile(auth0Id: string, email: string) {
+export class DatabaseService {  static async syncUserProfile(auth0Id: string, email: string) {
     // Check if user exists
     const { data: existingUser } = await supabase
       .from('users')
