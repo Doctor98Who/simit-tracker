@@ -16,6 +16,7 @@ const CommunityTab = () => {
   ];
 
   const openComments = (photo: any, isOwn: boolean) => {
+    console.log('Opening comments for photo:', photo);
     setSelectedPhoto({ ...photo, isOwn });
     setShowComments(true);
   };

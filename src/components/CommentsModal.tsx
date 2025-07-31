@@ -137,30 +137,38 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       right: 0,
       bottom: 0,
       background: 'rgba(0, 0, 0, 0.8)',
-      zIndex: 1000,
+      zIndex: 99999,
       display: 'flex',
       alignItems: 'flex-end',
     }} onClick={onClose}>
       <div 
         style={{
           width: '100%',
-          maxHeight: '85vh',
-          background: 'var(--bg-dark)',
+          height: '85vh',
+          background: '#1a1a1a',
           borderRadius: '16px 16px 0 0',
           display: 'flex',
           flexDirection: 'column',
+          position: 'relative',
+          zIndex: 100000,
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div style={{
           padding: '16px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          background: '#1a1a1a',
         }}>
-          <h3 style={{ margin: 0, fontSize: '1.1em', fontWeight: '600' }}>
+          <h3 style={{ 
+            margin: 0, 
+            fontSize: '1.1em', 
+            fontWeight: '600',
+            color: '#ffffff' 
+          }}>
             Comments
           </h3>
           <button
@@ -170,8 +178,13 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
               border: 'none',
               fontSize: '1.5em',
               cursor: 'pointer',
-              color: 'var(--text-muted)',
+              color: '#ffffff',
               padding: '4px',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             ×
@@ -183,12 +196,13 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           flex: 1,
           overflowY: 'auto',
           padding: '16px',
+          background: '#1a1a1a',
         }}>
           {comments.length === 0 ? (
             <div style={{
               textAlign: 'center',
               padding: '40px 20px',
-              color: 'var(--text-muted)',
+              color: '#999999',
             }}>
               <p style={{ marginBottom: '8px' }}>No comments yet</p>
               <p style={{ fontSize: '0.85em' }}>Be the first to share your thoughts!</p>
@@ -204,7 +218,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  background: 'var(--bg-lighter)',
+                  background: '#2a2a2a',
                   backgroundImage: comment.user_profile_pic 
                     ? `url(${comment.user_profile_pic})` 
                     : 'none',
@@ -220,12 +234,16 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                     gap: '8px',
                     marginBottom: '4px',
                   }}>
-                    <span style={{ fontWeight: '600', fontSize: '0.9em' }}>
+                    <span style={{ 
+                      fontWeight: '600', 
+                      fontSize: '0.9em',
+                      color: '#ffffff' 
+                    }}>
                       {comment.user_name}
                     </span>
                     <span style={{ 
                       fontSize: '0.75em', 
-                      color: 'var(--text-muted)' 
+                      color: '#999999' 
                     }}>
                       {new Date(comment.timestamp).toLocaleString()}
                     </span>
@@ -240,18 +258,19 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                         onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                         style={{
                           flex: 1,
-                          background: 'var(--bg-lighter)',
-                          border: '1px solid var(--border)',
+                          background: '#2a2a2a',
+                          border: '1px solid #3a3a3a',
                           borderRadius: '8px',
                           padding: '6px 12px',
-                          color: 'var(--text)',
+                          color: '#ffffff',
                           fontSize: '0.9em',
                         }}
+                        autoFocus
                       />
                       <button
                         onClick={saveEdit}
                         style={{
-                          background: 'var(--accent-primary)',
+                          background: '#4a9eff',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
@@ -268,9 +287,9 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                           setEditText('');
                         }}
                         style={{
-                          background: 'var(--bg-lighter)',
-                          color: 'var(--text)',
-                          border: '1px solid var(--border)',
+                          background: '#2a2a2a',
+                          color: '#ffffff',
+                          border: '1px solid #3a3a3a',
                           borderRadius: '8px',
                           padding: '6px 12px',
                           fontSize: '0.85em',
@@ -285,12 +304,13 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                       margin: 0, 
                       fontSize: '0.9em',
                       lineHeight: '1.5',
+                      color: '#ffffff',
                     }}>
                       {comment.text}
                       {comment.edited && (
                         <span style={{ 
                           fontSize: '0.8em', 
-                          color: 'var(--text-muted)',
+                          color: '#999999',
                           marginLeft: '8px',
                         }}>
                           (edited)
@@ -307,7 +327,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: 'var(--text-muted)',
+                        color: '#999999',
                         cursor: 'pointer',
                         padding: '4px',
                         fontSize: '1.2em',
@@ -321,8 +341,8 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                         position: 'absolute',
                         top: '100%',
                         right: 0,
-                        background: 'var(--bg-dark)',
-                        border: '1px solid var(--border)',
+                        background: '#2a2a2a',
+                        border: '1px solid #3a3a3a',
                         borderRadius: '8px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                         minWidth: '100px',
@@ -336,7 +356,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                             padding: '8px 16px',
                             background: 'none',
                             border: 'none',
-                            color: 'var(--text)',
+                            color: '#ffffff',
                             fontSize: '0.9em',
                             textAlign: 'left',
                             cursor: 'pointer',
@@ -352,7 +372,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                             padding: '8px 16px',
                             background: 'none',
                             border: 'none',
-                            borderTop: '1px solid var(--border)',
+                            borderTop: '1px solid #3a3a3a',
                             color: '#ef4444',
                             fontSize: '0.9em',
                             textAlign: 'left',
@@ -373,16 +393,17 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
         {/* Comment input */}
         <div style={{
           padding: '16px',
-          borderTop: '1px solid var(--border)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           gap: '12px',
           alignItems: 'center',
+          background: '#1a1a1a',
         }}>
           <div style={{
             width: '36px',
             height: '36px',
             borderRadius: '50%',
-            background: 'var(--bg-lighter)',
+            background: '#2a2a2a',
             backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -394,10 +415,10 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
             display: 'flex',
             gap: '8px',
             alignItems: 'center',
-            background: 'var(--bg-lighter)',
+            background: '#2a2a2a',
             borderRadius: '20px',
             padding: '8px 16px',
-            border: '1px solid var(--border)',
+            border: '1px solid #3a3a3a',
           }}>
             <input
               type="text"
@@ -409,7 +430,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
                 flex: 1,
                 background: 'none',
                 border: 'none',
-                color: 'var(--text)',
+                color: '#ffffff',
                 fontSize: '14px',
                 outline: 'none',
               }}
@@ -418,8 +439,8 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
               onClick={handleAddComment}
               disabled={!comment.trim()}
               style={{
-                background: comment.trim() ? 'var(--accent-primary)' : 'var(--bg-darker)',
-                color: comment.trim() ? 'white' : 'var(--text-muted)',
+                background: comment.trim() ? '#4a9eff' : '#3a3a3a',
+                color: comment.trim() ? 'white' : '#666666',
                 border: 'none',
                 borderRadius: '14px',
                 padding: '6px 16px',
