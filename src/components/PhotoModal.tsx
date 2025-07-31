@@ -245,7 +245,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start', // Changed from 'center' to 'flex-start'
         justifyContent: 'center',
         position: 'fixed',
         top: 0,
@@ -258,12 +258,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: 'calc(100vh - 80px)',
+        height: '100%', // Full height of parent
         background: 'var(--bg-dark)',
         padding: 0,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        position: 'relative', // Add relative positioning
       }}>
         {/* Header */}
         <div style={{
@@ -341,14 +342,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
         {/* Image with navigation */}
         <div style={{
           display: 'flex',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           justifyContent: 'center',
           background: 'black',
           overflow: 'hidden',
           position: 'relative',
           width: '100%',
           flexShrink: 0,
-          height: '40vh',
+          maxHeight: '35vh', // Reduced from 40vh
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -407,10 +408,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             src={localPhoto.base64} 
             alt="Progress"
             style={{
-              width: 'auto',
+              width: '100%',
               height: 'auto',
-              maxWidth: '100%',
-              maxHeight: '100%',
+              maxHeight: '35vh',
               objectFit: 'contain',
               display: 'block',
             }}
@@ -577,6 +577,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
             minHeight: 0,
+            paddingBottom: '60px', // Add padding for bottom nav
           }}>
             {/* Comments header */}
             <div style={{
@@ -672,8 +673,11 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             <div style={{ 
               flex: 1,
               overflowY: 'auto',
+              overflowX: 'hidden',
               padding: '0 20px 20px',
               minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
