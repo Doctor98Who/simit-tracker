@@ -632,8 +632,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                   height: '32px',
                   borderRadius: '50%',
                   background: 'var(--bg-lighter)',
-                  backgroundImage: (comment as any)?.user_profile_pic ? `url(${(comment as any).user_profile_pic})` : 'none',
-                  backgroundSize: 'cover',
+backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',                  
+backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   flexShrink: 0,
                 }} />
@@ -827,6 +827,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     onClick={(e) => {
       e.stopPropagation();
       e.preventDefault();
+       console.log('3 dots clicked for comment:', idx);
       setShowCommentMenu(showCommentMenu === idx ? null : idx);
     }}
     onTouchEnd={(e) => {
@@ -857,7 +858,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         minWidth: '120px',
-        zIndex: 100,
+        zIndex: 10000,
         overflow: 'hidden',
       }}>
         <button
