@@ -151,15 +151,6 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
     <div 
       className="modal active comments-modal" 
       onClick={onClose}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'flex-end',  // Force bottom alignment
-        display: 'flex',
-      }}
     >
       <div 
         className="modal-content"
@@ -173,6 +164,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
+          margin: 0,  // Remove any default margins
         }}
         onClick={(e) => e.stopPropagation()}
       >
