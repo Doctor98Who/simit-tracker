@@ -19,39 +19,25 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
 }) => {
   const { data, setData, dbUser } = useContext(DataContext);
   
-  // Force update mechanism
-  const [updateKey, setUpdateKey] = useState(0);
-  const forceUpdate = () => setUpdateKey(prev => prev + 1);
+  // Get initial photo from context
+  const getPhotoFromContext = () => {
+    return isOwn 
+      ? data.progressPics.find(p => p.id === photo.id) || photo
+      : data.friendsFeed.find(p => p.id === photo.id) || photo;
+  };
   
-  // Get current photo from context
-  const currentPhoto = isOwn 
-    ? data.progressPics.find(p => p.id === photo.id) || photo
-    : data.friendsFeed.find(p => p.id === photo.id) || photo;
-  
-  // Use local state that updates with key changes
-  const [localPhoto, setLocalPhoto] = useState(currentPhoto);
+  // Use local state for immediate updates
+  const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
   
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
   
-  // Update local photo when context or key changes
-  useEffect(() => {
-    const updatedPhoto = isOwn 
-      ? data.progressPics.find(p => p.id === photo.id) || photo
-      : data.friendsFeed.find(p => p.id === photo.id) || photo;
-    setLocalPhoto(updatedPhoto);
-  }, [data.progressPics, data.friendsFeed, photo.id, isOwn, updateKey]);
-  
-  // Add these debug logs
-  console.log('PhotoModal mounted');
-  console.log('dbUser in PhotoModal:', dbUser);
-  console.log('localPhoto data:', localPhoto);
+  // Debug logs
+  console.log('PhotoModal rendered with localPhoto:', localPhoto);
   
   const handleLike = async () => {
     console.log('handleLike called');
-    console.log('dbUser:', dbUser);
-    console.log('localPhoto.id:', localPhoto.id);
     
     if (!dbUser) {
       console.log('No dbUser found!');
@@ -59,41 +45,47 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     }
     
     try {
-      // Toggle like in database
+      // Optimistically update UI before API call
+      const optimisticUpdate = {
+        ...localPhoto,
+        likes: localPhoto.userHasLiked 
+          ? Math.max((localPhoto.likes || 0) - 1, 0)
+          : (localPhoto.likes || 0) + 1,
+        userHasLiked: !localPhoto.userHasLiked
+      };
+      
+      // Update local state immediately
+      setLocalPhoto(optimisticUpdate);
+      
+      // Then make API call
       const result = await DatabaseService.likePhoto(dbUser.id, localPhoto.id);
       console.log('Like result:', result);
       
-      // Update local state immediately for instant UI feedback
-      const updatedPhoto = {
-        ...localPhoto,
-        likes: result.liked ? (localPhoto.likes || 0) + 1 : Math.max((localPhoto.likes || 0) - 1, 0),
-        userHasLiked: result.liked
-      };
-      
-      // Update local state first for immediate UI update
-      setLocalPhoto(updatedPhoto);
-      forceUpdate(); // Add this line
-      // Then update context
+      // Update context for persistence
       if (isOwn) {
-        const newPics = data.progressPics.map(p =>
-          p.id === localPhoto.id ? updatedPhoto : p
-        );
-        setData(prev => ({ ...prev, progressPics: newPics }));
+        setData(prev => ({
+          ...prev,
+          progressPics: prev.progressPics.map(p =>
+            p.id === localPhoto.id ? optimisticUpdate : p
+          )
+        }));
       } else {
-        const newFeed = data.friendsFeed.map(item =>
-          item.id === localPhoto.id ? updatedPhoto : item
-        );
-        setData(prev => ({ ...prev, friendsFeed: newFeed }));
+        setData(prev => ({
+          ...prev,
+          friendsFeed: prev.friendsFeed.map(item =>
+            item.id === localPhoto.id ? optimisticUpdate : item
+          )
+        }));
       }
     } catch (error) {
       console.error('Error toggling like:', error);
+      // Revert on error
+      setLocalPhoto(getPhotoFromContext());
     }
   };
   
   const handleComment = async () => {
     console.log('handleComment called');
-    console.log('dbUser:', dbUser);
-    console.log('comment:', comment);
     
     if (!dbUser || !comment.trim()) {
       console.log('No dbUser or empty comment!');
@@ -108,43 +100,46 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
         timestamp: Date.now()
       };
       
-      // Update in database
-      await DatabaseService.addComment(dbUser.id, localPhoto.id, comment);
-      
-      // Update local state immediately
-      const updatedPhoto = {
+      // Optimistically update UI
+      const optimisticUpdate = {
         ...localPhoto,
         comments: [...(localPhoto.comments || []), newComment]
       };
       
-      // Update local state first for immediate UI update
-      setLocalPhoto(updatedPhoto);
-      forceUpdate(); // Add this line
-      // Then update context
-      if (isOwn) {
-        const newPics = data.progressPics.map(p =>
-          p.id === localPhoto.id ? updatedPhoto : p
-        );
-        setData(prev => ({ ...prev, progressPics: newPics }));
-      } else {
-        const newFeed = data.friendsFeed.map(item =>
-          item.id === localPhoto.id ? updatedPhoto : item
-        );
-        setData(prev => ({ ...prev, friendsFeed: newFeed }));
-      }
+      // Update local state immediately
+      setLocalPhoto(optimisticUpdate);
+      setComment(''); // Clear input immediately
       
-      setComment('');
+      // Then make API call
+      await DatabaseService.addComment(dbUser.id, localPhoto.id, comment);
+      
+      // Update context for persistence
+      if (isOwn) {
+        setData(prev => ({
+          ...prev,
+          progressPics: prev.progressPics.map(p =>
+            p.id === localPhoto.id ? optimisticUpdate : p
+          )
+        }));
+      } else {
+        setData(prev => ({
+          ...prev,
+          friendsFeed: prev.friendsFeed.map(item =>
+            item.id === localPhoto.id ? optimisticUpdate : item
+          )
+        }));
+      }
     } catch (error) {
       console.error('Error adding comment:', error);
+      // Don't revert comments on error - they're already saved
     }
   };
-
   const saveEditedCaption = () => {
     if (!isOwn) return;
    
     const newPics = [...data.progressPics];
     const index = data.progressPics.findIndex((p: any) =>
-      p.id === photo.id
+      p.id === localPhoto.id
     );
     if (index !== -1) {
       newPics[index] = { ...newPics[index], caption: editCaption };
@@ -197,15 +192,15 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             ✕
           </button>
           <span style={{ fontSize: '1.1em', fontWeight: '600' }}>
-            {isOwn ? 'Your Photo' : `${photo.user?.first_name || 'User'}'s Photo`}
+            {isOwn ? 'Your Photo' : `${localPhoto.user?.first_name || 'User'}'s Photo`}
           </span>
           {isOwn && (
             <button
               onClick={() => setData(prev => ({ 
                 ...prev, 
                 activeModal: 'photo-menu-modal',
-                tempBase64: photo.base64,
-                tempTimestamp: photo.timestamp
+                tempBase64: localPhoto.base64,
+                tempTimestamp: localPhoto.timestamp
               }))}
               style={{
                 background: 'none',
@@ -286,7 +281,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           )}
           
           <img 
-            src={photo.base64} 
+            src={localPhoto.base64} 
             alt="Progress"
             style={{
               maxWidth: '100%',
@@ -315,7 +310,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   style={{
     background: 'none',
     border: 'none',
-    color: photo.userHasLiked ? '#ef4444' : 'var(--text)',
+    color: localPhoto.userHasLiked ? '#ef4444' : 'var(--text)',
     fontSize: '1.8em',
     cursor: 'pointer',
     padding: 0,
@@ -325,15 +320,15 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   onClick={() => {
     console.log('Like button clicked!');
     console.log('dbUser:', dbUser);
-    console.log('photo.id:', photo.id);
+    console.log('photo.id:', localPhoto.id);
   
     handleLike();
   }}
 >
-  {photo.userHasLiked ? '❤️' : '🤍'}
+  {localPhoto.userHasLiked ? '❤️' : '🤍'}
 </button>
   <span style={{ fontSize: '0.95em', fontWeight: '500' }}>
-    {photo.likes || 0} {photo.likes === 1 ? 'like' : 'likes'}
+    {localPhoto.likes || 0} {localPhoto.likes === 1 ? 'like' : 'likes'}
   </span>
 </div>
           {/* Caption */}
@@ -374,7 +369,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 <button
                   onClick={() => {
                     setIsEditingCaption(false);
-                    setEditCaption(photo.caption || '');
+                    setEditCaption(localPhoto.caption || '');
                   }}
                   style={{
                     padding: '8px 16px',
@@ -392,7 +387,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               </div>
             </div>
           ) : (
-            photo.caption && (
+            localPhoto.caption && (
               <p style={{ 
                 margin: '0 0 16px 0',
                 fontSize: '0.95em',
@@ -401,7 +396,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               }}
               onClick={() => isOwn && setIsEditingCaption(true)}
               >
-                {photo.caption}
+                {localPhoto.caption}
               </p>
             )
           )}
@@ -415,12 +410,12 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             flexWrap: 'wrap',
             marginBottom: '16px',
           }}>
-            <span>📅 {new Date(photo.timestamp).toLocaleDateString()}</span>
-            {photo.weight && (
-              <span>⚖️ {photo.weight} {data.weightUnit || 'lbs'}</span>
+            <span>📅 {new Date(localPhoto.timestamp).toLocaleDateString()}</span>
+            {localPhoto.weight && (
+              <span>⚖️ {localPhoto.weight} {data.weightUnit || 'lbs'}</span>
             )}
-            {photo.pump && (
-              <span>💪 Pump: {photo.pump}/100</span>
+            {localPhoto.pump && (
+              <span>💪 Pump: {localPhoto.pump}/100</span>
             )}
           </div>
 
@@ -465,7 +460,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
 
             {/* Comments list */}
             <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              {(photo.comments || []).map((comment: any, idx: number) => (
+              {(localPhoto.comments || []).map((comment: any, idx: number) => (
                 <div key={idx} style={{
                   marginBottom: '12px',
                   padding: '8px',
