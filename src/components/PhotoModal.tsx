@@ -841,11 +841,10 @@ backgroundSize: 'cover',
 {dbUser && comment.user_id === dbUser.id && (
   <div
     onClick={() => {
-      alert('Div clicked! Index: ' + idx);
       setShowCommentMenu(showCommentMenu === idx ? null : idx);
     }}
     style={{
-      background: 'rgba(255, 0, 0, 0.3)',
+      background: 'none',
       border: 'none',
       color: 'var(--text-muted)',
       cursor: 'pointer',
