@@ -16,31 +16,6 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   const [editText, setEditText] = useState('');
   const [showMenu, setShowMenu] = useState<number | null>(null);
 
-  useEffect(() => {
-    // Store current scroll position
-    const scrollY = window.scrollY;
-    
-    // Add modal-open class (this handles the body position fixed)
-    document.body.classList.add('modal-open');
-    
-    // Store scroll position as data attribute
-    document.body.setAttribute('data-scroll-position', scrollY.toString());
-    
-    return () => {
-      // Get stored scroll position
-      const storedScrollY = parseInt(document.body.getAttribute('data-scroll-position') || '0');
-      
-      // Remove modal-open class
-      document.body.classList.remove('modal-open');
-      
-      // Remove data attribute
-      document.body.removeAttribute('data-scroll-position');
-      
-      // Return to original scroll position
-      window.scrollTo(0, storedScrollY);
-    };
-  }, []);
-
   const handleAddComment = async () => {
     if (!dbUser || !comment.trim()) return;
 
@@ -147,37 +122,21 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   };
 
   return (
-    <>
-      {/* Backdrop */}
+    <div className="modal active comments-modal" onClick={onClose}>
       <div 
+        className="modal-content"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          zIndex: 9998,
-        }} 
-        onClick={onClose}
-      />
-      
-      {/* Modal Content - positioned absolutely */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '100%',
-        maxWidth: '428px', // Match app max-width
-        height: '85vh',
-        background: 'var(--bg-dark)',
-        borderRadius: '16px 16px 0 0',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 9999,
-        transition: 'transform 0.3s ease-out',
-      }}>
+          width: '100%',
+          maxWidth: '100%',
+          height: '85vh',
+          borderRadius: '20px 20px 0 0',
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--bg-dark)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Drag handle */}
         <div style={{
           width: '40px',
@@ -507,7 +466,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
