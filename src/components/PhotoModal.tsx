@@ -415,8 +415,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
+          minHeight: 0, // Critical for flex children
           overflow: 'hidden',
-          minHeight: 0,
         }}>
           {/* Like button and stats */}
           <div style={{
@@ -666,8 +666,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               flex: 1,
               overflowY: 'auto',
               padding: '0 20px 20px',
-              minHeight: '200px', // Changed from 0 to ensure minimum visible height
-              maxHeight: 'calc(100vh - 500px)', // Add explicit max height calculation
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
