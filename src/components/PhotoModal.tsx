@@ -31,8 +31,10 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   
   // Update local photo when photo prop changes (for navigation between photos)
   useEffect(() => {
-    setLocalPhoto(getPhotoFromContext());
-  }, [photo.id]);
+    const newPhoto = getPhotoFromContext();
+    setLocalPhoto(newPhoto);
+    setEditCaption(newPhoto.caption || '');
+  }, [photo.id, isOwn]); // Add isOwn to dependencies too
   
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
@@ -349,7 +351,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           position: 'relative',
           width: '100%',
           flexShrink: 0,
-          maxHeight: '35vh', // Reduced from 40vh
+          height: '30vh', // Set fixed height instead of maxHeight
+          maxHeight: '30vh',
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -409,8 +412,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             alt="Progress"
             style={{
               width: '100%',
-              height: 'auto',
-              maxHeight: '35vh',
+              height: '100%',
+              maxHeight: '30vh',
               objectFit: 'contain',
               display: 'block',
             }}
@@ -424,7 +427,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           flexDirection: 'column',
           background: 'var(--bg-dark)',
           minHeight: 0, // Critical for flex children
-          overflow: 'hidden',
+          // Remove overflow: 'hidden' - this was swallowing the scrollable area
         }}>
           {/* Like button and stats */}
           <div style={{
@@ -576,8 +579,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             flexDirection: 'column',
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
-            minHeight: 0,
+            minHeight: 0, // Critical for proper flex sizing
             paddingBottom: '60px', // Add padding for bottom nav
+            // Remove overflow: 'hidden' to allow proper scrolling
           }}>
             {/* Comments header */}
             <div style={{
@@ -675,7 +679,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               overflowY: 'auto',
               overflowX: 'hidden',
               padding: '0 20px 20px',
-              minHeight: 0,
+              minHeight: 0, // Critical for flex to work properly
               display: 'flex',
               flexDirection: 'column',
             }}>
