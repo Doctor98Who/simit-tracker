@@ -1229,12 +1229,16 @@ button.finish {
 .progress-photo-modal {
     background: var(--bg-dark);
 }
-/* Add to App.css */
+
+/* Add this to ensure the modal content fills the viewport properly */
 .progress-photo-modal .modal-content {
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  height: -webkit-fill-available; /* iOS Safari fix */
+  height: -webkit-fill-available;
   max-height: 100vh;
   max-height: -webkit-fill-available;
+  overflow: hidden; /* Prevent the modal content itself from scrolling */
 }
 
 /* Ensure the modal respects safe areas on iOS */
@@ -1243,11 +1247,6 @@ button.finish {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
-}
-
-/* Fix for the scrollable content area */
-.progress-photo-modal .modal-content > div:last-child {
-  padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* 60px for bottom nav + safe area */
 }
 
 /* Responsive adjustments for smaller screens */
@@ -1263,18 +1262,17 @@ button.finish {
     .app-container {
         max-width: 100%;
     }
-    
+   
     .content {
         padding: 15px;
     }
-    
+   
     .modal-content {
         width: 100%;
         max-width: 100%;
         border-radius: 20px 20px 0 0;
     }
 }
-
 /* Fix for Android Chrome address bar */
 @supports (padding: max(0px)) {
     body {

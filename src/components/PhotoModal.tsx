@@ -426,7 +426,7 @@ height: '100vh',
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
-          paddingBottom: '80px', // Space for bottom navigation
+         
         }}>
           {/* Like button and stats */}
           <div style={{
@@ -579,7 +579,7 @@ height: '100vh',
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
             minHeight: 0, // Critical for proper flex sizing
-           
+           overflow: 'hidden', // ← ADD THIS BACK
             // Remove overflow: 'hidden' to allow proper scrolling
           }}>
             {/* Comments header */}
@@ -681,6 +681,7 @@ height: '100vh',
               display: 'flex',
               flexDirection: 'column',
               minHeight: 0, // Important!
+              paddingBottom: '80px', // ← ADD PADDING HERE INSTEAD
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
