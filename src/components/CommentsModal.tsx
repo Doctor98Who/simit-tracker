@@ -129,11 +129,13 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           width: '100%',
           maxWidth: '100%',
           height: '85vh',
+          maxHeight: '85vh',
           borderRadius: '20px 20px 0 0',
           padding: 0,
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
+          overflow: 'hidden',  // Add this to match workout modal
         }}
         onClick={(e) => e.stopPropagation()}
       >
