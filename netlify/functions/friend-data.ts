@@ -108,6 +108,7 @@ export const handler: Handler = async (event, context) => {
           userHasLiked: userLikedPhotos.includes(photo.id),
           user: photo.user,
           comments: photo.comments.map(c => ({
+            id: c.id,
             user_id: c.user_id,
             user_name: `${c.user.first_name} ${c.user.last_name}`,
             text: c.text,
