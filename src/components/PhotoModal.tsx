@@ -33,16 +33,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
   
-  // Debug logs
-  console.log('PhotoModal rendered with localPhoto:', localPhoto);
-  
   const handleLike = async () => {
-    console.log('handleLike called');
-    
-    if (!dbUser) {
-      console.log('No dbUser found!');
-      return;
-    }
+    if (!dbUser) return;
     
     try {
       // Optimistically update UI before API call
@@ -59,7 +51,6 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Then make API call
       const result = await DatabaseService.likePhoto(dbUser.id, localPhoto.id);
-      console.log('Like result:', result);
       
       // Update context for persistence
       if (isOwn) {
@@ -85,12 +76,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   };
   
   const handleComment = async () => {
-    console.log('handleComment called');
-    
-    if (!dbUser || !comment.trim()) {
-      console.log('No dbUser or empty comment!');
-      return;
-    }
+    if (!dbUser || !comment.trim()) return;
     
     try {
       const newComment = {
@@ -131,9 +117,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-      // Don't revert comments on error - they're already saved
     }
   };
+
   const saveEditedCaption = () => {
     if (!isOwn) return;
    
@@ -147,86 +133,66 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     }
     setIsEditingCaption(false);
   };
+
   return (
     <div 
-      className="modal active progress-photo-modal"
+      className="modal active"
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '20px',
       }}
     >
-      <div className="modal-content" style={{
+      <div style={{
         width: '100%',
-        maxWidth: '100%',
-        height: '100%',
+        maxWidth: '1200px',
+        height: '90vh',
         background: 'var(--bg-dark)',
-        padding: 0,
-        borderRadius: 0,
+        borderRadius: '16px',
+        overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: window.innerWidth > 768 ? 'row' : 'column',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
       }}>
-        {/* Header */}
+        {/* Image Section */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '16px 20px',
-          borderBottom: '1px solid var(--border)',
-          background: 'var(--bg-dark)',
-          backdropFilter: 'blur(10px)',
-        }}>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text)',
-              fontSize: '1.2em',
-              cursor: 'pointer',
-              padding: '4px',
-              minHeight: 'auto',
-            }}
-          >
-            ✕
-          </button>
-          <span style={{ fontSize: '1.1em', fontWeight: '600' }}>
-            {isOwn ? 'Your Photo' : `${localPhoto.user?.first_name || 'User'}'s Photo`}
-          </span>
-          {isOwn && (
-            <button
-              onClick={() => setData(prev => ({ 
-                ...prev, 
-                activeModal: 'photo-menu-modal',
-                tempBase64: localPhoto.base64,
-                tempTimestamp: localPhoto.timestamp
-              }))}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text)',
-                fontSize: '1em',
-                cursor: 'pointer',
-                padding: '4px',
-                minHeight: 'auto',
-              }}
-            >
-              ⋯
-            </button>
-          )}
-        </div>
-
-        {/* Image with navigation */}
-        <div style={{
-          flex: 1,
+          flex: window.innerWidth > 768 ? '1.5' : '1',
+          background: '#000',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'black',
-          overflow: 'hidden',
           position: 'relative',
+          minHeight: window.innerWidth > 768 ? 'auto' : '50vh',
         }}>
+          {/* Close button for mobile */}
+          {window.innerWidth <= 768 && (
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                left: '16px',
+                background: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                zIndex: 20,
+              }}
+            >
+              ✕
+            </button>
+          )}
+          
           {showNavigation && onNavigate && (
             <>
               <button
@@ -249,6 +215,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                   fontSize: '1.2em',
                   color: 'white',
                   zIndex: 10,
+                  transition: 'all 0.2s ease',
                 }}
               >
                 ‹
@@ -273,6 +240,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                   fontSize: '1.2em',
                   color: 'white',
                   zIndex: 10,
+                  transition: 'all 0.2s ease',
                 }}
               >
                 ›
@@ -288,143 +256,299 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               maxHeight: '100%',
               objectFit: 'contain',
             }}
-          />              
+          />
         </div>
 
-        {/* Details */}
+        {/* Details Section */}
         <div style={{
-          padding: '20px',
-          borderTop: '1px solid var(--border)',
+          flex: '1',
+          display: 'flex',
+          flexDirection: 'column',
           background: 'var(--bg-dark)',
-          maxHeight: '40%',
-          overflowY: 'auto',
+          minWidth: window.innerWidth > 768 ? '380px' : 'auto',
+          maxWidth: window.innerWidth > 768 ? '420px' : '100%',
         }}>
-{/* Like button */}
-<div style={{
-  display: 'flex',
-  alignItems: 'center',
-  gap: '16px',
-  marginBottom: '16px',
-}}>
-<button
-  style={{
-    background: 'none',
-    border: 'none',
-    color: localPhoto.userHasLiked ? '#ef4444' : 'var(--text)',
-    fontSize: '1.8em',
-    cursor: 'pointer',
-    padding: 0,
-    minHeight: 'auto',
-    transition: 'all 0.2s ease',
-  }}
-  onClick={() => {
-    console.log('Like button clicked!');
-    console.log('dbUser:', dbUser);
-    console.log('photo.id:', localPhoto.id);
-  
-    handleLike();
-  }}
->
-  {localPhoto.userHasLiked ? '❤️' : '🤍'}
-</button>
-  <span style={{ fontSize: '0.95em', fontWeight: '500' }}>
-    {localPhoto.likes || 0} {localPhoto.likes === 1 ? 'like' : 'likes'}
-  </span>
-</div>
-          {/* Caption */}
-          {isEditingCaption && isOwn ? (
-            <div style={{ marginBottom: '16px' }}>
-              <textarea
-                value={editCaption}
-                onChange={(e) => setEditCaption(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                  resize: 'vertical',
-                  minHeight: '80px',
-                }}
-                autoFocus
-              />
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button
-                  onClick={saveEditedCaption}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'var(--accent-primary)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '0.85em',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditingCaption(false);
-                    setEditCaption(localPhoto.caption || '');
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    background: 'transparent',
-                    color: 'var(--text-muted)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    fontSize: '0.85em',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
+          {/* Header */}
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'var(--bg-lighter)',
+                backgroundImage: isOwn 
+                  ? (data.profilePic ? `url(${data.profilePic})` : 'none')
+                  : (localPhoto.user?.profile_pic ? `url(${localPhoto.user.profile_pic})` : 'none'),
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }} />
+              <div>
+                <div style={{ fontWeight: '600', fontSize: '1em' }}>
+                  {isOwn ? `${data.firstName} ${data.lastName}` : `${localPhoto.user?.first_name || ''} ${localPhoto.user?.last_name || ''}`}
+                </div>
+                <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                  @{isOwn ? data.username : localPhoto.user?.username}
+                </div>
               </div>
             </div>
-          ) : (
-            localPhoto.caption && (
-              <p style={{ 
-                margin: '0 0 16px 0',
-                fontSize: '0.95em',
-                lineHeight: '1.5',
-                cursor: isOwn ? 'pointer' : 'default',
-              }}
-              onClick={() => isOwn && setIsEditingCaption(true)}
-              >
-                {localPhoto.caption}
-              </p>
-            )
-          )}
-
-          {/* Photo details */}
-          <div style={{
-            display: 'flex',
-            gap: '20px',
-            fontSize: '0.85em',
-            color: 'var(--text-muted)',
-            flexWrap: 'wrap',
-            marginBottom: '16px',
-          }}>
-            <span>📅 {new Date(localPhoto.timestamp).toLocaleDateString()}</span>
-            {localPhoto.weight && (
-              <span>⚖️ {localPhoto.weight} {data.weightUnit || 'lbs'}</span>
-            )}
-            {localPhoto.pump && (
-              <span>💪 Pump: {localPhoto.pump}/100</span>
-            )}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {isOwn && (
+                <button
+                  onClick={() => setData(prev => ({ 
+                    ...prev, 
+                    activeModal: 'photo-menu-modal',
+                    tempBase64: localPhoto.base64,
+                    tempTimestamp: localPhoto.timestamp
+                  }))}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    fontSize: '1.2em',
+                    cursor: 'pointer',
+                    padding: '4px',
+                  }}
+                >
+                  ⋯
+                </button>
+              )}
+              {window.innerWidth > 768 && (
+                <button
+                  onClick={onClose}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    fontSize: '1.2em',
+                    cursor: 'pointer',
+                    padding: '4px',
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Comments section */}
-          <div style={{ marginTop: '20px' }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '1em' }}>Comments</h4>
-            
-            {/* Comment input */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          {/* Content Section - Scrollable */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            {/* Actions & Info */}
+            <div style={{ padding: '20px' }}>
+              {/* Like & Share Actions */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+                marginBottom: '16px',
+              }}>
+                <button
+                  onClick={handleLike}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: localPhoto.userHasLiked ? '#ef4444' : 'var(--text)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span style={{ fontSize: '1.5em' }}>
+                    {localPhoto.userHasLiked ? '❤️' : '🤍'}
+                  </span>
+                  <span style={{ fontSize: '0.95em', fontWeight: '500' }}>
+                    {localPhoto.likes || 0}
+                  </span>
+                </button>
+              </div>
+
+              {/* Caption */}
+              {isEditingCaption && isOwn ? (
+                <div style={{ marginBottom: '16px' }}>
+                  <textarea
+                    value={editCaption}
+                    onChange={(e) => setEditCaption(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'var(--bg-lighter)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      color: 'var(--text)',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                      minHeight: '60px',
+                      fontFamily: 'inherit',
+                    }}
+                    autoFocus
+                  />
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button
+                      onClick={saveEditedCaption}
+                      style={{
+                        padding: '6px 16px',
+                        background: 'var(--accent-primary)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '0.85em',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingCaption(false);
+                        setEditCaption(localPhoto.caption || '');
+                      }}
+                      style={{
+                        padding: '6px 16px',
+                        background: 'transparent',
+                        color: 'var(--text-muted)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        fontSize: '0.85em',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                localPhoto.caption && (
+                  <p style={{ 
+                    margin: '0 0 16px 0',
+                    fontSize: '0.95em',
+                    lineHeight: '1.5',
+                    cursor: isOwn ? 'pointer' : 'default',
+                  }}
+                  onClick={() => isOwn && setIsEditingCaption(true)}
+                  >
+                    {localPhoto.caption}
+                  </p>
+                )
+              )}
+
+              {/* Photo metadata */}
+              <div style={{
+                display: 'flex',
+                gap: '16px',
+                fontSize: '0.85em',
+                color: 'var(--text-muted)',
+                flexWrap: 'wrap',
+                paddingBottom: '16px',
+                borderBottom: '1px solid var(--border)',
+              }}>
+                <span>{new Date(localPhoto.timestamp).toLocaleDateString()}</span>
+                {localPhoto.weight && (
+                  <span>⚖️ {localPhoto.weight} {data.weightUnit || 'lbs'}</span>
+                )}
+                {localPhoto.pump && (
+                  <span>💪 Pump: {localPhoto.pump}/100</span>
+                )}
+              </div>
+            </div>
+
+            {/* Comments Section */}
+            <div style={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '0 20px 20px',
+            }}>
+              <h4 style={{ 
+                margin: '0 0 16px 0', 
+                fontSize: '0.9em',
+                fontWeight: '600',
+                color: 'var(--text-muted)',
+              }}>
+                Comments ({(localPhoto.comments || []).length})
+              </h4>
+              
+              {/* Comments List */}
+              <div style={{ 
+                flex: 1,
+                overflowY: 'auto',
+                marginBottom: '12px',
+                minHeight: '100px',
+              }}>
+                {(localPhoto.comments || []).length === 0 ? (
+                  <p style={{
+                    textAlign: 'center',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.9em',
+                    padding: '20px',
+                  }}>
+                    No comments yet. Be the first to comment!
+                  </p>
+                ) : (
+                  (localPhoto.comments || []).map((comment: any, idx: number) => (
+                    <div key={idx} style={{
+                      marginBottom: '12px',
+                      display: 'flex',
+                      gap: '10px',
+                    }}>
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: 'var(--bg-lighter)',
+                        flexShrink: 0,
+                      }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ 
+                          background: 'var(--bg-lighter)',
+                          borderRadius: '12px',
+                          padding: '8px 12px',
+                        }}>
+                          <div style={{ 
+                            fontWeight: '600', 
+                            fontSize: '0.85em', 
+                            marginBottom: '2px' 
+                          }}>
+                            {comment.user_name}
+                          </div>
+                          <div style={{ fontSize: '0.9em' }}>{comment.text}</div>
+                        </div>
+                        <div style={{ 
+                          fontSize: '0.75em', 
+                          color: 'var(--text-muted)', 
+                          marginTop: '4px',
+                          paddingLeft: '12px',
+                        }}>
+                          {new Date(comment.timestamp).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Fixed Comment Input */}
+          <div style={{
+            padding: '16px 20px',
+            borderTop: '1px solid var(--border)',
+            background: 'var(--bg-dark)',
+          }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <input
                 type="text"
                 value={comment}
@@ -433,49 +557,32 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 placeholder="Add a comment..."
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
+                  padding: '10px 14px',
                   background: 'var(--bg-lighter)',
                   border: '1px solid var(--border)',
-                  borderRadius: '8px',
+                  borderRadius: '24px',
                   color: 'var(--text)',
                   fontSize: '14px',
+                  outline: 'none',
                 }}
               />
               <button
                 onClick={handleComment}
+                disabled={!comment.trim()}
                 style={{
-                  padding: '8px 16px',
-                  background: 'var(--accent-primary)',
-                  color: 'white',
+                  padding: '10px 20px',
+                  background: comment.trim() ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+                  color: comment.trim() ? 'white' : 'var(--text-muted)',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '24px',
                   fontSize: '0.85em',
                   fontWeight: '600',
-                  cursor: 'pointer',
+                  cursor: comment.trim() ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 Post
               </button>
-            </div>
-
-            {/* Comments list */}
-            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              {(localPhoto.comments || []).map((comment: any, idx: number) => (
-                <div key={idx} style={{
-                  marginBottom: '12px',
-                  padding: '8px',
-                  background: 'var(--bg-lighter)',
-                  borderRadius: '8px',
-                }}>
-                  <div style={{ fontWeight: '600', fontSize: '0.9em', marginBottom: '4px' }}>
-                    {comment.user_name}
-                  </div>
-                  <div style={{ fontSize: '0.9em' }}>{comment.text}</div>
-                  <div style={{ fontSize: '0.75em', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    {new Date(comment.timestamp).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
