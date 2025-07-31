@@ -70,9 +70,15 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
     }
   };
 const handleDeleteComment = async (idx: number) => {
+  console.log('handleDeleteComment called with idx:', idx);
   const commentToDelete = comments[idx];
-  if (!dbUser || commentToDelete.user_id !== dbUser.id) return;
-
+  console.log('commentToDelete:', commentToDelete);
+  console.log('dbUser:', dbUser);
+  
+  if (!dbUser || commentToDelete.user_id !== dbUser.id) {
+    console.log('Returning early - user check failed');
+    return;
+  }
   try {
     // API call to delete from database FIRST
     if (commentToDelete.id) {
