@@ -742,6 +742,14 @@ body {
 .exercise-select-footer button {
     width: 100%;
 }
+.exercise-select-modal {
+    align-items: flex-end !important;
+}
+
+/* Comments Modal - Bottom Sheet Style */
+.comments-modal {
+    align-items: flex-end !important;
+}
 
 /* Touch target optimization */
 .exercise-select-list .exercise-item {
