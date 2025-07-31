@@ -1,5 +1,6 @@
 :root {
     --bg-dark: #000000;
+    --bg-darker: #0A0A0A;  /* ADD THIS LINE */
     --bg-light: #1C1C1E;
     --bg-lighter: #2C2C2E;
     --text: #FFFFFF;
@@ -21,6 +22,7 @@
 /* Light theme - Modern and Sleek */
 [data-theme="light"] {
     --bg-dark: #FFFFFF;
+    --bg-darker: #E8EAED;  /* ADD THIS LINE */
     --bg-light: #F8F9FA;
     --bg-lighter: #F0F2F5;
     --text: #1A1A1A;
@@ -36,7 +38,6 @@
     --completed-check: #42B554;
     --subtle-gradient: linear-gradient(135deg, #FFFFFF, #F8F9FA);
 }
-
 /* Light mode specific adjustments */
 [data-theme="light"] .program-card,
 [data-theme="light"] .exercise-item,

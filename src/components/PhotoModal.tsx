@@ -21,7 +21,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   
   // Get initial photo from context
   const getPhotoFromContext = () => {
-    return isOwn 
+    return isOwn
       ? data.progressPics.find((p: any) => p.id === photo.id) || photo
       : data.friendsFeed.find((p: any) => p.id === photo.id) || photo;
   };
@@ -36,13 +36,23 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     setEditCaption(newPhoto.caption || '');
   }, [photo.id, isOwn]); // Add isOwn to dependencies too
   
+  // ADD THIS NEW USEEFFECT - This prevents background scrolling
+  useEffect(() => {
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      // Re-enable body scroll when modal closes
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+  
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
   const [editingCommentIdx, setEditingCommentIdx] = useState<number | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
-  const [showCommentMenu, setShowCommentMenu] = useState<number | null>(null);
-  
+  const [showCommentMenu, setShowCommentMenu] = useState<number | null>(null);  
   const handleLike = async () => {
     if (!dbUser) return;
     
@@ -255,8 +265,15 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
         right: 0,
         bottom: 0,
         zIndex: 9999,
+        overflowY: 'auto', // Add this to allow modal scrolling if needed
       }}
-    >
+      onClick={(e) => {
+    // Close modal if clicking on backdrop
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }}
+>
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
