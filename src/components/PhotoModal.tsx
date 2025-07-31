@@ -275,8 +275,8 @@ return (
     className="modal active progress-photo-modal"
     style={{
       background: 'rgba(0, 0, 0, 0.95)',
-      display: 'flex',
-      alignItems: 'flex-start',
+display: 'block', // Change from 'flex' to 'block'
+     alignItems: 'flex-start',
       justifyContent: 'center',
       position: 'fixed',
       top: 0,
@@ -291,6 +291,7 @@ return (
       width: '100%',
       maxWidth: '800px',
       height: '100vh', // CHANGED: from minHeight to height - fixed height
+      margin: '0 auto',
       background: 'var(--bg-dark)',
       padding: 0,
       display: 'flex',
@@ -848,45 +849,43 @@ backgroundSize: 'cover',
 
 
 {dbUser && comment.user_id === dbUser.id && (
-  <div
-    onClick={() => {
-      console.log('Before click - showCommentMenu:', showCommentMenu);
-      setShowCommentMenu(showCommentMenu === idx ? null : idx);
-      console.log('Clicked index:', idx);
-      console.log('After click - will showCommentMenu be:', showCommentMenu === idx ? null : idx);
-    }}
-    style={{
-      background: 'none',
-      border: 'none',
-      color: 'var(--text-muted)',
-      cursor: 'pointer',
-      padding: '8px',
-      fontSize: '1.2em',
-      lineHeight: '0.5',
-      position: 'relative',
-      minHeight: '44px',
-      minWidth: '44px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    ⋯
-    {true && ( // TEMPORARILY CHANGE showCommentMenu === idx TO true
+  <>
+    <div
+      onClick={() => {
+        setShowCommentMenu(prev => prev === idx ? null : idx);
+      }}
+      style={{
+        background: 'none',
+        border: 'none',
+        color: 'var(--text-muted)',
+        cursor: 'pointer',
+        padding: '8px',
+        fontSize: '1.2em',
+        lineHeight: '0.5',
+        position: 'relative',
+        minHeight: '44px',
+        minWidth: '44px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      ⋯
+    </div>
+    {showCommentMenu === idx && (
       <div style={{
         position: 'absolute',
-        top: '100%',
-        right: 0,
-        background: 'red',
-        border: '2px solid yellow',
+        top: '40px',
+        right: '0',
+        background: 'var(--bg-dark)',
+        border: '1px solid var(--border)',
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         minWidth: '120px',
         zIndex: 10000,
         overflow: 'hidden',
       }}>
-        <div style={{ color: 'white', padding: '10px' }}>MENU FOR INDEX {idx}</div>
-                <button
+        <button
           onClick={(e) => {
             e.stopPropagation();
             handleEditComment(idx);
@@ -933,8 +932,8 @@ backgroundSize: 'cover',
         </button>
       </div>
     )}
-  </div>
-)}                        
+  </>
+)}                       
 </div>
 <div style={{ fontSize: '0.9em', lineHeight: '1.5' }}>
   {comment.text}
