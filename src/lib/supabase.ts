@@ -2,11 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY!;
-
-// Add these console logs to debug
-console.log('Supabase Service Key exists:', !!supabaseServiceKey);
-console.log('Service key first 10 chars:', supabaseServiceKey?.substring(0, 10));
 
 // Public client for non-authenticated operations
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -15,14 +10,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     detectSessionInUrl: false
   },
-});
-
-// Service client for authenticated operations (bypasses RLS)
-export const supabaseService = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
 });
 
 // Set custom JWT for Auth0 user

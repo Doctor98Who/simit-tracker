@@ -1,4 +1,4 @@
-import { supabase, supabaseService } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { StorageService } from './storage';
 import { DataType } from '../DataContext';
 
@@ -443,19 +443,33 @@ static async getProgressPhotos(userId: string) {
   }
 
 
-  // Friend-related methods
-  static async searchUsers(currentUserId: string, searchQuery: string) {
-    const { data, error } = await supabaseService
-      .from('users')
-      .select('id, username, first_name, last_name, profile_pic')
-      .neq('id', currentUserId)
-      .or(`username.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
-      .limit(20);
+// Friend-related methods
+static async searchUsers(currentUserId: string, searchQuery: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'searchUsers',
+        currentUserId,
+        searchQuery
+      })
+    });
 
-    if (error) throw error;
-    return data;
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to search users');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw error;
   }
-
+}
 static async sendFriendRequest(senderId: string, receiverUsername: string) {
   try {
     const response = await fetch('/.netlify/functions/friend-request', {

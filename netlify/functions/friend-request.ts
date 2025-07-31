@@ -215,6 +215,24 @@ export const handler: Handler = async (event, context) => {
           body: JSON.stringify({ success: true })
         };
       }
+case 'searchUsers': {
+  const { currentUserId, searchQuery } = params;
+  
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, username, first_name, last_name, profile_pic')
+    .neq('id', currentUserId)
+    .or(`username.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
+    .limit(20);
+
+  if (error) throw error;
+  
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ data })
+  };
+}
+
 
       default:
         return {
