@@ -23,12 +23,17 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [comment, setComment] = useState('');
 
 const handleLike = async () => {
-  if (!dbUser) return;
-  
+    console.log('handleLike called');
+  console.log('dbUser:', dbUser);
+  console.log('photo.id:', photo.id);
+  if (!dbUser) {
+    console.log('No dbUser found!');
+    return;
+  }  
   try {
     // Toggle like in database
     const result = await DatabaseService.likePhoto(dbUser.id, photo.id);
-    
+     console.log('Like result:', result);
     // Update local state
     const updatedPhoto = { 
       ...photo, 
