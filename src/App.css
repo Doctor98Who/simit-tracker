@@ -746,11 +746,6 @@ body {
     align-items: flex-end !important;
 }
 
-/* Comments Modal - Bottom Sheet Style */
-.comments-modal {
-    align-items: flex-end !important;
-}
-
 /* Touch target optimization */
 .exercise-select-list .exercise-item {
     min-height: 72px;

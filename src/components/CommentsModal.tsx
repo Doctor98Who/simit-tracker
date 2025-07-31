@@ -148,29 +148,36 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   };
 
   return (
-    <div 
-      className="modal active comments-modal" 
-      onClick={onClose}
-      style={{
-        overflow: 'hidden', // Override the overflow-y: auto from .modal
-      }}
-    >
+    <>
+      {/* Backdrop */}
       <div 
-        className="modal-content"
         style={{
-          width: '100%',
-          maxWidth: '100%',
-          height: '85vh',
-          maxHeight: '85vh',
-          borderRadius: '20px 20px 0 0',
-          padding: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'var(--bg-dark)',
-          margin: 0,  // Remove any default margins
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 9998,
+        }} 
+        onClick={onClose}
+      />
+      
+      {/* Modal Content - positioned absolutely */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '85vh',
+        background: 'var(--bg-dark)',
+        borderRadius: '16px 16px 0 0',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 9999,
+        transform: 'translateY(0)',
+        transition: 'transform 0.3s ease-out',
+      }}>
         {/* Drag handle */}
         <div style={{
           width: '40px',
@@ -500,7 +507,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
