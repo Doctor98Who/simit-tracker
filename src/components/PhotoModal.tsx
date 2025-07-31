@@ -248,13 +248,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: '100vh',
+        height: '90vh', // Changed from 100vh to 90vh like the working version
+        maxHeight: '90vh', // Added maxHeight constraint
         background: 'var(--bg-dark)',
         padding: 0,
-        borderRadius: 0,
+        borderRadius: '12px', // Added border radius
         display: 'flex',
         flexDirection: 'column',
-        margin: 0,
+        margin: '5vh auto', // Center with margin like working version
         overflow: 'hidden',
       }}>
         {/* Header */}
@@ -340,7 +341,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           position: 'relative',
           width: '100%',
           flexShrink: 0,
-          maxHeight: '35vh',
+          maxHeight: '40vh', // Changed back to 40vh to ensure space for comments
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -401,7 +402,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             style={{
               width: '100%',
               height: 'auto',
-              maxHeight: '35vh',
+              maxHeight: '40vh',
               objectFit: 'contain',
               display: 'block',
             }}
@@ -595,17 +596,17 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
 
             {/* Comment input box */}
             <div style={{ 
-              padding: '0 20px 16px',
+              padding: '0 20px 12px',
               flexShrink: 0,
             }}>
               <div style={{ 
                 display: 'flex', 
-                gap: '12px',
-                alignItems: 'flex-start',
+                gap: '10px',
+                alignItems: 'center',
               }}>
                 <div style={{
-                  width: '36px',
-                  height: '36px',
+                  width: '32px',
+                  height: '32px',
                   borderRadius: '50%',
                   background: 'var(--bg-lighter)',
                   backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
@@ -619,8 +620,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                   gap: '8px',
                   alignItems: 'center',
                   background: 'var(--bg-lighter)',
-                  borderRadius: '24px',
-                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  padding: '6px 12px',
                   border: '1px solid var(--border)',
                 }}>
                   <input
@@ -645,8 +646,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                       background: comment.trim() ? 'var(--accent-primary)' : 'var(--bg-darker)',
                       color: comment.trim() ? 'white' : 'var(--text-muted)',
                       border: 'none',
-                      borderRadius: '16px',
-                      padding: '6px 16px',
+                      borderRadius: '14px',
+                      padding: '4px 14px',
                       fontSize: '0.85em',
                       fontWeight: '600',
                       cursor: comment.trim() ? 'pointer' : 'default',
