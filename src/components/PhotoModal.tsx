@@ -10,57 +10,72 @@ interface PhotoModalProps {
   showNavigation?: boolean;
 }
 
-const PhotoModal: React.FC<PhotoModalProps> = ({ 
-  photo, 
-  isOwn, 
-  onClose, 
+const PhotoModal: React.FC<PhotoModalProps> = ({
+  photo,
+  isOwn,
+  onClose,
   onNavigate,
-  showNavigation = false 
+  showNavigation = false
 }) => {
   const { data, setData, dbUser } = useContext(DataContext);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(photo.caption || '');
   const [comment, setComment] = useState('');
 
-const handleLike = async () => {
+  // Add these debug logs
+  console.log('PhotoModal mounted');
+  console.log('dbUser in PhotoModal:', dbUser);
+  console.log('photo data:', photo);
+
+  const handleLike = async () => {
     console.log('handleLike called');
-  console.log('dbUser:', dbUser);
-  console.log('photo.id:', photo.id);
-  if (!dbUser) {
-    console.log('No dbUser found!');
-    return;
-  }  
-  try {
-    // Toggle like in database
-    const result = await DatabaseService.likePhoto(dbUser.id, photo.id);
-     console.log('Like result:', result);
-    // Update local state
-    const updatedPhoto = { 
-      ...photo, 
-      likes: result.liked ? (photo.likes || 0) + 1 : Math.max((photo.likes || 0) - 1, 0),
-      userHasLiked: result.liked
-    };
+    console.log('dbUser:', dbUser);
+    console.log('photo.id:', photo.id);
     
-    // Update in local data
-    if (isOwn) {
-      const newPics = data.progressPics.map(p => 
-        p.id === photo.id ? updatedPhoto : p
-      );
-      setData(prev => ({ ...prev, progressPics: newPics }));
-    } else {
-      const newFeed = data.friendsFeed.map(item => 
-        item.id === photo.id ? updatedPhoto : item
-      );
-      setData(prev => ({ ...prev, friendsFeed: newFeed }));
+    if (!dbUser) {
+      console.log('No dbUser found!');
+      return;
     }
-  } catch (error) {
-    console.error('Error toggling like:', error);
-  }
-};
+    
+    try {
+      // Toggle like in database
+      const result = await DatabaseService.likePhoto(dbUser.id, photo.id);
+      console.log('Like result:', result);
+      
+      // Update local state
+      const updatedPhoto = {
+        ...photo,
+        likes: result.liked ? (photo.likes || 0) + 1 : Math.max((photo.likes || 0) - 1, 0),
+        userHasLiked: result.liked
+      };
+     
+      // Update in local data
+      if (isOwn) {
+        const newPics = data.progressPics.map(p =>
+          p.id === photo.id ? updatedPhoto : p
+        );
+        setData(prev => ({ ...prev, progressPics: newPics }));
+      } else {
+        const newFeed = data.friendsFeed.map(item =>
+          item.id === photo.id ? updatedPhoto : item
+        );
+        setData(prev => ({ ...prev, friendsFeed: newFeed }));
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
+  };
 
   const handleComment = async () => {
-    if (!dbUser || !comment.trim()) return;
+    console.log('handleComment called');
+    console.log('dbUser:', dbUser);
+    console.log('comment:', comment);
     
+    if (!dbUser || !comment.trim()) {
+      console.log('No dbUser or empty comment!');
+      return;
+    }
+   
     try {
       const newComment = {
         user_id: dbUser.id,
@@ -68,28 +83,28 @@ const handleLike = async () => {
         text: comment,
         timestamp: Date.now()
       };
-      
+     
       // Update in database
       await DatabaseService.addComment(dbUser.id, photo.id, comment);
-      
+     
       // Update local state
-      const updatedPhoto = { 
-        ...photo, 
-        comments: [...(photo.comments || []), newComment] 
+      const updatedPhoto = {
+        ...photo,
+        comments: [...(photo.comments || []), newComment]
       };
-      
+     
       if (isOwn) {
-        const newPics = data.progressPics.map(p => 
+        const newPics = data.progressPics.map(p =>
           p.id === photo.id ? updatedPhoto : p
         );
         setData(prev => ({ ...prev, progressPics: newPics }));
       } else {
-        const newFeed = data.friendsFeed.map(item => 
+        const newFeed = data.friendsFeed.map(item =>
           item.id === photo.id ? updatedPhoto : item
         );
         setData(prev => ({ ...prev, friendsFeed: newFeed }));
       }
-      
+     
       setComment('');
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -98,9 +113,9 @@ const handleLike = async () => {
 
   const saveEditedCaption = () => {
     if (!isOwn) return;
-    
+   
     const newPics = [...data.progressPics];
-    const index = data.progressPics.findIndex((p: any) => 
+    const index = data.progressPics.findIndex((p: any) =>
       p.id === photo.id
     );
     if (index !== -1) {
@@ -109,7 +124,6 @@ const handleLike = async () => {
     }
     setIsEditingCaption(false);
   };
-
   return (
     <div 
       className="modal active progress-photo-modal"
@@ -269,21 +283,26 @@ const handleLike = async () => {
   gap: '16px',
   marginBottom: '16px',
 }}>
-  <button
-    style={{
-      background: 'none',
-      border: 'none',
-      color: photo.userHasLiked ? '#ef4444' : 'var(--text)',
-      fontSize: '1.8em',
-      cursor: 'pointer',
-      padding: 0,
-      minHeight: 'auto',
-      transition: 'all 0.2s ease',
-    }}
-    onClick={handleLike}
-  >
-    {photo.userHasLiked ? '❤️' : '🤍'}
-  </button>
+<button
+  style={{
+    background: 'none',
+    border: 'none',
+    color: photo.userHasLiked ? '#ef4444' : 'var(--text)',
+    fontSize: '1.8em',
+    cursor: 'pointer',
+    padding: 0,
+    minHeight: 'auto',
+    transition: 'all 0.2s ease',
+  }}
+  onClick={() => {
+    console.log('Like button clicked!');
+    console.log('dbUser:', dbUser);
+    console.log('photo.id:', photo.id);
+    handleLike();
+  }}
+>
+  {photo.userHasLiked ? '❤️' : '🤍'}
+</button>
   <span style={{ fontSize: '0.95em', fontWeight: '500' }}>
     {photo.likes || 0} {photo.likes === 1 ? 'like' : 'likes'}
   </span>
