@@ -1225,7 +1225,10 @@ button.finish {
         transform: scale(1);
     }
 }
-
+.progress-photo-modal.modal.active {
+    align-items: flex-start !important;  /* Force modal to start at top */
+    padding-top: 0 !important;
+}
 /* Progress Photo Modal */
 .progress-photo-modal {
     background: var(--bg-dark);
