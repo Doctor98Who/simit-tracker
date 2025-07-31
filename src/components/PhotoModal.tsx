@@ -30,31 +30,31 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   const [localPhoto, setLocalPhoto] = useState(getPhotoFromContext());
 
   // Update local photo when photo prop changes (for navigation between photos)
-  useEffect(() => {
-    const newPhoto = getPhotoFromContext();
-    setLocalPhoto(newPhoto);
-    setEditCaption(newPhoto.caption || '');
-  }, [photo.id, isOwn]);
+useEffect(() => {
+  // Store the original position
+  const scrollY = window.scrollY;
+  const bodyStyle = document.body.style;
+  const htmlStyle = document.documentElement.style;
 
-  // Prevent background scrolling with better mobile support
-  useEffect(() => {
-    // Store the original position
-    const scrollY = window.scrollY;
+  // Prevent body scroll when modal is open
+  bodyStyle.position = 'fixed';
+  bodyStyle.top = `-${scrollY}px`;
+  bodyStyle.width = '100%';
+  bodyStyle.overflowY = 'hidden';
+  
+  // Also lock html element for some browsers
+  htmlStyle.overflowY = 'hidden';
 
-    // Prevent body scroll when modal is open
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-
-    return () => {
-      // Re-enable body scroll when modal closes
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      window.scrollTo(0, scrollY);
-    };
-  }, []);
-
+  return () => {
+    // Re-enable body scroll when modal closes
+    bodyStyle.position = '';
+    bodyStyle.top = '';
+    bodyStyle.width = '';
+    bodyStyle.overflowY = '';
+    htmlStyle.overflowY = '';
+    window.scrollTo(0, scrollY);
+  };
+}, []);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState(localPhoto.caption || '');
   const [comment, setComment] = useState('');
@@ -261,35 +261,37 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showCommentMenu]);
 
-  return (
-    <div
-      className="modal active progress-photo-modal"
-      style={{
-        background: 'rgba(0, 0, 0, 0.95)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
-      }}
-    >
-      <div className="modal-content" style={{
-        width: '100%',
-        maxWidth: '800px',
-        minHeight: '100vh',
-        background: 'var(--bg-dark)',
-        padding: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-      }}>
-        {/* Header */}
+return (
+  <div
+    className="modal active progress-photo-modal"
+    style={{
+      background: 'rgba(0, 0, 0, 0.95)',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 9999,
+      overflow: 'hidden', // CHANGED: from 'auto' to 'hidden' - prevents outer scroll
+    }}
+  >
+    <div className="modal-content" style={{
+      width: '100%',
+      maxWidth: '800px',
+      height: '100vh', // CHANGED: from minHeight to height - fixed height
+      background: 'var(--bg-dark)',
+      padding: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      overflowY: 'auto', // ADDED: scroll here on the content
+      overflowX: 'hidden', // ADDED: prevent horizontal scroll
+      WebkitOverflowScrolling: 'touch', // ADDED: smooth scrolling on iOS
+    }}>
+              {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',

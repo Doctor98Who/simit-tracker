@@ -1229,16 +1229,20 @@ button.finish {
 /* Progress Photo Modal */
 .progress-photo-modal {
     background: var(--bg-dark);
-}
-/* Simplified Progress Photo Modal */
-.progress-photo-modal {
-    background: var(--bg-dark);
+    overflow: hidden !important; /* Prevent outer scroll */
 }
 
-/* Simple webkit scrolling for smooth scroll on iOS */
-.progress-photo-modal {
-    -webkit-overflow-scrolling: touch;
+/* Modal content scrolling */
+.progress-photo-modal .modal-content {
+    height: 100vh;
+    height: -webkit-fill-available;
+    max-height: 100vh;
+    max-height: -webkit-fill-available;
+    overflow-y: auto !important; /* Scroll should be here */
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
 }
+
 /* Responsive adjustments for smaller screens */
 @media screen and (max-height: 700px) {
     .exercise-select-modal .modal-content {
@@ -1263,13 +1267,13 @@ button.finish {
         border-radius: 20px 20px 0 0;
     }
 }
+
 /* Fix for Android Chrome address bar */
 @supports (padding: max(0px)) {
     body {
         min-height: -webkit-fill-available;
     }
 }
-
 /* Ensure inputs don't zoom on focus */
 @media screen and (max-width: 768px) {
     input[type="text"]:focus,
