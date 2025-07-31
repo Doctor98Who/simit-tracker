@@ -35,7 +35,7 @@ useEffect(() => {
   const scrollY = window.scrollY;
   const bodyStyle = document.body.style;
   const htmlStyle = document.documentElement.style;
-
+  
   // Prevent body scroll when modal is open
   bodyStyle.position = 'fixed';
   bodyStyle.top = `-${scrollY}px`;
@@ -44,7 +44,19 @@ useEffect(() => {
   
   // Also lock html element for some browsers
   htmlStyle.overflowY = 'hidden';
-
+  
+  // Scroll modal to top when it opens
+  const modalElement = document.querySelector('.progress-photo-modal');
+  if (modalElement) {
+    modalElement.scrollTop = 0;
+  }
+  
+  // Ensure modal content is also at top
+  const modalContent = document.querySelector('.progress-photo-modal .modal-content');
+  if (modalContent) {
+    modalContent.scrollTop = 0;
+  }
+  
   return () => {
     // Re-enable body scroll when modal closes
     bodyStyle.position = '';
@@ -841,7 +853,9 @@ backgroundSize: 'cover',
 {dbUser && comment.user_id === dbUser.id && (
   <div
     onClick={() => {
+      console.log('Before click - showCommentMenu:', showCommentMenu);
       setShowCommentMenu(showCommentMenu === idx ? null : idx);
+        console.log('Clicked index:', idx);
     }}
     style={{
       background: 'none',
@@ -865,8 +879,8 @@ backgroundSize: 'cover',
         position: 'absolute',
         top: '100%',
         right: 0,
-        background: 'var(--bg-dark)',
-        border: '1px solid var(--border)',
+        background: 'red', // TEMPORARILY MAKE IT RED TO SEE IT
+         border: '2px solid yellow', // ADD YELLOW BORDER
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         minWidth: '120px',
