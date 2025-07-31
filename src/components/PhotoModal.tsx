@@ -45,17 +45,15 @@ useEffect(() => {
   // Also lock html element for some browsers
   htmlStyle.overflowY = 'hidden';
   
-  // Scroll modal to top when it opens
-  const modalElement = document.querySelector('.progress-photo-modal');
-  if (modalElement) {
-    modalElement.scrollTop = 0;
-  }
-  
-  // Ensure modal content is also at top
-  const modalContent = document.querySelector('.progress-photo-modal .modal-content');
-  if (modalContent) {
-    modalContent.scrollTop = 0;
-  }
+  // IMPORTANT: Use setTimeout to ensure DOM is ready
+  setTimeout(() => {
+    // Scroll the modal content div to top
+    const modalContent = document.querySelector('.progress-photo-modal .modal-content');
+    if (modalContent) {
+      modalContent.scrollTop = 0;
+      modalContent.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  }, 0);
   
   return () => {
     // Re-enable body scroll when modal closes
@@ -855,7 +853,8 @@ backgroundSize: 'cover',
     onClick={() => {
       console.log('Before click - showCommentMenu:', showCommentMenu);
       setShowCommentMenu(showCommentMenu === idx ? null : idx);
-        console.log('Clicked index:', idx);
+      console.log('Clicked index:', idx);
+      console.log('After click - will showCommentMenu be:', showCommentMenu === idx ? null : idx);
     }}
     style={{
       background: 'none',
@@ -874,20 +873,21 @@ backgroundSize: 'cover',
     }}
   >
     ⋯
-    {showCommentMenu === idx && (
+    {true && ( // TEMPORARILY CHANGE showCommentMenu === idx TO true
       <div style={{
         position: 'absolute',
         top: '100%',
         right: 0,
-        background: 'red', // TEMPORARILY MAKE IT RED TO SEE IT
-         border: '2px solid yellow', // ADD YELLOW BORDER
+        background: 'red',
+        border: '2px solid yellow',
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         minWidth: '120px',
         zIndex: 10000,
         overflow: 'hidden',
       }}>
-        <button
+        <div style={{ color: 'white', padding: '10px' }}>MENU FOR INDEX {idx}</div>
+                <button
           onClick={(e) => {
             e.stopPropagation();
             handleEditComment(idx);
