@@ -1,6 +1,11 @@
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseService } from '../lib/supabase';
+console.log('DatabaseService loaded');
+console.log('supabaseService exists:', !!supabaseService);
+console.log('Service key in supabaseService:', !!(supabaseService as any).supabaseKey);
 import { StorageService } from './storage';
 import { DataType } from '../DataContext';
+console.log('Supabase Service Key exists:', !!process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY);
+console.log('Service key first 10 chars:', process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY?.substring(0, 10));
 
 export class DatabaseService {
   static async syncUserProfile(auth0Id: string, email: string) {
@@ -22,15 +27,15 @@ export class DatabaseService {
         })
         .select()
         .single();
-      
+
       if (error) {
         console.error('Error creating user:', error);
         throw error;
       }
-      
+
       return data;
     }
-    
+
     return existingUser;
   }
 
@@ -127,7 +132,7 @@ export class DatabaseService {
     // Save exercises and sets
     for (let i = 0; i < workout.exercises.length; i++) {
       const exercise = workout.exercises[i];
-      
+
       const { data: exerciseData, error: exerciseError } = await supabase
         .from('workout_exercises')
         .insert({
@@ -147,7 +152,7 @@ export class DatabaseService {
       // Save sets
       for (let j = 0; j < exercise.sets.length; j++) {
         const set = exercise.sets[j];
-        
+
         await supabase
           .from('exercise_sets')
           .insert({
@@ -250,7 +255,7 @@ export class DatabaseService {
       .eq('user_id', userId);
 
     if (error) throw error;
-    
+
     return data.map(ex => ({
       id: ex.id,
       name: ex.name,
@@ -262,55 +267,55 @@ export class DatabaseService {
     }));
   }
 
-static async saveProgressPhoto(userId: string, photo: any) {
-  try {
-    let photoUrl = photo.base64;
-    // Upload image if it's base64
-    if (photo.base64 && photo.base64.startsWith('data:')) {
-      const path = StorageService.generateFilePath(userId, 'progress');
-      photoUrl = await StorageService.uploadImage('progress', path, photo.base64);
+  static async saveProgressPhoto(userId: string, photo: any) {
+    try {
+      let photoUrl = photo.base64;
+      // Upload image if it's base64
+      if (photo.base64 && photo.base64.startsWith('data:')) {
+        const path = StorageService.generateFilePath(userId, 'progress');
+        photoUrl = await StorageService.uploadImage('progress', path, photo.base64);
+      }
+      const { data, error } = await supabase
+        .from('progress_photos')
+        .insert({
+          user_id: userId,
+          photo_url: photoUrl,
+          timestamp: photo.timestamp,
+          weight: photo.weight,
+          caption: photo.caption,
+          pump: photo.pump,
+          likes: photo.likes || 0,
+          visibility: photo.isPublic ? 'public' : 'private',
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving progress photo:', error);
+      throw error;
     }
-    const { data, error } = await supabase
-      .from('progress_photos')
-      .insert({
-        user_id: userId,
-        photo_url: photoUrl,
-        timestamp: photo.timestamp,
-        weight: photo.weight,
-        caption: photo.caption,
-        pump: photo.pump,
-        likes: photo.likes || 0,
-       visibility: photo.isPublic ? 'public' : 'private',
-      })
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error saving progress photo:', error);
-    throw error;
   }
-}
 
-static async deleteProgressPhoto(userId: string, photoId: string, photoUrl: string) {
-  try {
-    // Delete from storage
-    const path = StorageService.getFilePathFromUrl(photoUrl, 'progress');
-    if (path) {
-      await StorageService.deleteImage('progress', path);
+  static async deleteProgressPhoto(userId: string, photoId: string, photoUrl: string) {
+    try {
+      // Delete from storage
+      const path = StorageService.getFilePathFromUrl(photoUrl, 'progress');
+      if (path) {
+        await StorageService.deleteImage('progress', path);
+      }
+      // Delete from database
+      const { error } = await supabase
+        .from('progress_photos')
+        .delete()
+        .eq('id', photoId)
+        .eq('user_id', userId);
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting progress photo:', error);
+      throw error;
     }
-    // Delete from database
-    const { error } = await supabase
-      .from('progress_photos')
-      .delete()
-      .eq('id', photoId)
-      .eq('user_id', userId);
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error deleting progress photo:', error);
-    throw error;
   }
-}
 
 static async getProgressPhotos(userId: string) {
   const { data, error } = await supabase
@@ -318,53 +323,16 @@ static async getProgressPhotos(userId: string) {
     .select('*')
     .eq('user_id', userId)
     .order('timestamp', { ascending: false });
+  
   if (error) throw error;
  
+  // Get user's likes for these photos
+  const photoIds = data.map(p => p.id);
+  const userLikedPhotos = photoIds.length > 0 
+    ? await this.getUserLikedPhotos(userId, photoIds)
+    : [];
+  
   return data.map(photo => ({
-    id: photo.id,
-    base64: photo.photo_url, // Keep as 'base64' for compatibility
-    timestamp: photo.timestamp,
-    weight: photo.weight,
-    caption: photo.caption,
-    pump: photo.pump,
-    likes: photo.likes,
-   isPublic: photo.visibility === 'public',  // Add this line
-    comments: []
-  }));
-}
-
-static async getPublicFriendPhotos(userId: string): Promise<any[]> {
-  // First get all friend IDs
-  const { data: friendships, error: friendError } = await supabase
-    .from('friendships')
-    .select('friend_id, user_id')
-    .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
-    .eq('status', 'accepted');
-    
-  if (friendError) throw friendError;
-  
-  // Extract friend IDs
-  const friendIds = friendships?.map(f => 
-    f.user_id === userId ? f.friend_id : f.user_id
-  ) || [];
-  
-  if (friendIds.length === 0) return [];
-  
-  // Get public photos from friends
-  const { data: photos, error: photoError } = await supabase
-    .from('progress_photos')
-    .select(`
-      *,
-      user:users(id, username, first_name, last_name, profile_pic)
-    `)
-    .in('user_id', friendIds)
-    .eq('visibility', 'public')  // Changed from 'is_public' to 'visibility'    
-    .order('created_at', { ascending: false })
-    .limit(50);
-    
-  if (photoError) throw photoError;
-  
-  return photos?.map(photo => ({
     id: photo.id,
     base64: photo.photo_url,
     timestamp: photo.timestamp,
@@ -372,26 +340,70 @@ static async getPublicFriendPhotos(userId: string): Promise<any[]> {
     caption: photo.caption,
     pump: photo.pump,
     likes: photo.likes,
-    isPublic: photo.visibility === 'public',
-    user: photo.user
-  })) || [];
+    visibility: photo.visibility,
+    userHasLiked: userLikedPhotos.includes(photo.id),
+    comments: []
+  }));
 }
+  static async getPublicFriendPhotos(userId: string): Promise<any[]> {
+    // First get all friend IDs
+    const { data: friendships, error: friendError } = await supabase
+      .from('friendships')
+      .select('friend_id, user_id')
+      .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+      .eq('status', 'accepted');
 
-static async saveProgramTemplate(userId: string, template: any) {
-  const { data, error } = await supabase
-    .from('program_templates')
-    .insert({
-      user_id: userId,
-      name: template.name,
-      mesocycle_length: template.mesocycleLength,
-      weeks: template.weeks,
-      last_used: template.lastUsed
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
+    if (friendError) throw friendError;
+
+    // Extract friend IDs
+    const friendIds = friendships?.map(f =>
+      f.user_id === userId ? f.friend_id : f.user_id
+    ) || [];
+
+    if (friendIds.length === 0) return [];
+
+    // Get public photos from friends
+    const { data: photos, error: photoError } = await supabase
+      .from('progress_photos')
+      .select(`
+      *,
+      user:users(id, username, first_name, last_name, profile_pic)
+    `)
+      .in('user_id', friendIds)
+      .eq('visibility', 'public')  // Changed from 'is_public' to 'visibility'    
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (photoError) throw photoError;
+
+    return photos?.map(photo => ({
+      id: photo.id,
+      base64: photo.photo_url,
+      timestamp: photo.timestamp,
+      weight: photo.weight,
+      caption: photo.caption,
+      pump: photo.pump,
+      likes: photo.likes,
+      isPublic: photo.visibility === 'public',
+      user: photo.user
+    })) || [];
+  }
+
+  static async saveProgramTemplate(userId: string, template: any) {
+    const { data, error } = await supabase
+      .from('program_templates')
+      .insert({
+        user_id: userId,
+        name: template.name,
+        mesocycle_length: template.mesocycleLength,
+        weeks: template.weeks,
+        last_used: template.lastUsed
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
   static async updateProgramTemplate(userId: string, templateId: string, updates: any) {
     const { data, error } = await supabase
       .from('program_templates')
@@ -426,7 +438,7 @@ static async saveProgramTemplate(userId: string, template: any) {
       .eq('user_id', userId);
 
     if (error) throw error;
-    
+
     return data.map(template => ({
       id: template.id,
       name: template.name,
@@ -435,11 +447,11 @@ static async saveProgramTemplate(userId: string, template: any) {
       lastUsed: template.last_used
     }));
   }
-  
+
 
   // Friend-related methods
   static async searchUsers(currentUserId: string, searchQuery: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('users')
       .select('id, username, first_name, last_name, profile_pic')
       .neq('id', currentUserId)
@@ -452,7 +464,7 @@ static async saveProgramTemplate(userId: string, template: any) {
 
   static async sendFriendRequest(senderId: string, receiverUsername: string) {
     // First, find the receiver by username
-    const { data: receiver, error: receiverError } = await supabase
+    const { data: receiver, error: receiverError } = await supabaseService
       .from('users')
       .select('id')
       .eq('username', receiverUsername)
@@ -463,7 +475,7 @@ static async saveProgramTemplate(userId: string, template: any) {
     }
 
     // Check if request already exists
-    const { data: existingRequest } = await supabase
+    const { data: existingRequest } = await supabaseService
       .from('friend_requests')
       .select('id')
       .eq('sender_id', senderId)
@@ -475,7 +487,7 @@ static async saveProgramTemplate(userId: string, template: any) {
     }
 
     // Check if already friends
-    const { data: existingFriend } = await supabase
+    const { data: existingFriend } = await supabaseService
       .from('friends')
       .select('id')
       .eq('user_id', senderId)
@@ -487,7 +499,7 @@ static async saveProgramTemplate(userId: string, template: any) {
     }
 
     // Send friend request
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('friend_requests')
       .insert({
         sender_id: senderId,
@@ -502,7 +514,7 @@ static async saveProgramTemplate(userId: string, template: any) {
 
   static async acceptFriendRequest(requestId: string, userId: string) {
     // Get the friend request
-    const { data: request, error: requestError } = await supabase
+    const { data: request, error: requestError } = await supabaseService
       .from('friend_requests')
       .select('*')
       .eq('id', requestId)
@@ -514,13 +526,13 @@ static async saveProgramTemplate(userId: string, template: any) {
     }
 
     // Update request status
-    await supabase
+    await supabaseService
       .from('friend_requests')
       .update({ status: 'accepted', updated_at: new Date().toISOString() })
       .eq('id', requestId);
 
     // Create bidirectional friend relationships
-    const { error: friendError } = await supabase
+    const { error: friendError } = await supabaseService
       .from('friends')
       .insert([
         {
@@ -540,7 +552,7 @@ static async saveProgramTemplate(userId: string, template: any) {
   }
 
   static async rejectFriendRequest(requestId: string, userId: string) {
-    const { error } = await supabase
+    const { error } = await supabaseService
       .from('friend_requests')
       .update({ status: 'rejected', updated_at: new Date().toISOString() })
       .eq('id', requestId)
@@ -551,7 +563,7 @@ static async saveProgramTemplate(userId: string, template: any) {
   }
 
   static async getFriends(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('friends')
       .select(`
         *,
@@ -571,7 +583,7 @@ static async saveProgramTemplate(userId: string, template: any) {
   }
 
   static async getPendingFriendRequests(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('friend_requests')
       .select(`
         *,
@@ -593,7 +605,7 @@ static async saveProgramTemplate(userId: string, template: any) {
 
   static async removeFriend(userId: string, friendId: string) {
     // Remove both directions of the friendship
-    const { error } = await supabase
+    const { error } = await supabaseService
       .from('friends')
       .delete()
       .or(`user_id.eq.${userId},user_id.eq.${friendId}`)
@@ -603,56 +615,62 @@ static async saveProgramTemplate(userId: string, template: any) {
     return true;
   }
 
-  static async getFriendsFeed(userId: string) {
-    // First get all friend IDs
-    const { data: friends, error: friendsError } = await supabase
-      .from('friends')
-      .select('friend_id')
-      .eq('user_id', userId)
-      .eq('status', 'accepted');
-
-    if (friendsError) throw friendsError;
-
-    const friendIds = friends.map(f => f.friend_id);
-
-    if (friendIds.length === 0) {
-      return [];
-    }
-
-    // Get public progress photos from friends
-    const { data: photos, error: photosError } = await supabase
-      .from('progress_photos')
-      .select(`
-        *,
-        user:user_id(
-          id,
-          username,
-          first_name,
-          last_name,
-          profile_pic
-        )
-      `)
-      .in('user_id', friendIds)
-      .eq('visibility', 'public')
-      .order('timestamp', { ascending: false })
-      .limit(50);
-
-    if (photosError) throw photosError;
-
-    return photos.map(photo => ({
-      id: photo.id,
-      base64: photo.photo_url,
-      timestamp: photo.timestamp,
-      weight: photo.weight,
-      caption: photo.caption,
-      pump: photo.pump,
-      likes: photo.likes,
-      visibility: photo.visibility,
-      user: photo.user,
-      comments: []
-    }));
+static async getFriendsFeed(userId: string) {
+  // First get all friend IDs
+  const { data: friends, error: friendsError } = await supabaseService
+    .from('friends')
+    .select('friend_id')
+    .eq('user_id', userId)
+    .eq('status', 'accepted');
+    
+  if (friendsError) throw friendsError;
+  
+  const friendIds = friends.map(f => f.friend_id);
+  
+  if (friendIds.length === 0) {
+    return [];
   }
-
+  
+  // Get public progress photos from friends
+  const { data: photos, error: photosError } = await supabaseService
+    .from('progress_photos')
+    .select(`
+      *,
+      user:user_id(
+        id,
+        username,
+        first_name,
+        last_name,
+        profile_pic
+      )
+    `)
+    .in('user_id', friendIds)
+    .eq('visibility', 'public')
+    .order('timestamp', { ascending: false })
+    .limit(50);
+    
+  if (photosError) throw photosError;
+  
+  // Get user's likes for these photos
+  const photoIds = photos.map(p => p.id);
+  const userLikedPhotos = photoIds.length > 0 
+    ? await this.getUserLikedPhotos(userId, photoIds)
+    : [];
+  
+  return photos.map(photo => ({
+    id: photo.id,
+    base64: photo.photo_url,
+    timestamp: photo.timestamp,
+    weight: photo.weight,
+    caption: photo.caption,
+    pump: photo.pump,
+    likes: photo.likes,
+    visibility: photo.visibility,
+    userHasLiked: userLikedPhotos.includes(photo.id),
+    user: photo.user,
+    comments: []
+  }));
+}
   static async updateProgressPhotoVisibility(userId: string, photoId: string, visibility: 'private' | 'public') {
     const { error } = await supabase
       .from('progress_photos')
@@ -662,5 +680,119 @@ static async saveProgramTemplate(userId: string, template: any) {
 
     if (error) throw error;
     return true;
+  }
+  static async likePhoto(userId: string, photoId: string) {
+console.log('likePhoto called with:', { userId, photoId });
+  try {      // Check if already liked
+      const { data: existingLike } = await supabaseService
+        .from('likes')
+        .select('id')
+        .eq('photo_id', photoId)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingLike) {
+        // Unlike - delete the like
+        const { error } = await supabaseService
+          .from('likes')
+          .delete()
+          .eq('photo_id', photoId)
+          .eq('user_id', userId);
+
+        if (error) throw error;
+        return { liked: false };
+      } else {
+        // Like - insert new like
+        const { error } = await supabaseService
+          .from('likes')
+          .insert({
+            photo_id: photoId,
+            user_id: userId
+          });
+
+        if (error) throw error;
+        return { liked: true };
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      throw error;
+    }
+  }
+
+  static async addComment(userId: string, photoId: string, text: string) {
+    try {
+      const { data, error } = await supabaseService
+        .from('comments')
+        .insert({
+          photo_id: photoId,
+          user_id: userId,
+          text
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      throw error;
+    }
+  }
+
+  static async deleteComment(commentId: string, userId: string) {
+    try {
+      const { error } = await supabaseService
+        .from('comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      throw error;
+    }
+  }
+
+  static async getPhotoComments(photoId: string) {
+    try {
+      const { data, error } = await supabaseService
+        .from('comments')
+        .select(`
+        *,
+        user:users(
+          id,
+          username,
+          first_name,
+          last_name,
+          profile_pic
+        )
+      `)
+        .eq('photo_id', photoId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error getting comments:', error);
+      throw error;
+    }
+  }
+
+  static async getUserLikedPhotos(userId: string, photoIds: string[]) {
+ console.log('getUserLikedPhotos called with:', { userId, photoIds });
+  try {      const { data, error } = await supabaseService
+        .from('likes')
+        .select('photo_id')
+        .eq('user_id', userId)
+        .in('photo_id', photoIds);
+
+      if (error) throw error;
+      return data.map(like => like.photo_id);
+    } catch (error) {
+      console.error('Error getting user likes:', error);
+      throw error;
+    }
   }
 }

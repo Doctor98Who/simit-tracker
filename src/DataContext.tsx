@@ -195,35 +195,48 @@ export const DataContext = createContext<DataContextType>({
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const [data, setData] = useState<DataType>(initialData);
-  const { user, isAuthenticated, isLoading } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
   const [dbUser, setDbUser] = useState<any>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  const syncUserData = async () => {
-    if (!user?.sub || !user?.email) return;
-    
-    setIsSyncing(true);
+const syncUserData = async () => {
+  if (!user?.sub || !user?.email) return;
+ 
+  setIsSyncing(true);
+  try {
+    // Get Auth0 access token and set Supabase session
     try {
-      // Set Auth0 ID for RLS
-      setSupabaseAuth0Id(user.sub);
-      
-      // Sync user profile
-      const userProfile = await DatabaseService.syncUserProfile(user.sub, user.email);
-      setDbUser(userProfile);
-      
-      // Load user data from Supabase
-      const [history, customExercises, progressPhotos, templates, friends, friendRequests] = await Promise.all([
-        DatabaseService.getWorkoutHistory(userProfile.id),
-        DatabaseService.getCustomExercises(userProfile.id),
-        DatabaseService.getProgressPhotos(userProfile.id),
-        DatabaseService.getProgramTemplates(userProfile.id),
-        DatabaseService.getFriends(userProfile.id),
-        DatabaseService.getPendingFriendRequests(userProfile.id)
-      ]);
-
-      // Load friends feed separately
-      const friendsFeed = await DatabaseService.getFriendsFeed(userProfile.id);
+      const token = await getAccessTokenSilently();
+await setSupabaseAuth0Id(user.sub, token);
+      console.log('Set Supabase session with Auth0 token');
+    } catch (error) {
+      console.error('Error getting Auth0 token:', error);
+      await setSupabaseAuth0Id(user.sub);
+    }
+    
+    console.log('Setting Auth0 ID for RLS:', user.sub);
+   
+    // Check if Supabase session exists
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Current Supabase session after setSupabaseAuth0Id:', session);      
+    
+    // Sync user profile
+    const userProfile = await DatabaseService.syncUserProfile(user.sub, user.email);
+    setDbUser(userProfile);
+   
+    // Load user data from Supabase
+    const [history, customExercises, progressPhotos, templates, friends, friendRequests] = await Promise.all([
+      DatabaseService.getWorkoutHistory(userProfile.id),
+      DatabaseService.getCustomExercises(userProfile.id),
+      DatabaseService.getProgressPhotos(userProfile.id),
+      DatabaseService.getProgramTemplates(userProfile.id),
+      DatabaseService.getFriends(userProfile.id),
+      DatabaseService.getPendingFriendRequests(userProfile.id)
+    ]);
+    
+    // Load friends feed separately
+    const friendsFeed = await DatabaseService.getFriendsFeed(userProfile.id);
 
       // Add this to load current workout
       const currentWorkout = userProfile.current_workout || null;

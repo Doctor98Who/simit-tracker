@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { Auth0ProviderWithHistory } from './components/Auth0ProviderWithHistory';
+import './lib/supabase';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

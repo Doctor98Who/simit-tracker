@@ -25,6 +25,8 @@ interface Exercise {
 
 const ProfileTab = () => {
   const { data, setData } = useContext(DataContext);
+  console.log('Current friend requests:', data.friendRequests);
+console.log('Current friends:', data.friends);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryItems, setExpandedHistoryItems] = useState<number[]>([]);
 
