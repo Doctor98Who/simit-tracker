@@ -123,13 +123,21 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
 
   return (
     <div 
-      className="modal active comments-modal" 
+      className="modal active" 
+      id="comments-modal"
       onClick={onClose} 
       style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'rgba(0,0,0,0.8)',
+        display: 'flex',
         alignItems: 'flex-end',
-        overflow: 'hidden !important',  // Force override the CSS
-        height: '100vh',                 // Explicit height
-        maxHeight: '100vh',              // Prevent expansion
+        justifyContent: 'center',
+        zIndex: 1000,
+        overflow: 'hidden',
       }}
     >
       <div 
