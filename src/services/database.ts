@@ -326,7 +326,40 @@ static async getProgressPhotos(userId: string) {
     ? await this.getUserLikedPhotos(userId, photoIds)
     : [];
   
-  return data.map(photo => ({
+  // Get comments for each photo
+  const photosWithComments = await Promise.all(
+    data.map(async (photo) => {
+      try {
+        // Fetch comments using the serverless function
+        const response = await fetch('/.netlify/functions/photo-interactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'getComments',
+            photoId: photo.id
+          })
+        });
+        
+        const result = await response.json();
+        const comments = result.data || [];
+        
+        return {
+          ...photo,
+          comments: comments.map((c: any) => ({
+            user_id: c.user_id,
+            user_name: `${c.user.first_name} ${c.user.last_name}`,
+            text: c.text,
+            timestamp: new Date(c.created_at).getTime()
+          }))
+        };
+      } catch (error) {
+        console.error('Error loading comments for photo:', photo.id, error);
+        return { ...photo, comments: [] };
+      }
+    })
+  );
+  
+  return photosWithComments.map(photo => ({
     id: photo.id,
     base64: photo.photo_url,
     timestamp: photo.timestamp,
@@ -336,7 +369,7 @@ static async getProgressPhotos(userId: string) {
     likes: photo.likes,
     visibility: photo.visibility,
     userHasLiked: userLikedPhotos.includes(photo.id),
-    comments: []
+    comments: photo.comments
   }));
 }
   static async getPublicFriendPhotos(userId: string): Promise<any[]> {
