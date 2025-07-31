@@ -175,19 +175,27 @@ return (
       fontWeight: '600',
       color: 'var(--text)',
     }}>Exercises</h2>
-<div style={{ position: 'relative', marginBottom: '8px', padding: '0 16px' }}>
-        <input
-        type="text"
-        className="search-bar"
-        id="exercise-search"
-        placeholder="Search exercises..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{
-          width: '100%',
-          paddingRight: searchQuery ? '40px' : '16px',
-        }}
-      />
+<div style={{ 
+  position: 'relative', 
+  marginBottom: '8px', 
+  padding: '0 16px',
+  maxWidth: '100%',
+  boxSizing: 'border-box',
+}}>
+  <input
+    type="text"
+    className="search-bar"
+    id="exercise-search"
+    placeholder="Search exercises..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    style={{
+      width: '100%',
+      paddingRight: searchQuery ? '40px' : '16px',
+      boxSizing: 'border-box',
+      maxWidth: '100%',
+    }}
+  />
       {searchQuery && (
         <button
           onClick={() => setSearchQuery('')}

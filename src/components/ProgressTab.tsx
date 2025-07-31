@@ -27,8 +27,8 @@ const ProgressTab = () => {
     setSelectedPhotoIndex(index);
     setEditCaption(pic.caption || '');
     setIsEditingCaption(false);
-    setData(prev => ({ 
-      ...prev, 
+    setData(prev => ({
+      ...prev,
       activeModal: 'progress-photo-modal',
       tempBase64: pic.base64,
       tempTimestamp: pic.timestamp
@@ -47,8 +47,8 @@ const ProgressTab = () => {
     setSelectedPhoto(newPhoto);
     setEditCaption(newPhoto.caption || '');
     setIsEditingCaption(false);
-    setData(prev => ({ 
-      ...prev, 
+    setData(prev => ({
+      ...prev,
       tempBase64: newPhoto.base64,
       tempTimestamp: newPhoto.timestamp
     }));
@@ -57,8 +57,8 @@ const ProgressTab = () => {
   const closePhotoModal = () => {
     setSelectedPhoto(null);
     setIsEditingCaption(false);
-    setData(prev => ({ 
-      ...prev, 
+    setData(prev => ({
+      ...prev,
       activeModal: null,
       tempBase64: null,
       tempTimestamp: null
@@ -66,26 +66,44 @@ const ProgressTab = () => {
   };
 
 const uploadProgressPic = () => {
-  // Clean up any stuck states
-  document.body.style.overflow = '';
-  document.body.style.position = '';
-  document.body.style.width = '';
-  document.body.style.top = '';
-  
-  // Ensure clean state
-  setData(prev => ({ 
-    ...prev, 
-    activeModal: 'progress-upload-modal',
-    tempBase64: null,
-    tempTimestamp: null,
-    activeTab: 'progress-tab',
-    tempIsPublic: false // Add this to track public/private state
-  }));
+    // Clean up any stuck states
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.top = '';
+
+    // Create and trigger file input immediately
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        const file = target.files[0];
+        const reader = new FileReader();
+    reader.onload = (event: ProgressEvent<FileReader>) => {
+  const result = event.target?.result;
+  if (result && typeof result === 'string') {
+    // Now open the modal with the photo already loaded
+    setData(prev => ({
+      ...prev,
+      activeModal: 'progress-upload-modal',
+      tempBase64: result,
+      tempTimestamp: Date.now(),
+      activeTab: 'progress-tab',
+      tempIsPublic: false
+    }));
+  }
 };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
   const saveEditedCaption = () => {
     if (selectedPhoto) {
       const newPics = [...data.progressPics];
-      const index = data.progressPics.findIndex((p: ProgressPic) => 
+      const index = data.progressPics.findIndex((p: ProgressPic) =>
         p.base64 === selectedPhoto.base64 && p.timestamp === selectedPhoto.timestamp
       );
       if (index !== -1) {
@@ -98,102 +116,102 @@ const uploadProgressPic = () => {
   };
 
   const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: ProgressPic, index: number) => (
-<div 
-  key={index} 
-  className="progress-pic"
-  onClick={() => openPhotoModal(pic, index)}
-  style={{
-    position: 'relative',
-    cursor: 'pointer',
-    aspectRatio: '1',
-    overflow: 'hidden',
-    background: '#000',
-  }}
->
-  <img 
-    src={pic.base64} 
-    alt="Progress" 
-    style={{
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      display: 'block',
-    }}
-  />
-  {pic.pump && (
-    <div style={{
-      position: 'absolute',
-      bottom: '8px',
-      left: '8px',
-      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9))',
-      backdropFilter: 'blur(8px)',
-      borderRadius: '16px',
-      padding: '4px 10px',
-      fontSize: '11px',
-      color: 'white',
-      fontWeight: '600',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '4px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-    }}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M19.5 9.5L18.5 8.5C17.5 7.5 16 7 14.5 7C13 7 11.5 7.5 10.5 8.5L9.5 9.5L8.5 8.5C7.5 7.5 6 7 4.5 7C3 7 1.5 7.5 0.5 8.5L0.5 8.5C-0.5 9.5 -0.5 11 0.5 12L7.5 19C8.5 20 10 20.5 11.5 20.5C13 20.5 14.5 20 15.5 19L22.5 12C23.5 11 23.5 9.5 22.5 8.5C21.5 7.5 20.5 7.5 19.5 8.5V9.5Z" 
-          fill="white" 
-          stroke="white" 
-          strokeWidth="1.5" 
-          strokeLinecap="round" 
-          strokeLinejoin="round"
-        />
-        <path d="M15 3L17 5L15 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M9 3L7 5L9 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-      {pic.pump}
+    <div
+      key={index}
+      className="progress-pic"
+      onClick={() => openPhotoModal(pic, index)}
+      style={{
+        position: 'relative',
+        cursor: 'pointer',
+        aspectRatio: '1',
+        overflow: 'hidden',
+        background: '#000',
+      }}
+    >
+      <img
+        src={pic.base64}
+        alt="Progress"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+        }}
+      />
+      {pic.pump && (
+        <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          left: '8px',
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(147, 51, 234, 0.9))',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '16px',
+          padding: '4px 10px',
+          fontSize: '11px',
+          color: 'white',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.5 9.5L18.5 8.5C17.5 7.5 16 7 14.5 7C13 7 11.5 7.5 10.5 8.5L9.5 9.5L8.5 8.5C7.5 7.5 6 7 4.5 7C3 7 1.5 7.5 0.5 8.5L0.5 8.5C-0.5 9.5 -0.5 11 0.5 12L7.5 19C8.5 20 10 20.5 11.5 20.5C13 20.5 14.5 20 15.5 19L22.5 12C23.5 11 23.5 9.5 22.5 8.5C21.5 7.5 20.5 7.5 19.5 8.5V9.5Z"
+              fill="white"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path d="M15 3L17 5L15 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M9 3L7 5L9 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          {pic.pump}
+        </div>
+      )}
     </div>
-  )}
-</div>
   )), [sortedProgressPics]);
 
   return (
     <div>
-<div style={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '20px',
-  background: 'transparent',
-  marginBottom: '20px',
-}}>
-  <h2 style={{ 
-    margin: 0, 
-    fontSize: '1.2em',
-    fontWeight: '600',
-    color: 'var(--text)',
-  }}>Progress Feed</h2>
-  <div 
-    onClick={uploadProgressPic}
-    style={{
-      color: 'var(--accent-primary)',
-      fontSize: '1em',
-      cursor: 'pointer',
-      fontWeight: '500',
-    }}
-  >
-    + Add Photo
-  </div>
-</div>      
-<div style={{
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '1px',
-  background: '#000',
-  margin: '0 -20px',  // Full width to edges
-}}>
-  {renderedProgressPics}
-</div>
-      {/* Photo Detail Modal */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '20px',
+        background: 'transparent',
+        marginBottom: '20px',
+      }}>
+        <h2 style={{
+          margin: 0,
+          fontSize: '1.2em',
+          fontWeight: '600',
+          color: 'var(--text)',
+        }}>Progress Feed</h2>
+        <div
+          onClick={uploadProgressPic}
+          style={{
+            color: 'var(--accent-primary)',
+            fontSize: '1em',
+            cursor: 'pointer',
+            fontWeight: '500',
+          }}
+        >
+          + Add Photo
+        </div>
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '1px',
+        background: '#000',
+        margin: '0 -20px',  // Full width to edges
+      }}>
+        {renderedProgressPics}
+      </div>
+            {/* Photo Detail Modal */}
       {selectedPhoto && data.activeModal === 'progress-photo-modal' && (
-        <div 
+        <div
           className="modal active progress-photo-modal"
           style={{
             background: 'rgba(0, 0, 0, 0.95)',
@@ -296,18 +314,18 @@ const uploadProgressPic = () => {
                   ‹
                 </button>
               )}
-              
-<img 
-  src={selectedPhoto.base64} 
-  alt="Progress"
-  style={{
-    maxWidth: '100%',
-    maxHeight: '100%',
-    objectFit: 'contain',
-    objectPosition: 'center',
-    backgroundColor: 'black',
-  }}
-/>              
+
+              <img
+                src={selectedPhoto.base64}
+                alt="Progress"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center',
+                  backgroundColor: 'black',
+                }}
+              />
               {selectedPhotoIndex < sortedProgressPics.length - 1 && (
                 <button
                   onClick={() => navigatePhoto('next')}
@@ -448,13 +466,13 @@ const uploadProgressPic = () => {
                 </div>
               ) : (
                 selectedPhoto.caption && (
-                  <p style={{ 
+                  <p style={{
                     margin: '0 0 16px 0',
                     fontSize: '0.95em',
                     lineHeight: '1.5',
                     cursor: 'pointer',
                   }}
-                  onClick={() => setIsEditingCaption(true)}
+                    onClick={() => setIsEditingCaption(true)}
                   >
                     {selectedPhoto.caption}
                   </p>

@@ -6,7 +6,7 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.1.17' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.18' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
@@ -217,7 +217,7 @@ useEffect(() => {
                     fontSize: '0.75em',
                     fontWeight: '600',
                   }}>
-                    v0.1.17
+                    v0.1.18
                   </span>
                   <span style={{
                     color: 'var(--text-muted)',
@@ -245,17 +245,13 @@ useEffect(() => {
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
-                    <li>Complete overhaul of create program UI</li>
+                    <li>Uploading picture as 'public' will populate it in feed under community tab</li>
+                    <li>Friends can see public posts and interact with it</li>
+                    <li>Complete overhaul of UI in many of the tabs</li>
                     <li>Added login capability!</li>
                     <li>Added cloud sync with Supabase</li>
                     <li>1RM progress tracking and charts</li>
                     <li>Can edit custom exercises now</li>
-                    <li>Can edit uploaded progress pic</li>
-                    <li>Exercise history viewing</li>
-                    <li>Rest timer with custom durations</li>
-                    <li>Drop set support (D sets)</li>
-                    <li>Drag to reorder exercises</li>
-                    <li>Multi-device support</li>
                   </ul>
                 </div>
                 
@@ -277,6 +273,8 @@ useEffect(() => {
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
+                    <li>Finding friends is no longer case sensitive</li>
+                    <li>Small bug fixes</li>
                     <li>Fixed seach bar going off screen in ExerciseTab</li>
                     <li>Fixed sync issues when refreshing/exiting browser</li>
                     <li>Fixed numerical display of sets involving warm up sets</li>

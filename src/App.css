@@ -352,8 +352,18 @@ body {
     color: var(--text);
     border: 1px solid var(--border);
     width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
 }
-.letter-header {
+
+/* Prevent search bar from expanding on focus */
+.search-bar:focus {
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+    outline: none;
+    border-color: var(--accent-primary);
+}.letter-header {
     font-size: 1.8em;
     color: var(--accent-primary);
     margin-top: 20px;

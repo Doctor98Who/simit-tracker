@@ -55,21 +55,19 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
   return (
     <div style={{
       background: 'var(--bg-dark)',
-      borderRadius: '12px',
-      marginBottom: '16px',
+      marginBottom: '2px',
       overflow: 'hidden',
-      border: '1px solid var(--border)',
     }}>
       {/* Header */}
       <div style={{
-        padding: '12px 16px',
+        padding: '14px 16px',
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
       }}>
         <div style={{
-          width: '40px',
-          height: '40px',
+          width: '32px',
+          height: '32px',
           borderRadius: '50%',
           background: 'var(--bg-lighter)',
           backgroundImage: (isOwn ? data.profilePic : item.user?.profile_pic) 
@@ -77,28 +75,35 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
             : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          flexShrink: 0,
         }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: '600' }}>
+          <div style={{ 
+            fontWeight: '600',
+            fontSize: '0.95em',
+            lineHeight: '1.2',
+          }}>
             {isOwn 
               ? `${data.firstName} ${data.lastName}`
               : `${item.user.first_name} ${item.user.last_name}`
             }
           </div>
-          <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
-            {isOwn 
-              ? `@${data.username}` 
-              : `@${item.user.username}`
-            } • {new Date(item.timestamp).toLocaleDateString()}
+          <div style={{ 
+            fontSize: '0.8em', 
+            color: 'var(--text-muted)',
+            lineHeight: '1.2',
+          }}>
+            {new Date(item.timestamp).toLocaleDateString()}
           </div>
         </div>
       </div>
       
-      {/* Image */}
+      {/* Image - Full width */}
       <div style={{
         width: '100%',
         aspectRatio: '1',
         background: '#000',
+        position: 'relative',
       }}>
         <img 
           src={item.base64} 
@@ -111,61 +116,120 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
         />
       </div>
       
-      {/* Action buttons */}
+      {/* Actions + Pump Rating Row */}
       <div style={{
         display: 'flex',
-        gap: '16px',
-        padding: '12px 16px',
-        borderBottom: '1px solid var(--border)',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '8px 8px',
       }}>
-        <button
-          onClick={handleLike}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
+        {/* Left side - Like and Comment buttons */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'center',
+        }}>
+          <button
+            onClick={handleLike}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: 'var(--text)',
+              padding: '8px',
+              minWidth: '40px',
+              minHeight: '40px',
+              transition: 'all 0.2s',
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill={userHasLiked ? '#ef4444' : 'none'}
+              stroke={userHasLiked ? '#ef4444' : 'currentColor'}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ transition: 'all 0.2s ease' }}
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={onOpenComments}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              color: 'var(--text)',
+              padding: '8px',
+              minWidth: '40px',
+              minHeight: '40px',
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Right side - Pump Rating */}
+        {item.pump && (
+          <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            color: userHasLiked ? '#ef4444' : 'var(--text)',
-            fontSize: '1.2em',
-            padding: '8px',
-            minWidth: '44px',
-            minHeight: '44px',
-            transition: 'color 0.2s',
-          }}
-        >
-          <span>{userHasLiked ? '❤️' : '🤍'}</span>
-          <span style={{ fontSize: '0.75em' }}>{likes}</span>
-        </button>
-        
-        <button
-          onClick={onOpenComments}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: 'var(--text)',
-            fontSize: '1.2em',
-            padding: '8px',
-            minWidth: '44px',
-            minHeight: '44px',
-          }}
-        >
-          <span>💬</span>
-          <span style={{ fontSize: '0.75em' }}>
-            {(item.comments || []).length}
-          </span>
-        </button>
+            padding: '6px 12px',
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            borderRadius: '20px',
+            color: 'white',
+            fontSize: '0.85em',
+            fontWeight: '600',
+            marginRight: '8px',
+          }}>
+            <span style={{ fontSize: '1.1em' }}>💪</span>
+            <span>{item.pump}/100</span>
+          </div>
+        )}
       </div>
+
+      {/* Likes count */}
+      {likes > 0 && (
+        <div style={{
+          padding: '0 16px',
+          fontSize: '0.95em',
+          fontWeight: '600',
+          marginBottom: '8px',
+        }}>
+          {likes} {likes === 1 ? 'like' : 'likes'}
+        </div>
+      )}
       
-      {/* Details */}
-      <div style={{ padding: '16px' }}>
+      {/* Caption and Comments Preview */}
+      <div style={{ padding: '0 16px 16px' }}>
         {item.caption && (
-          <p style={{ margin: '0 0 12px 0', fontSize: '0.95em' }}>
+          <p style={{ 
+            margin: '0 0 8px 0', 
+            fontSize: '0.95em',
+            lineHeight: '1.4',
+          }}>
             <span style={{ fontWeight: '600' }}>
               {isOwn ? data.username : item.user.username}
             </span>{' '}
@@ -173,20 +237,20 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           </p>
         )}
         
-        {/* Show preview of comments */}
+        {/* Comments preview */}
         {(item.comments || []).length > 0 && (
-          <div style={{ marginBottom: '8px' }}>
+          <div>
             {item.comments.slice(0, 2).map((comment: any, idx: number) => (
               <p key={idx} style={{ 
                 margin: '4px 0', 
                 fontSize: '0.9em',
-                color: 'var(--text-muted)'
+                lineHeight: '1.4',
               }}>
-                <span style={{ fontWeight: '600', color: 'var(--text)' }}>
+                <span style={{ fontWeight: '600' }}>
                   {comment.user_name.split(' ')[0]}
                 </span>{' '}
-                {comment.text.length > 50 
-                  ? comment.text.substring(0, 50) + '...' 
+                {comment.text.length > 60 
+                  ? comment.text.substring(0, 60) + '...' 
                   : comment.text
                 }
               </p>
@@ -198,9 +262,10 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
                   background: 'none',
                   border: 'none',
                   color: 'var(--text-muted)',
-                  fontSize: '0.85em',
+                  fontSize: '0.9em',
                   cursor: 'pointer',
                   padding: '4px 0',
+                  marginTop: '4px',
                 }}
               >
                 View all {item.comments.length} comments
@@ -209,20 +274,16 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           </div>
         )}
         
-        {/* Additional info */}
-        <div style={{
-          display: 'flex',
-          gap: '16px',
-          fontSize: '0.85em',
-          color: 'var(--text-muted)',
-        }}>
-          {item.weight && (
-            <span>⚖️ {item.weight} {data.weightUnit || 'lbs'}</span>
-          )}
-          {item.pump && (
-            <span>💪 Pump: {item.pump}/100</span>
-          )}
-        </div>
+        {/* Weight info if present */}
+        {item.weight && (
+          <div style={{
+            marginTop: '8px',
+            fontSize: '0.85em',
+            color: 'var(--text-muted)',
+          }}>
+            ⚖️ {item.weight} {data.weightUnit || 'lbs'}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -20,12 +20,11 @@ export const handler: Handler = async (event, context) => {
         const { senderId, receiverUsername } = params;
         
         // Find receiver by username
-        const { data: receiver, error: receiverError } = await supabase
-          .from('users')
-          .select('id')
-          .eq('username', receiverUsername)
-          .single();
-
+const { data: receiver, error: receiverError } = await supabase
+  .from('users')
+  .select('id')
+  .ilike('username', receiverUsername)
+  .single();
         if (receiverError || !receiver) {
           return { 
             statusCode: 404, 

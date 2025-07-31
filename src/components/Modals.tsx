@@ -1,12 +1,10 @@
 import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
-import { DataContext, DataType, Exercise, Template, ProgressPhoto } from '../DataContext';
+import { DataContext, DataType, Exercise, Template, ProgressPhoto, Set } from '../DataContext';
 import WorkoutModal from './WorkoutModal';
 import { useAuth0 } from '@auth0/auth0-react';
 import EXIF from 'exif-js';
 import { DatabaseService } from '../services/database';
 import CommentsModal from './CommentsModal';
-
-
 interface Day {
   name: string;
   exercises: Exercise[];
@@ -285,15 +283,34 @@ const Modals = () => {
     setSelectSearchQuery('');
 
     // Create the new exercise with sets
-    const newExercise = {
-      ...exercise,
-      sets: Array.from({ length: 3 }, () => ({
-        weight: '',
-        reps: '',
-        rpe: '',
-        completed: false,
-      })),
-    };
+// Get previous sets for this exercise to carry over set types
+const getPreviousSetTypes = () => {
+  // Look for the most recent workout with this exercise
+  for (let i = data.history.length - 1; i >= 0; i--) {
+    const workout = data.history[i];
+    const matchingEx = workout.exercises.find((e: Exercise) => 
+      e.name === exercise.name && (e.subtype || '') === (exercise.subtype || '')
+    );
+    if (matchingEx && matchingEx.sets) {
+      return matchingEx.sets.map((s: Set) => s.type);
+    }
+  }
+  return [];
+};
+
+const previousSetTypes = getPreviousSetTypes();
+
+// Create the new exercise with sets, carrying over set types
+const newExercise = {
+  ...exercise,
+  sets: Array.from({ length: 3 }, (_, index) => ({
+    weight: '',
+    reps: '',
+    rpe: '',
+    completed: false,
+    type: previousSetTypes[index] || undefined,
+  })),
+};
 
     if (exerciseSelectMode === 'workout') {
       // Adding to workout
@@ -1016,354 +1033,345 @@ const Modals = () => {
 
   return (
     <>
-      <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxHeight: '90vh',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-          borderRadius: '24px',
-          padding: '0',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          maxWidth: '450px',
-          width: '90%',
+    <div id="program-modal" className={`modal ${activeModal === 'program-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+    borderRadius: '24px',
+    padding: '0',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    maxWidth: '450px',
+    width: '90%',
+    overflow: 'hidden',
+  }}>
+    {/* Header */}
+    <div style={{
+      padding: '20px 24px',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      background: 'rgba(0, 0, 0, 0.2)',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}>
+      <h2 style={{
+        margin: 0,
+        fontSize: '1.3em',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        letterSpacing: '-0.5px',
+      }}>Create Program</h2>
+      {data.isEditingProgram && (
+        <span style={{
+          fontSize: '0.75em',
+          padding: '4px 12px',
+          background: 'rgba(59, 130, 246, 0.15)',
+          color: 'var(--accent-primary)',
+          borderRadius: '12px',
+          fontWeight: '500',
         }}>
-          {/* Header */}
+          Editing
+        </span>
+      )}
+    </div>
+
+    {/* Content */}
+    <div style={{
+      padding: '24px',
+      overflowY: 'auto',
+      maxHeight: 'calc(90vh - 80px)',
+      WebkitOverflowScrolling: 'touch',
+    }}>
+      {/* Program Name Input */}
+      <div style={{ marginBottom: '28px' }}>
+        <label style={{
+          display: 'block',
+          marginBottom: '8px',
+          color: 'var(--text-muted)',
+          fontSize: '0.85em',
+          fontWeight: '500',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          Program Name
+        </label>
+        <input
+          type="text"
+          id="program-name"
+          placeholder="e.g., Push Pull Legs"
+          defaultValue={(data.currentProgram as any)?.name || ''}
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '12px',
+            color: 'var(--text)',
+            fontSize: '16px',
+            outline: 'none',
+            transition: 'all 0.3s ease',
+            backdropFilter: 'blur(10px)',
+            boxSizing: 'border-box',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = 'var(--accent-primary)';
+            e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+          }}
+        />
+      </div>
+
+      {/* Number of Weeks */}
+      <div style={{ marginBottom: '28px' }}>
+        <label style={{
+          display: 'block',
+          marginBottom: '8px',
+          color: 'var(--text-muted)',
+          fontSize: '0.85em',
+          fontWeight: '500',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          Program Duration
+        </label>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '14px 16px',
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '12px',
+          transition: 'all 0.3s ease',
+        }}>
+          <input
+            type="number"
+            id="mesocycle-length"
+            placeholder="4"
+            min="1"
+            max="52"
+            defaultValue={data.currentProgram.weeks.length || ''}
+            onInput={generateWeeks}
+            style={{
+              width: '80px',
+              padding: '8px 12px',
+              background: 'var(--bg-lighter)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              color: 'var(--text)',
+              fontSize: '16px',
+              textAlign: 'center',
+              outline: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield',
+            }}
+          />
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.95em' }}>weeks</span>
+        </div>
+        <p style={{
+          marginTop: '8px',
+          fontSize: '0.8em',
+          color: 'var(--text-muted)',
+          lineHeight: '1.4',
+        }}>
+          Each week will repeat with progressive overload
+        </p>
+      </div>
+
+      {/* Weeks Overview */}
+      {data.currentProgram.weeks.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'rgba(0, 0, 0, 0.2)',
-            backdropFilter: 'blur(10px)',
+            marginBottom: '16px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button
-                onClick={goBack}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  fontSize: '1.2em',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minHeight: 'auto',
-                  transition: 'color 0.2s ease',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
-              >
-                ←
-              </button>
-              <h2 style={{
-                margin: 0,
-                fontSize: '1.3em',
-                fontWeight: '700',
-                background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-0.5px',
-              }}>Create Program</h2>
-            </div>
+            <h3 style={{
+              margin: 0,
+              fontSize: '1em',
+              color: 'var(--text)',
+              fontWeight: '600',
+            }}>
+              Week Structure
+            </h3>
+            <span style={{
+              fontSize: '0.85em',
+              color: 'var(--accent-primary)',
+              fontWeight: '500',
+            }}>
+              {data.currentProgram.weeks.length} {data.currentProgram.weeks.length === 1 ? 'week' : 'weeks'}
+            </span>
           </div>
 
-          {/* Content */}
           <div style={{
-            padding: '24px',
-            overflowY: 'auto',
-            maxHeight: 'calc(90vh - 80px)',
-            WebkitOverflowScrolling: 'touch',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
           }}>
-            {/* Program Name Input */}
-            <div style={{ marginBottom: '28px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: 'var(--text-muted)',
-                fontSize: '0.85em',
-                fontWeight: '500',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
-                Program Name
-              </label>
-              <input
-                type="text"
-                id="program-name"
-                placeholder="e.g., Push Pull Legs"
+            {data.currentProgram.weeks.map((_: Week, index: number) => (
+              <div
+                key={index}
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  currentWeekIndex: index,
+                  activeModal: 'week-modal',
+                  isEditingProgram: prev.isEditingProgram || false,
+                }))}
                 style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                  outline: 'none',
-                  transition: 'all 0.3s ease',
-                  backdropFilter: 'blur(10px)',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--accent-primary)';
-                  e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-                }}
-              />
-            </div>
-
-            {/* Number of Weeks */}
-            <div style={{ marginBottom: '28px' }}>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: 'var(--text-muted)',
-                fontSize: '0.85em',
-                fontWeight: '500',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
-                Program Duration
-              </label>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '14px 16px',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                transition: 'all 0.3s ease',
-              }}>
-                <input
-                  type="number"
-                  id="mesocycle-length"
-                  placeholder="4"
-                  min="1"
-                  max="52"
-                  onInput={generateWeeks}
-                  style={{
-                    width: '80px',
-                    padding: '8px 12px',
-                    background: 'var(--bg-lighter)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    color: 'var(--text)',
-                    fontSize: '16px',
-                    textAlign: 'center',
-                    outline: 'none',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'textfield',
-                  }}
-                />
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.95em' }}>weeks</span>
-              </div>
-              <p style={{
-                marginTop: '8px',
-                fontSize: '0.8em',
-                color: 'var(--text-muted)',
-                lineHeight: '1.4',
-              }}>
-                Each week will repeat with progressive overload
-              </p>
-            </div>
-
-            {/* Weeks Overview */}
-            {data.currentProgram.weeks.length > 0 && (
-              <div style={{ marginBottom: '24px' }}>
-                <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '16px',
-                }}>
-                  <h3 style={{
-                    margin: 0,
-                    fontSize: '1em',
-                    color: 'var(--text)',
-                    fontWeight: '600',
-                  }}>
-                    Week Structure
-                  </h3>
-                  <span style={{
-                    fontSize: '0.85em',
-                    color: 'var(--accent-primary)',
-                    fontWeight: '500',
-                  }}>
-                    {data.currentProgram.weeks.length} {data.currentProgram.weeks.length === 1 ? 'week' : 'weeks'}
-                  </span>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                }}>
-                  {data.currentProgram.weeks.map((_: any, index: number) => (
-                    <div
-                      key={index}
-                      onClick={() => setData((prev: DataType) => ({
-                        ...prev,
-                        currentWeekIndex: index,
-                        activeModal: 'week-modal',
-                        isEditingProgram: prev.isEditingProgram || false,
-                      }))}
-                      style={{
-                        padding: '16px',
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        borderRadius: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-                        e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                        e.currentTarget.style.transform = 'translateX(4px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))';
-                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                        e.currentTarget.style.transform = 'translateX(0)';
-                      }}
-                    >
-                      <div>
-                        <div style={{
-                          fontSize: '1em',
-                          fontWeight: '600',
-                          marginBottom: '4px',
-                          color: 'var(--text)',
-                        }}>
-                          Week {index + 1}
-                        </div>
-                        <div style={{
-                          fontSize: '0.85em',
-                          color: 'var(--text-muted)'
-                        }}>
-                          {data.currentProgram.weeks[index].days.length} training days
-                        </div>
-                      </div>
-                      <div style={{
-                        color: 'var(--text-muted)',
-                        fontSize: '1.2em',
-                      }}>
-                        →
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  onClick={addWeek}
-                  style={{
-                    width: '100%',
-                    padding: '14px',
-                    marginTop: '12px',
-                    background: 'transparent',
-                    color: 'var(--accent-primary)',
-                    border: '1px dashed rgba(59, 130, 246, 0.3)',
-                    borderRadius: '12px',
-                    fontSize: '0.9em',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                  }}
-                >
-                  <span style={{ fontSize: '1.2em' }}>+</span> Add Week
-                </button>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-              marginTop: '32px',
-            }}>
-              <button
-                onClick={saveProgram}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  background: 'var(--accent-gradient)',
-                  color: 'white',
-                  border: 'none',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
                   borderRadius: '12px',
-                  fontSize: '1em',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-                  transition: 'all 0.3s ease',
-                  opacity: data.currentProgram.weeks.length > 0 ? 1 : 0.5,
-                  pointerEvents: data.currentProgram.weeks.length > 0 ? 'auto' : 'none',
-                }}
-                onMouseEnter={(e) => {
-                  if (data.currentProgram.weeks.length > 0) {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-                }}
-              >
-                Save Program
-              </button>
-
-              <button
-                className="secondary"
-                onClick={closeModal}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'transparent',
-                  color: 'var(--text-muted)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  fontSize: '0.9em',
-                  fontWeight: '500',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                  e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                  e.currentTarget.style.transform = 'translateX(4px)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.color = 'var(--text-muted)';
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04))';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.transform = 'translateX(0)';
                 }}
               >
-                Cancel
-              </button>
-            </div>
+                <div>
+                  <div style={{
+                    fontSize: '1em',
+                    fontWeight: '600',
+                    marginBottom: '4px',
+                    color: 'var(--text)',
+                  }}>
+                    Week {index + 1}
+                  </div>
+                  <div style={{
+                    fontSize: '0.85em',
+                    color: 'var(--text-muted)'
+                  }}>
+                    {data.currentProgram.weeks[index].days.length} training days
+                  </div>
+                </div>
+                <div style={{
+                  color: 'var(--text-muted)',
+                  fontSize: '1.2em',
+                }}>
+                  →
+                </div>
+              </div>
+            ))}
           </div>
+
+          <button
+            onClick={addWeek}
+            style={{
+              width: '100%',
+              padding: '14px',
+              marginTop: '12px',
+              background: 'transparent',
+              color: 'var(--accent-primary)',
+              border: '1px dashed rgba(59, 130, 246, 0.3)',
+              borderRadius: '12px',
+              fontSize: '0.9em',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+            }}
+          >
+            <span style={{ fontSize: '1.2em' }}>+</span> Add Week
+          </button>
         </div>
+      )}
+
+      {/* Action Buttons */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        marginTop: '32px',
+      }}>
+        <button
+          onClick={saveProgram}
+          style={{
+            width: '100%',
+            padding: '14px',
+            background: 'var(--accent-gradient)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '1em',
+            fontWeight: '600',
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+            transition: 'all 0.3s ease',
+            opacity: data.currentProgram.weeks.length > 0 ? 1 : 0.5,
+            pointerEvents: data.currentProgram.weeks.length > 0 ? 'auto' : 'none',
+          }}
+          onMouseEnter={(e) => {
+            if (data.currentProgram.weeks.length > 0) {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+          }}
+        >
+          Save Program
+        </button>
+
+        <button
+          className="secondary"
+          onClick={closeModal}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'transparent',
+            color: 'var(--text-muted)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '12px',
+            fontSize: '0.9em',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.color = 'var(--text)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.color = 'var(--text-muted)';
+          }}
+        >
+          Cancel
+        </button>
       </div>
+    </div>
+  </div>
+</div>
       <div id="program-weeks-modal" className={`modal ${activeModal === 'program-weeks-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
@@ -2688,607 +2696,559 @@ const Modals = () => {
         </div>
       </div>
 
-      <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxWidth: '400px',
-          maxHeight: '90vh',  // Add this
-          overflowY: 'auto',  // Add this
-          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-          borderRadius: '24px',
-          padding: '0',
-          overflow: 'hidden',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          display: 'flex',      // Add this
-          flexDirection: 'column',  // Add this
-        }}>
-          {/* Header */}
+<div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    maxWidth: '420px',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
+    borderRadius: '24px',
+    padding: '0',
+    overflow: 'hidden',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+  }}>
+    {/* Header */}
+    <div style={{
+      padding: '20px 24px',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      background: 'rgba(0, 0, 0, 0.2)',
+      backdropFilter: 'blur(10px)',
+    }}>
+      <h2 style={{
+        margin: 0,
+        fontSize: '1.3em',
+        fontWeight: '700',
+        background: 'linear-gradient(135deg, #fff, #e0e0e0)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        letterSpacing: '-0.5px',
+      }}>New Progress Photo</h2>
+    </div>
+
+    <div style={{
+      padding: '24px',
+      overflowY: 'auto',
+      flex: 1,
+      WebkitOverflowScrolling: 'touch',
+    }}>
+      {data.tempBase64 ? (
+        <>
+          {/* Photo Preview */}
           <div style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'rgba(0, 0, 0, 0.2)',
-            backdropFilter: 'blur(10px)',
+            marginBottom: '24px',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            background: '#000',
+            aspectRatio: '1',
+            position: 'relative',
           }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: '1.3em',
-              fontWeight: '700',
-              background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '-0.5px',
-            }}>New Progress Photo</h2>
+            <img
+              src={data.tempBase64}
+              alt="Progress"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            <button
+              onClick={() => setData(prev => ({ ...prev, tempBase64: null }))}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                background: 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '1.2em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 59, 48, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)';
+              }}
+            >
+              ×
+            </button>
           </div>
 
-          <div style={{
-            padding: '24px',
-            overflowY: 'auto',
-            flex: 1,
-            WebkitOverflowScrolling: 'touch',
-          }}>
-            {data.tempBase64 ? (
-              <>
+          {/* Caption Input */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--text-muted)',
+              fontSize: '0.85em',
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>
+              Caption
+            </label>
+            <textarea
+              id="progress-caption"
+              placeholder="Share your progress..."
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                padding: '14px 16px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                color: 'var(--text)',
+                fontSize: '15px',
+                outline: 'none',
+                resize: 'vertical',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(10px)',
+                fontFamily: 'inherit',
+                lineHeight: '1.5',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--accent-primary)';
+                e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+              }}
+            />
+          </div>
+
+          {/* Weight Input */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              color: 'var(--text-muted)',
+              fontSize: '0.85em',
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>
+              Body Weight
+            </label>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              transition: 'all 0.3s ease',
+              backdropFilter: 'blur(10px)',
+            }}>
+              <input
+                type="number"
+                id="progress-weight"
+                placeholder="0"
+                style={{
+                  width: '80px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text)',
+                  fontSize: '16px',
+                  outline: 'none',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'textfield',
+                  textAlign: 'center',
+                }}
+              />
+              <span style={{
+                color: 'var(--text-muted)',
+                fontSize: '0.9em',
+                fontWeight: '500',
+              }}>
+                {data.weightUnit || 'lbs'}
+              </span>
+            </div>
+          </div>
+
+          {/* Pump Rating */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '12px',
+              color: 'var(--text-muted)',
+              fontSize: '0.85em',
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>
+              Pump Rating
+            </label>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '16px',
+              padding: '20px',
+              backdropFilter: 'blur(10px)',
+            }}>
+              <div style={{ position: 'relative', marginBottom: '16px' }}>
+                <input
+                  type="range"
+                  id="progress-pump"
+                  min="0"
+                  max="100"
+                  defaultValue="50"
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    WebkitAppearance: 'none',
+                    appearance: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    zIndex: 2,
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const label = document.getElementById('pump-value');
+                    if (label) label.textContent = value;
+                    
+                    const percent = (parseInt(value) / 100) * 100;
+                    const track = document.getElementById('pump-track-fill');
+                    if (track) track.style.width = `${percent}%`;
+                  }}
+                />
                 <div style={{
-                  width: '100%',
-                  height: '280px',
-                  marginBottom: '20px',
-                  borderRadius: '16px',
+                  position: 'absolute',
+                  top: '50%',
+                  left: 0,
+                  right: 0,
+                  height: '6px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '3px',
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'none',
                   overflow: 'hidden',
-                  background: 'linear-gradient(135deg, var(--bg-lighter), var(--bg-dark))',
+                }}>
+                  <div
+                    id="pump-track-fill"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      height: '100%',
+                      width: '50%',
+                      background: 'var(--accent-gradient)',
+                      borderRadius: '3px',
+                      transition: 'width 0.2s ease',
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{
+                textAlign: 'center',
+                fontSize: '1.5em',
+                fontWeight: '700',
+                background: 'var(--accent-gradient)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                marginTop: '12px',
+              }}>
+                <span id="pump-value">50</span>
+                <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '10px',
+                fontSize: '0.65em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                <span>No Pump</span>
+                <span>Moderate</span>
+                <span>Max Pump</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Privacy Toggle */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '12px',
+              color: 'var(--text-muted)',
+              fontSize: '0.85em',
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}>
+              Visibility
+            </label>
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+            }}>
+              <button
+                onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: !data.tempIsPublic 
+                    ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)' 
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                  color: !data.tempIsPublic ? 'white' : 'var(--text-muted)',
+                  border: '1px solid',
+                  borderColor: !data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                }}>
-                  <img
-                    src={data.tempBase64}
-                    alt="Preview"
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      objectPosition: 'center',
-                    }}
-                  />
-                </div>
-
-                {/* Caption Input */}
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}>
-                    Caption
-                  </label>
-                  <textarea
-                    id="progress-caption"
-                    placeholder="Write a caption..."
-                    style={{
-                      width: '100%',
-                      minHeight: '80px',
-                      padding: '14px 16px',
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
-                      color: 'var(--text)',
-                      fontSize: '15px',
-                      resize: 'vertical',
-                      boxSizing: 'border-box',
-                      outline: 'none',
-                      transition: 'all 0.3s ease',
-                      backdropFilter: 'blur(10px)',
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'var(--accent-primary)';
-                      e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                      e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
-                    }}
-                  />
-                </div>
-
-                {/* Weight Input */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}>
-                    Weight (optional)
-                  </label>
-                  <div style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    padding: '10px 16px',
-                    transition: 'all 0.3s ease',
-                  }}>
-                    <input
-                      type="number"
-                      id="progress-weight"
-                      placeholder="0"
-                      style={{
-                        width: '60px',
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'var(--text)',
-                        fontSize: '15px',
-                        outline: 'none',
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'textfield',
-                        textAlign: 'center',
-                      }}
-                    />
-                    <span style={{
-                      color: 'var(--text-muted)',
-                      fontSize: '0.9em',
-                      fontWeight: '500',
-                    }}>
-                      {data.weightUnit || 'lbs'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Modern Pump Slider */}
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '10px',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}>
-                    Pump Rating
-                  </label>
-                  <div style={{
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    backdropFilter: 'blur(10px)',
-                  }}>
-                    <div style={{ position: 'relative', marginBottom: '16px' }}>
-                      <input
-                        type="range"
-                        id="progress-pump"
-                        min="0"
-                        max="100"
-                        defaultValue="50"
-                        style={{
-                          width: '100%',
-                          height: '40px',
-                          WebkitAppearance: 'none',
-                          appearance: 'none',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          zIndex: 2,
-                        }}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const label = document.getElementById('pump-value');
-                          if (label) label.textContent = value;
-
-                          // Update track fill
-                          const percent = (parseInt(value) / 100) * 100;
-                          const track = document.getElementById('pump-track-fill');
-                          if (track) track.style.width = `${percent}%`;
-                        }}
-                      />
-                      {/* Custom track background */}
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: 0,
-                        right: 0,
-                        height: '6px',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '4px',
-                        transform: 'translateY(-50%)',
-                        pointerEvents: 'none',
-                        overflow: 'hidden',
-                      }}>
-                        {/* Track fill */}
-                        <div
-                          id="pump-track-fill"
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            height: '100%',
-                            width: '50%',
-                            background: 'var(--accent-gradient)',  // Changed to blue gradient                      
-                            borderRadius: '4px',
-                            transition: 'width 0.2s ease',
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div style={{
-                      textAlign: 'center',
-                      fontSize: '1.5em',
-                      fontWeight: '700',
-                      background: 'var(--accent-gradient)',  // Changed to blue gradient                         
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      marginTop: '12px',
-                    }}>
-                      <span id="pump-value">50</span>
-                      <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: '10px',
-                      fontSize: '0.65em',
-                      color: 'var(--text-muted)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      <span>No Pump</span>
-                      <span>Moderate</span>
-                      <span>Max Pump</span>
-                    </div>
-                  </div>
-                </div>
-                {/* Public/Private Toggle */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '10px',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}>
-                    Privacy
-                  </label>
-                  <div style={{
-                    display: 'flex',
-                    gap: '12px',
-                  }}>
-                    <button
-                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
-                      style={{
-                        flex: 1,
-                        padding: '12px',
-                        background: !data.tempIsPublic ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                        color: !data.tempIsPublic ? 'white' : 'var(--text-muted)',
-                        border: '1px solid',
-                        borderColor: !data.tempIsPublic ? 'var(--accent-primary)' : 'var(--border)',
-                        borderRadius: '8px',
-                        fontSize: '0.9em',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                      }}
-                    >
-                      <span>🔒</span> Private
-                    </button>
-                    <button
-                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
-                      style={{
-                        flex: 1,
-                        padding: '12px',
-                        background: data.tempIsPublic ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-                        color: data.tempIsPublic ? 'white' : 'var(--text-muted)',
-                        border: '1px solid',
-                        borderColor: data.tempIsPublic ? 'var(--accent-primary)' : 'var(--border)',
-                        borderRadius: '8px',
-                        fontSize: '0.9em',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                      }}
-                    >
-                      <span>🌍</span> Public
-                    </button>
-                  </div>
-                  <p style={{
-                    marginTop: '8px',
-                    fontSize: '0.75em',
-                    color: 'var(--text-muted)',
-                    textAlign: 'center',
-                  }}>
-                    {data.tempIsPublic
-                      ? "Friends will see this in their feed"
-                      : "Only you will see this photo"}
-                  </p>
-                </div>
-                {/* Action Buttons */}
-                <div style={{
+                  gap: '8px',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                Private
+              </button>
+              <button
+                onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: data.tempIsPublic 
+                    ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)' 
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                  color: data.tempIsPublic ? 'white' : 'var(--text-muted)',
+                  border: '1px solid',
+                  borderColor: data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                }}>
-                  <button
-                    onClick={() => {
-                      const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-                      const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-                      const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
-
-                      if (data.tempBase64 && data.tempTimestamp) {
-                        const newPic = {
-                          base64: data.tempBase64,
-                          timestamp: data.tempTimestamp,
-                          caption,
-                          weight,
-                          pump,
-                          likes: 0,
-                          comments: [],
-                          isPublic: data.tempIsPublic || false,
-                        };
-                        const newProgressPics = [...data.progressPics, newPic];
-
-                        setData((prev: DataType) => ({
-                          ...prev,
-                          progressPics: newProgressPics,
-                          tempBase64: null,
-                          tempTimestamp: null,
-                          activeModal: null
-                        }));
-
-                        requestAnimationFrame(() => {
-                          setData((prev: DataType) => ({
-                            ...prev,
-                            activeTab: 'progress-tab'
-                          }));
-                        });
-                      }
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '14px',
-                      background: 'var(--accent-gradient)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontSize: '1em',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
-                    }}
-                  >
-                    Post Photo
-                  </button>
-
-                  <button
-                    onClick={() => setData((prev: DataType) => ({
-                      ...prev,
-                      tempBase64: null,
-                      tempTimestamp: null,
-                      activeModal: 'progress-upload-modal'
-                    }))}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      background: 'transparent',
-                      color: 'var(--text)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
-                      fontSize: '0.9em',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                      e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    Choose Different Photo
-                  </button>
-
-                  <button
-                    onClick={closeModal}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      background: 'transparent',
-                      color: 'rgba(239, 68, 68, 0.8)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                      borderRadius: '12px',
-                      fontSize: '0.9em',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-                      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
-                      e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div
-                  style={{
-                    border: '2px dashed var(--border)',
-                    borderRadius: '12px',
-                    padding: '40px',
-                    textAlign: 'center',
-                    marginBottom: '20px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-
-                    input.onchange = (e: Event) => {
-                      const target = e.target as HTMLInputElement;
-                      if (target.files && target.files[0]) {
-                        const file = target.files[0];
-
-                        const reader = new FileReader();
-
-                        reader.onload = (event: ProgressEvent<FileReader>) => {
-                          const base64 = event.target?.result as string;
-
-                          const img = new Image();
-                          img.src = base64;
-
-                          img.onload = () => {
-                            const maxWidth = 1080;
-                            const maxHeight = 1920;
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > maxWidth || height > maxHeight) {
-                              const ratio = Math.min(maxWidth / width, maxHeight / height);
-                              width = Math.round(width * ratio);
-                              height = Math.round(height * ratio);
-                            }
-
-                            const canvas = document.createElement('canvas');
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-
-                            if (ctx) {
-                              ctx.drawImage(img, 0, 0, width, height);
-                              const resizedBase64 = canvas.toDataURL('image/jpeg', 0.8);
-
-                              let timestamp = Date.now();
-                              try {
-                                EXIF.getData(img as any, function () {
-                                  try {
-                                    const exifDate = EXIF.getTag(img, 'DateTimeOriginal');
-                                    if (exifDate) {
-                                      const parts = exifDate.split(' ');
-                                      if (parts.length === 2) {
-                                        const datePart = parts[0].replace(/:/g, '-');
-                                        const timePart = parts[1];
-                                        const dt = new Date(`${datePart}T${timePart}`);
-                                        if (!isNaN(dt.getTime())) {
-                                          timestamp = dt.getTime();
-                                        }
-                                      }
-                                    }
-                                  } catch (e) {
-                                    console.log('EXIF date parsing failed');
-                                  }
-
-                                  setData((prev: DataType) => ({
-                                    ...prev,
-                                    tempBase64: resizedBase64,
-                                    tempTimestamp: timestamp,
-                                    activeModal: 'progress-upload-modal'
-                                  }));
-                                });
-                              } catch (error) {
-                                setData((prev: DataType) => ({
-                                  ...prev,
-                                  tempBase64: resizedBase64,
-                                  tempTimestamp: timestamp,
-                                  activeModal: 'progress-upload-modal'
-                                }));
-                              }
-                            }
-                          };
-
-                          img.onerror = () => {
-                            alert('Failed to process image. Please try another photo.');
-                          };
-                        };
-
-                        reader.onerror = () => {
-                          alert('Failed to read image. Please try another photo.');
-                        };
-
-                        reader.readAsDataURL(file);
-                      }
-                    };
-
-                    input.click();
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.05)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                    e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  <div style={{ fontSize: '3em', marginBottom: '16px' }}>📸</div>
-                  <div style={{ fontSize: '1.1em', fontWeight: '600', marginBottom: '8px' }}>
-                    Choose a photo
-                  </div>
-                  <div style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>
-                    Tap to select from your gallery
-                  </div>
-                </div>
-
-                <button
-                  onClick={closeModal}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    background: 'transparent',
-                    color: 'rgba(239, 68, 68, 0.8)',
-                    border: '1px dashed rgba(239, 68, 68, 0.4)',
-                    borderRadius: '8px',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </button>
-              </>
-            )}
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20"/>
+                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                </svg>
+                Public
+              </button>
+            </div>
+            <p style={{
+              marginTop: '8px',
+              fontSize: '0.75em',
+              color: 'var(--text-muted)',
+              textAlign: 'center',
+            }}>
+              {data.tempIsPublic 
+                ? "Friends will see this in their feed"
+                : "Only you will see this photo"}
+            </p>
           </div>
+
+          {/* Action Buttons */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}>
+            <button
+              onClick={() => {
+                const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+
+                if (data.tempBase64 && data.tempTimestamp) {
+                  const newPic = {
+                    base64: data.tempBase64,
+                    timestamp: data.tempTimestamp,
+                    caption,
+                    weight,
+                    pump,
+                    likes: 0,
+                    comments: [],
+                    isPublic: data.tempIsPublic || false,
+                  };
+                  const newProgressPics = [...data.progressPics, newPic];
+
+                  setData((prev: DataType) => ({
+                    ...prev,
+                    progressPics: newProgressPics,
+                    tempBase64: null,
+                    tempTimestamp: null,
+                    activeModal: null
+                  }));
+
+                  requestAnimationFrame(() => {
+                    setData((prev: DataType) => ({
+                      ...prev,
+                      activeTab: 'progress-tab'
+                    }));
+                  });
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'var(--accent-gradient)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '1em',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+              }}
+            >
+              Share Progress
+            </button>
+
+            <button
+              onClick={() => setData((prev: DataType) => ({
+                ...prev,
+                tempBase64: null,
+                tempTimestamp: null,
+                activeModal: null
+              }))}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'transparent',
+                color: 'var(--text-muted)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                fontSize: '0.9em',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.color = 'var(--text)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.color = 'var(--text-muted)';
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      ) : (
+        // Photo picker UI when no photo selected
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '300px',
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: '120px',
+            height: '120px',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '24px',
+          }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <h3 style={{
+            fontSize: '1.1em',
+            fontWeight: '600',
+            marginBottom: '8px',
+            color: 'var(--text)',
+          }}>
+            Select a photo
+          </h3>
+          <p style={{
+            fontSize: '0.9em',
+            color: 'var(--text-muted)',
+            marginBottom: '24px',
+          }}>
+            Choose a photo to track your progress
+          </p>
+          <button
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*';
+              input.onchange = (e: Event) => {
+                const target = e.target as HTMLInputElement;
+                if (target.files && target.files[0]) {
+                  const file = target.files[0];
+                  const reader = new FileReader();
+                  reader.onload = (event: ProgressEvent<FileReader>) => {
+                    if (event.target?.result) {
+                      setData(prev => ({
+                        ...prev,
+                        tempBase64: event.target!.result as string,
+                        tempTimestamp: Date.now(),
+                      }));
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              };
+              input.click();
+            }}
+            style={{
+              padding: '12px 24px',
+              background: 'var(--accent-gradient)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '0.95em',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            Choose Photo
+          </button>
         </div>
-      </div>
+      )}
+    </div>
+  </div>
+</div>
       <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
           maxWidth: '400px',
@@ -3339,7 +3299,68 @@ const Modals = () => {
               }}>
                 APPEARANCE
               </h3>
+{/* SOCIAL Section */}
+<div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+  <h3 style={{
+    margin: '0 0 15px 0',
+    fontSize: '0.8em',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  }}>
+    SOCIAL
+  </h3>
 
+  <div
+    onClick={() => setData((prev: DataType) => ({
+      ...prev,
+      activeModal: 'find-friends-modal',
+      previousModal: 'settings-modal'
+    }))}
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '12px 0',
+      cursor: 'pointer',
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <span style={{ fontSize: '1em' }}>Find Friends</span>
+    </div>
+    <span style={{ color: 'var(--text-muted)' }}>›</span>
+  </div>
+
+  <div
+    onClick={() => setData(prev => ({ 
+      ...prev, 
+      showFriendsModal: true,
+      activeModal: null 
+    }))}
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '12px 0',
+      cursor: 'pointer',
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <span style={{ fontSize: '1em' }}>My Friends</span>
+      <span style={{
+        background: 'var(--accent-primary)',
+        color: 'white',
+        padding: '2px 8px',
+        borderRadius: '12px',
+        fontSize: '0.75em',
+        fontWeight: '600',
+      }}>
+        {data.friends.length}
+      </span>
+    </div>
+    <span style={{ color: 'var(--text-muted)' }}>›</span>
+  </div>
+</div>
               <div
                 onClick={() => setData((prev: DataType) => ({
                   ...prev,
@@ -4479,89 +4500,119 @@ const Modals = () => {
         </div>
       </div>
 
-      {/* Find Friends Modal */}
-      <div id="find-friends-modal" className={`modal ${data.showFindFriendsModal ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxWidth: '400px',
-          maxHeight: '80vh',
-          overflowY: 'auto',
-          background: 'var(--bg-dark)',
-          borderRadius: '20px',
+{/* Find Friends Modal */}
+<div id="find-friends-modal" className={`modal ${activeModal === 'find-friends-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    maxWidth: '400px',
+    background: 'var(--bg-dark)',
+    borderRadius: '0',
+    padding: '0',
+    overflow: 'hidden',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+  }}>
+    <div style={{
+      padding: '15px 20px',
+      borderBottom: '1px solid var(--border)',
+      background: 'var(--bg-dark)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}>
+      <button
+        onClick={() => setData((prev: DataType) => ({ 
+          ...prev, 
+          activeModal: data.previousModal || 'settings-modal' 
+        }))}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: 'var(--text)',
+          fontSize: '1.2em',
+          cursor: 'pointer',
           padding: '0',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            padding: '20px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Find Friends</h2>
-            <button
-              onClick={() => setData(prev => ({ ...prev, showFindFriendsModal: false }))}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                fontSize: '1.2em',
-                cursor: 'pointer',
-                padding: '0',
-                minHeight: 'auto',
-                width: '24px',
-                height: '24px',
-              }}
-            >
-              ×
-            </button>
-          </div>
+          minHeight: 'auto',
+        }}
+      >
+        ‹
+      </button>
+      <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Find Friends</h2>
+      <div style={{ width: '30px' }}></div>
+    </div>
 
-          <div style={{ padding: '20px' }}>
-            <input
-              type="text"
-              id="friend-search-input"
-              placeholder="Enter username"
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'var(--bg-lighter)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                color: 'var(--text)',
-                fontSize: '16px',
-                marginBottom: '16px',
-              }}
-            />
-            <button
-              onClick={async () => {
-                const username = (document.getElementById('friend-search-input') as HTMLInputElement)?.value;
-                if (username && username.trim()) {
-                  try {
-                    await DatabaseService.sendFriendRequest(dbUser.id, username.trim());
-                    alert('Friend request sent!');
-                    (document.getElementById('friend-search-input') as HTMLInputElement).value = '';
-                  } catch (error: any) {
-                    alert(error.message || 'Failed to send friend request');
-                  }
-                }
-              }}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: 'var(--accent-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '1em',
-                fontWeight: '600',
-                cursor: 'pointer',
-              }}
-            >
-              Send Friend Request
-            </button>
-          </div>
-        </div>
+    <div style={{ flex: 1, padding: '20px' }}>
+      <div style={{
+        background: 'var(--bg-lighter)',
+        borderRadius: '16px',
+        padding: '16px',
+        marginBottom: '20px',
+      }}>
+        <input
+          type="text"
+          id="friend-search-input"
+          placeholder="Enter username to send friend request"
+          style={{
+            width: '100%',
+            padding: '14px',
+            background: 'var(--bg-dark)',
+            border: 'none',
+            borderRadius: '12px',
+            color: 'var(--text)',
+            fontSize: '16px',
+            marginBottom: '12px',
+          }}
+        />
+        <button
+          onClick={async () => {
+            const username = (document.getElementById('friend-search-input') as HTMLInputElement)?.value;
+            if (username && username.trim()) {
+              try {
+                await DatabaseService.sendFriendRequest(dbUser.id, username.trim());
+                alert('Friend request sent!');
+                (document.getElementById('friend-search-input') as HTMLInputElement).value = '';
+              } catch (error: any) {
+                alert(error.message || 'Failed to send friend request');
+              }
+            }
+          }}
+          style={{
+            width: '100%',
+            padding: '14px',
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontSize: '1em',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          }}
+        >
+          Send Friend Request
+        </button>
       </div>
+
+      <div style={{
+        marginTop: '30px',
+        padding: '20px',
+        background: 'var(--bg-lighter)',
+        borderRadius: '16px',
+        textAlign: 'center',
+      }}>
+        <p style={{
+          color: 'var(--text-muted)',
+          fontSize: '0.9em',
+          lineHeight: '1.5',
+          margin: 0,
+        }}>
+          Connect with friends to share workouts, track progress together, and stay motivated on your fitness journey.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
     </>
   );
 };

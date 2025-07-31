@@ -11,9 +11,8 @@ interface Exercise {
   subtype?: string;
   muscles?: string;
   sets: Set[];
-  previousSets?: { weight: string; reps: string }[];
+previousSets?: { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[];
 }
-
 interface WorkoutExerciseItemProps {
   ex: Exercise;
   idx: number;
@@ -558,27 +557,39 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   const toggleCompleted = (setIdx: number) => {
     updateSet(idx, setIdx, 'completed', !ex.sets[setIdx].completed);
   };
+const toggleSetType = (setIdx: number) => {
+  const currentSet = ex.sets[setIdx];
 
-  const toggleSetType = (setIdx: number) => {
-    const currentSet = ex.sets[setIdx];
+  // Don't allow changing type of auto-generated drop sets
+  if (isDropSet(setIdx)) return;
 
-    // Don't allow changing type of auto-generated drop sets
-    if (isDropSet(setIdx)) return;
-
-    // Cycle through: S (undefined) -> W -> D -> S
-    let newType: 'W' | 'D' | 'S' | undefined;
-    if (!currentSet.type || currentSet.type === 'S') {
-      newType = 'W';
-    } else if (currentSet.type === 'W') {
-      newType = 'D';
-      // Add drop set automatically when D is selected
-      addDropSet(idx, setIdx);
-    } else {
-      newType = 'S';
+  // Cycle through: S (undefined) -> W -> D -> S
+  let newType: 'W' | 'D' | 'S' | undefined;
+  if (!currentSet.type || currentSet.type === 'S') {
+    newType = 'W';
+  } else if (currentSet.type === 'W') {
+    newType = 'D';
+    // Add drop set automatically when D is selected
+    addDropSet(idx, setIdx);
+  } else {
+    newType = 'S';
+    // When changing from 'D' to 'S', remove any drop sets that follow
+    const setsToRemove: number[] = [];
+    for (let i = setIdx + 1; i < ex.sets.length; i++) {
+      if ((ex.sets[i] as any).isDropSet) {
+        setsToRemove.push(i);
+      } else {
+        break; // Stop when we hit a non-drop set
+      }
     }
+    // Remove drop sets in reverse order to maintain correct indices
+    for (let i = setsToRemove.length - 1; i >= 0; i--) {
+      deleteSet(idx, setsToRemove[i]);
+    }
+  }
 
-    updateSet(idx, setIdx, 'type', newType);
-  };
+  updateSet(idx, setIdx, 'type', newType);
+};
 const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
   if (set.type === 'W') return 'W';
   if (set.type === 'D') return 'D';
@@ -849,72 +860,79 @@ const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
                     ? `${ex.previousSets[sIdx].weight}×${ex.previousSets[sIdx].reps}`
                     : '—'}
                 </div>
-                <input
-                  value={s.weight}
-                  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
-                  type="number"
-                  inputMode="decimal"
-                  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
-                  style={{
-                    background: 'var(--bg-dark)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    textAlign: 'center',
-                    fontSize: '0.75em',
-                    fontWeight: '600',
-                    color: s.completed ? '#22C55E' : 'var(--text)',
-                    padding: '5px 2px',
-                    height: '28px',
-                    width: '100%',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'textfield',
-                    transition: 'all 0.2s ease',
-                    outline: 'none',
-                  }} onFocus={(e) => {
-                    e.target.style.borderColor = 'var(--accent-primary)';
-                    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-                    // Bug 17 fix: Auto-populate weight from previous if empty
-                    if (!s.weight && ex.previousSets?.[sIdx]?.weight) {
-                      updateSet(idx, sIdx, 'weight', ex.previousSets[sIdx].weight);
-                    }
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'var(--border)';
-                    e.target.style.background = 'var(--bg-dark)';
-                  }}
-                />
+            <input
+  value={s.weight}
+  onChange={(e) => updateSet(idx, sIdx, 'weight', e.target.value)}
+  type="number"
+  inputMode="decimal"
+  placeholder={ex.previousSets?.[sIdx]?.weight || "0"}
+  style={{
+    background: 'var(--bg-dark)',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    textAlign: 'center',
+    fontSize: '0.75em',
+    fontWeight: '600',
+    color: s.completed ? '#22C55E' : 'var(--text)',
+    padding: '5px 2px',
+    height: '28px',
+    width: '100%',
+    WebkitAppearance: 'none',
+    MozAppearance: 'textfield',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  }} 
+  onFocus={(e) => {
+    e.target.style.borderColor = 'var(--accent-primary)';
+    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+    // Bug 17 fix: Auto-populate weight from previous if empty
+    if (!s.weight && ex.previousSets?.[sIdx]?.weight) {
+      updateSet(idx, sIdx, 'weight', ex.previousSets[sIdx].weight);
+    }
+    // Move cursor to end of input
+    const value = e.target.value;
+    e.target.setSelectionRange(value.length, value.length);
+  }}
+  onBlur={(e) => {
+    e.target.style.borderColor = 'var(--border)';
+    e.target.style.background = 'var(--bg-dark)';
+  }}
+/>
                 <div style={{ position: 'relative' }}>
-                  <input
-                    value={s.reps}
-                    onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    style={{
-                      background: 'var(--bg-dark)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '6px',
-                      textAlign: 'center',
-                      fontSize: '0.75em',
-                      fontWeight: '600',
-                      color: s.completed ? '#22C55E' : 'var(--text)',
-                      padding: '5px 2px',
-                      height: '28px',
-                      width: '100%',
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'textfield',
-                      transition: 'all 0.2s ease',
-                      outline: 'none',
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'var(--accent-primary)';
-                      e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'var(--border)';
-                      e.target.style.background = 'var(--bg-dark)';
-                    }}
-                  />
+<input
+  value={s.reps}
+  onChange={(e) => updateSet(idx, sIdx, 'reps', e.target.value)}
+  type="number"
+  inputMode="numeric"
+  placeholder="0"
+  style={{
+    background: 'var(--bg-dark)',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    textAlign: 'center',
+    fontSize: '0.75em',
+    fontWeight: '600',
+    color: s.completed ? '#22C55E' : 'var(--text)',
+    padding: '5px 2px',
+    height: '28px',
+    width: '100%',
+    WebkitAppearance: 'none',
+    MozAppearance: 'textfield',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  }}
+  onFocus={(e) => {
+    e.target.style.borderColor = 'var(--accent-primary)';
+    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+    // Move cursor to end of input
+    const value = e.target.value;
+    e.target.setSelectionRange(value.length, value.length);
+  }}
+  onBlur={(e) => {
+    e.target.style.borderColor = 'var(--border)';
+    e.target.style.background = 'var(--bg-dark)';
+  }}
+/>
                   {/* Bug 16 fix: Remove ghost effect */}
                   {!s.reps && ex.previousSets?.[sIdx]?.reps && (
                     <div style={{
@@ -931,39 +949,42 @@ const getSetLabel = (set: Set, setIdx: number, allSets: Set[]) => {
                     </div>
                   )}
                 </div>
-                <input
-                  value={s[intensityMetric] || ''}
-                  onChange={(e) => updateSet(idx, sIdx, intensityMetric, e.target.value)}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.5"
-                  min={intensityMetric === 'rir' ? "0" : "1"}
-                  max={intensityMetric === 'rir' ? "10" : "10"}
-                  placeholder="0"
-                  style={{
-                    background: 'var(--bg-dark)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    textAlign: 'center',
-                    fontSize: '0.7em',
-                    color: s.completed ? '#22C55E' : 'var(--text)',
-                    padding: '5px 2px',
-                    height: '28px',
-                    width: '100%',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'textfield',
-                    transition: 'all 0.2s ease',
-                    outline: 'none',
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = 'var(--accent-primary)';
-                    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'var(--border)';
-                    e.target.style.background = 'var(--bg-dark)';
-                  }}
-                />
+<input
+  value={s[intensityMetric] || ''}
+  onChange={(e) => updateSet(idx, sIdx, intensityMetric, e.target.value)}
+  type="number"
+  inputMode="decimal"
+  step="0.5"
+  min={intensityMetric === 'rir' ? "0" : "1"}
+  max={intensityMetric === 'rir' ? "10" : "10"}
+  placeholder="0"
+  style={{
+    background: 'var(--bg-dark)',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    textAlign: 'center',
+    fontSize: '0.7em',
+    color: s.completed ? '#22C55E' : 'var(--text)',
+    padding: '5px 2px',
+    height: '28px',
+    width: '100%',
+    WebkitAppearance: 'none',
+    MozAppearance: 'textfield',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+  }}
+  onFocus={(e) => {
+    e.target.style.borderColor = 'var(--accent-primary)';
+    e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+    // Move cursor to end of input
+    const value = e.target.value;
+    e.target.setSelectionRange(value.length, value.length);
+  }}
+  onBlur={(e) => {
+    e.target.style.borderColor = 'var(--border)';
+    e.target.style.background = 'var(--bg-dark)';
+  }}
+/>
                 <div
                   className={`log-square ${s.completed ? 'completed' : ''}`}
                   onClick={() => toggleCompleted(sIdx)}
@@ -1282,31 +1303,32 @@ const WorkoutModal: React.FC = () => {
     exercise.sets.splice(afterSetIdx + 1, 0, dropSet);
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
-  const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string }[] => {
-    const previous: { weight: string; reps: string }[] = [];
+const getPreviousSets = useCallback((ex: Exercise): { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[] => {
+  const previous: { weight: string; reps: string; type?: 'W' | 'D' | 'S' }[] = [];
 
-    // Bug 17 fix: Look for the most recent workout with this exercise
-    for (let i = data.history.length - 1; i >= 0; i--) {
-      const workout = data.history[i];
-      const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
-      if (matchingEx && matchingEx.sets) {
-        const completedSets = matchingEx.sets
-          .filter((s: Set) => s.completed && s.weight && s.reps)
-          .map((s: Set) => ({
-            weight: s.weight || '0',
-            reps: s.reps || '0'
-          }));
-        if (completedSets.length > 0) {
-          // Pad with empty values if needed
-          while (completedSets.length < ex.sets.length) {
-            completedSets.push({ weight: '', reps: '' });
-          }
-          return completedSets;
+  // Bug 17 fix: Look for the most recent workout with this exercise
+  for (let i = data.history.length - 1; i >= 0; i--) {
+    const workout = data.history[i];
+    const matchingEx = workout.exercises.find((e: Exercise) => e.name === ex.name && (e.subtype || '') === (ex.subtype || ''));
+    if (matchingEx && matchingEx.sets) {
+      const completedSets = matchingEx.sets
+        .filter((s: Set) => s.completed && s.weight && s.reps)
+        .map((s: Set) => ({
+          weight: s.weight || '0',
+          reps: s.reps || '0',
+          type: s.type
+        }));
+      if (completedSets.length > 0) {
+        // Pad with empty values if needed
+        while (completedSets.length < ex.sets.length) {
+completedSets.push({ weight: '', reps: '', type: undefined });
         }
+        return completedSets;
       }
     }
-    return Array(ex.sets.length).fill({ weight: '', reps: '' });
-  }, [data.history]);
+  }
+return Array(ex.sets.length).fill({ weight: '', reps: '', type: undefined });
+}, [data.history]);
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(duration / 60000);
