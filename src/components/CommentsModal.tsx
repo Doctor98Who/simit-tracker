@@ -32,8 +32,11 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
       window.scrollTo(0, scrollY);
     };
   }, []);
-
+  useEffect(() => {
+    setComments(photo.comments || []);
+  }, [photo.comments]);
   const handleAddComment = async () => {
+
     if (!dbUser || !comment.trim()) return;
     try {
       const newComment = {
@@ -71,17 +74,15 @@ const handleDeleteComment = async (idx: number) => {
   if (!dbUser || commentToDelete.user_id !== dbUser.id) return;
 
   try {
+    // API call to delete from database FIRST
+    if (commentToDelete.id) {
+await DatabaseService.deleteCommentByIndex(dbUser.id, photo.id, idx);
+    }
+
+    // Then update local state
     const updatedComments = comments.filter((_: any, i: number) => i !== idx);
     setComments(updatedComments);
     setShowMenu(null);
-
-    // We need to update the entire comments array for this photo
-    // Since comments are loaded from a separate table, we need a different approach
-    // The photo-interactions function needs to handle comment deletion
-    
-    // For now, let's create a deleteComment function that works with the index
-    // You'll need to update your serverless function to handle this
-    await DatabaseService.deleteCommentByIndex(dbUser.id, photo.id, idx);
 
     // Update context
     const updatePhoto = (p: any) => 
@@ -100,7 +101,7 @@ const handleDeleteComment = async (idx: number) => {
     }
   } catch (error) {
     console.error('Error deleting comment:', error);
-    // Revert on error
+    // Revert on error by resetting to photo's comments
     setComments(photo.comments || []);
   }
 };
