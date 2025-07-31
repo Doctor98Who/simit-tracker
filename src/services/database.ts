@@ -456,337 +456,335 @@ static async getProgressPhotos(userId: string) {
     return data;
   }
 
-  static async sendFriendRequest(senderId: string, receiverUsername: string) {
-    // First, find the receiver by username
-    const { data: receiver, error: receiverError } = await supabaseService
-      .from('users')
-      .select('id')
-      .eq('username', receiverUsername)
-      .single();
-
-    if (receiverError || !receiver) {
-      throw new Error('User not found');
-    }
-
-    // Check if request already exists
-    const { data: existingRequest } = await supabaseService
-      .from('friend_requests')
-      .select('id')
-      .eq('sender_id', senderId)
-      .eq('receiver_id', receiver.id)
-      .single();
-
-    if (existingRequest) {
-      throw new Error('Friend request already sent');
-    }
-
-    // Check if already friends
-    const { data: existingFriend } = await supabaseService
-      .from('friends')
-      .select('id')
-      .eq('user_id', senderId)
-      .eq('friend_id', receiver.id)
-      .single();
-
-    if (existingFriend) {
-      throw new Error('Already friends with this user');
-    }
-
-    // Send friend request
-    const { data, error } = await supabaseService
-      .from('friend_requests')
-      .insert({
-        sender_id: senderId,
-        receiver_id: receiver.id
+static async sendFriendRequest(senderId: string, receiverUsername: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'sendFriendRequest',
+        senderId,
+        receiverUsername
       })
-      .select()
-      .single();
+    });
 
-    if (error) throw error;
-    return data;
-  }
-
-  static async acceptFriendRequest(requestId: string, userId: string) {
-    // Get the friend request
-    const { data: request, error: requestError } = await supabaseService
-      .from('friend_requests')
-      .select('*')
-      .eq('id', requestId)
-      .eq('receiver_id', userId)
-      .single();
-
-    if (requestError || !request) {
-      throw new Error('Friend request not found');
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to send friend request');
     }
 
-    // Update request status
-    await supabaseService
-      .from('friend_requests')
-      .update({ status: 'accepted', updated_at: new Date().toISOString() })
-      .eq('id', requestId);
+    return result.data;
+  } catch (error) {
+    console.error('Error sending friend request:', error);
+    throw error;
+  }
+}
 
-    // Create bidirectional friend relationships
-    const { error: friendError } = await supabaseService
-      .from('friends')
-      .insert([
-        {
-          user_id: request.sender_id,
-          friend_id: request.receiver_id,
-          status: 'accepted'
-        },
-        {
-          user_id: request.receiver_id,
-          friend_id: request.sender_id,
-          status: 'accepted'
-        }
-      ]);
+static async acceptFriendRequest(requestId: string, userId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'acceptFriendRequest',
+        requestId,
+        userId
+      })
+    });
 
-    if (friendError) throw friendError;
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to accept friend request');
+    }
+
     return true;
+  } catch (error) {
+    console.error('Error accepting friend request:', error);
+    throw error;
   }
+}
 
-  static async rejectFriendRequest(requestId: string, userId: string) {
-    const { error } = await supabaseService
-      .from('friend_requests')
-      .update({ status: 'rejected', updated_at: new Date().toISOString() })
-      .eq('id', requestId)
-      .eq('receiver_id', userId);
+static async rejectFriendRequest(requestId: string, userId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'rejectFriendRequest',
+        requestId,
+        userId
+      })
+    });
 
-    if (error) throw error;
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to reject friend request');
+    }
+
     return true;
+  } catch (error) {
+    console.error('Error rejecting friend request:', error);
+    throw error;
   }
+}
 
-  static async getFriends(userId: string) {
-    const { data, error } = await supabaseService
-      .from('friends')
-      .select(`
-        *,
-        friend:friend_id(
-          id,
-          username,
-          first_name,
-          last_name,
-          profile_pic
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('status', 'accepted');
+static async getFriends(userId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'getFriends',
+        userId
+      })
+    });
 
-    if (error) throw error;
-    return data.map(f => f.friend);
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to get friends');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
   }
+}
+static async getPendingFriendRequests(userId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'getPendingFriendRequests',
+        userId
+      })
+    });
 
-  static async getPendingFriendRequests(userId: string) {
-    const { data, error } = await supabaseService
-      .from('friend_requests')
-      .select(`
-        *,
-        sender:sender_id(
-          id,
-          username,
-          first_name,
-          last_name,
-          profile_pic
-        )
-      `)
-      .eq('receiver_id', userId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to get friend requests');
+    }
 
-    if (error) throw error;
-    return data;
+    return result.data;
+  } catch (error) {
+    console.error('Error getting friend requests:', error);
+    throw error;
   }
+}
 
-  static async removeFriend(userId: string, friendId: string) {
-    // Remove both directions of the friendship
-    const { error } = await supabaseService
-      .from('friends')
-      .delete()
-      .or(`user_id.eq.${userId},user_id.eq.${friendId}`)
-      .or(`friend_id.eq.${userId},friend_id.eq.${friendId}`);
+static async removeFriend(userId: string, friendId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'removeFriend',
+        userId,
+        friendId
+      })
+    });
 
-    if (error) throw error;
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to remove friend');
+    }
+
     return true;
+  } catch (error) {
+    console.error('Error removing friend:', error);
+    throw error;
   }
+}
 
 static async getFriendsFeed(userId: string) {
-  // First get all friend IDs
-  const { data: friends, error: friendsError } = await supabaseService
-    .from('friends')
-    .select('friend_id')
-    .eq('user_id', userId)
-    .eq('status', 'accepted');
+  try {
+    const response = await fetch('/.netlify/functions/friend-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'getFriendsFeed',
+        userId
+      })
+    });
+
+    const result = await response.json();
     
-  if (friendsError) throw friendsError;
-  
-  const friendIds = friends.map(f => f.friend_id);
-  
-  if (friendIds.length === 0) {
-    return [];
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to get friends feed');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error getting friends feed:', error);
+    throw error;
   }
-  
-  // Get public progress photos from friends
-  const { data: photos, error: photosError } = await supabaseService
-    .from('progress_photos')
-    .select(`
-      *,
-      user:user_id(
-        id,
-        username,
-        first_name,
-        last_name,
-        profile_pic
-      )
-    `)
-    .in('user_id', friendIds)
-    .eq('visibility', 'public')
-    .order('timestamp', { ascending: false })
-    .limit(50);
-    
-  if (photosError) throw photosError;
-  
-  // Get user's likes for these photos
-  const photoIds = photos.map(p => p.id);
-  const userLikedPhotos = photoIds.length > 0 
-    ? await this.getUserLikedPhotos(userId, photoIds)
-    : [];
-  
-  return photos.map(photo => ({
-    id: photo.id,
-    base64: photo.photo_url,
-    timestamp: photo.timestamp,
-    weight: photo.weight,
-    caption: photo.caption,
-    pump: photo.pump,
-    likes: photo.likes,
-    visibility: photo.visibility,
-    userHasLiked: userLikedPhotos.includes(photo.id),
-    user: photo.user,
-    comments: []
-  }));
 }
-  static async updateProgressPhotoVisibility(userId: string, photoId: string, visibility: 'private' | 'public') {
-    const { error } = await supabase
-      .from('progress_photos')
-      .update({ visibility })
-      .eq('id', photoId)
-      .eq('user_id', userId);
 
-    if (error) throw error;
+// Leave this one as is - it uses regular supabase, not supabaseService
+static async updateProgressPhotoVisibility(userId: string, photoId: string, visibility: 'private' | 'public') {
+  const { error } = await supabase
+    .from('progress_photos')
+    .update({ visibility })
+    .eq('id', photoId)
+    .eq('user_id', userId);
+
+  if (error) throw error;
+  return true;
+}
+
+static async likePhoto(userId: string, photoId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/photo-interactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'likePhoto',
+        userId,
+        photoId
+      })
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to like photo');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    throw error;
+  }
+}
+
+static async addComment(userId: string, photoId: string, text: string) {
+  try {
+    const response = await fetch('/.netlify/functions/photo-interactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'addComment',
+        userId,
+        photoId,
+        text
+      })
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to add comment');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
+}
+
+static async deleteComment(commentId: string, userId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/photo-interactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'deleteComment',
+        commentId,
+        userId
+      })
+    });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to delete comment');
+    }
+
     return true;
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
   }
-  static async likePhoto(userId: string, photoId: string) {
-console.log('likePhoto called with:', { userId, photoId });
-  try {      // Check if already liked
-      const { data: existingLike } = await supabaseService
-        .from('likes')
-        .select('id')
-        .eq('photo_id', photoId)
-        .eq('user_id', userId)
-        .single();
+}
 
-      if (existingLike) {
-        // Unlike - delete the like
-        const { error } = await supabaseService
-          .from('likes')
-          .delete()
-          .eq('photo_id', photoId)
-          .eq('user_id', userId);
+static async getPhotoComments(photoId: string) {
+  try {
+    const response = await fetch('/.netlify/functions/photo-interactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'getComments',
+        photoId
+      })
+    });
 
-        if (error) throw error;
-        return { liked: false };
-      } else {
-        // Like - insert new like
-        const { error } = await supabaseService
-          .from('likes')
-          .insert({
-            photo_id: photoId,
-            user_id: userId
-          });
-
-        if (error) throw error;
-        return { liked: true };
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      throw error;
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to get comments');
     }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    throw error;
   }
+}
 
-  static async addComment(userId: string, photoId: string, text: string) {
-    try {
-      const { data, error } = await supabaseService
-        .from('comments')
-        .insert({
-          photo_id: photoId,
-          user_id: userId,
-          text
-        })
-        .select()
-        .single();
+static async getUserLikedPhotos(userId: string, photoIds: string[]) {
+  try {
+    const response = await fetch('/.netlify/functions/photo-interactions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'getUserLikedPhotos',
+        userId,
+        photoIds
+      })
+    });
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      throw error;
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to get user likes');
     }
+
+    return result.data;
+  } catch (error) {
+    console.error('Error getting user likes:', error);
+    throw error;
   }
-
-  static async deleteComment(commentId: string, userId: string) {
-    try {
-      const { error } = await supabaseService
-        .from('comments')
-        .delete()
-        .eq('id', commentId)
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      throw error;
-    }
-  }
-
-  static async getPhotoComments(photoId: string) {
-    try {
-      const { data, error } = await supabaseService
-        .from('comments')
-        .select(`
-        *,
-        user:users(
-          id,
-          username,
-          first_name,
-          last_name,
-          profile_pic
-        )
-      `)
-        .eq('photo_id', photoId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error getting comments:', error);
-      throw error;
-    }
-  }
-
-  static async getUserLikedPhotos(userId: string, photoIds: string[]) {
- console.log('getUserLikedPhotos called with:', { userId, photoIds });
-  try {      const { data, error } = await supabaseService
-        .from('likes')
-        .select('photo_id')
-        .eq('user_id', userId)
-        .in('photo_id', photoIds);
-
-      if (error) throw error;
-      return data.map(like => like.photo_id);
-    } catch (error) {
-      console.error('Error getting user likes:', error);
-      throw error;
-    }
-  }
+}
 }
