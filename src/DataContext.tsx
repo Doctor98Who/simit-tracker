@@ -378,14 +378,22 @@ await setSupabaseAuth0Id(user.sub, token);
         }
         
         // Progress photo update (visibility change)
-        const updatedPhoto = newData.progressPics.find((p: ProgressPhoto, idx: number) => 
-          p.id && prev.progressPics[idx] && p.visibility !== prev.progressPics[idx].visibility
-        );
-        if (updatedPhoto && updatedPhoto.id) {
-          DatabaseService.updateProgressPhotoVisibility(dbUser.id, updatedPhoto.id, updatedPhoto.visibility || 'private')
-            .catch(console.error);
-        }
-        
+// Progress photo update (comments change)
+const photoWithUpdatedComments = newData.progressPics.find((p: ProgressPhoto, idx: number) => {
+  if (!p.id || !prev.progressPics[idx]) return false;
+  const prevComments = prev.progressPics[idx].comments || [];
+  const newComments = p.comments || [];
+  // Check if comments array length changed or content changed
+  return prevComments.length !== newComments.length || 
+    JSON.stringify(prevComments) !== JSON.stringify(newComments);
+});
+
+if (photoWithUpdatedComments && photoWithUpdatedComments.id) {
+  // Update the entire photo object with new comments
+  DatabaseService.updateProgressPhoto(dbUser.id, photoWithUpdatedComments.id, {
+    comments: photoWithUpdatedComments.comments || []
+  }).catch(console.error);
+}        
         // Custom exercise addition
         if (newData.customExercises.length > prev.customExercises.length) {
           const newExercise = newData.customExercises[newData.customExercises.length - 1];

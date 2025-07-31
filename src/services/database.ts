@@ -689,17 +689,16 @@ static async getFriendsFeed(userId: string) {
 }
 
 // Leave this one as is - it uses regular supabase, not supabaseService
-static async updateProgressPhotoVisibility(userId: string, photoId: string, visibility: 'private' | 'public') {
+static async updateProgressPhoto(userId: string, photoId: string, updates: any) {
   const { error } = await supabase
     .from('progress_photos')
-    .update({ visibility })
+    .update(updates)
     .eq('id', photoId)
     .eq('user_id', userId);
 
   if (error) throw error;
   return true;
 }
-
 static async likePhoto(userId: string, photoId: string) {
   try {
     const response = await fetch('/.netlify/functions/photo-interactions', {

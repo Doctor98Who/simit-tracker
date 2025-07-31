@@ -75,12 +75,8 @@ const handleDeleteComment = async (idx: number) => {
     setComments(updatedComments);
     setShowMenu(null);
 
-    // API call to delete from database - THIS IS THE MISSING PART!
-    if (commentToDelete.id) {
-      await DatabaseService.deleteComment(commentToDelete.id, dbUser.id);
-    }
-
-    // Update context
+    // Since comments are stored in the photo object, we need to update the photo
+    // This will trigger the DataContext's enhancedSetData which handles the database update
     const updatePhoto = (p: any) => 
       p.id === photo.id ? { ...p, comments: updatedComments } : p;
 
@@ -95,6 +91,9 @@ const handleDeleteComment = async (idx: number) => {
         friendsFeed: prev.friendsFeed.map(updatePhoto)
       }));
     }
+
+    // The DataContext will handle the database update automatically
+    // through the enhancedSetData function when it detects the change
   } catch (error) {
     console.error('Error deleting comment:', error);
     // Revert on error
