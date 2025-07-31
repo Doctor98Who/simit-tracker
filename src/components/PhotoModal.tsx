@@ -260,8 +260,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: '100%', // Full height of parent
-        background: 'var(--bg-dark)',
+height: '100vh',   
+     background: 'var(--bg-dark)',
         padding: 0,
         display: 'flex',
         flexDirection: 'column',
@@ -351,8 +351,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           position: 'relative',
           width: '100%',
           flexShrink: 0,
-          height: '30vh', // Set fixed height instead of maxHeight
-          maxHeight: '30vh',
+          minHeight: '200px',
+          maxHeight: '40vh', 
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -426,8 +426,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
-          minHeight: 0, // Critical for flex children
-          // Remove overflow: 'hidden' - this was swallowing the scrollable area
+          paddingBottom: '80px', // Space for bottom navigation
         }}>
           {/* Like button and stats */}
           <div style={{
@@ -483,7 +482,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 {/* Date */}
                 <span style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
                   {new Date(localPhoto.timestamp).toLocaleDateString()}
-                </span>
+                </span>              
 
                 {/* Weight */}
                 {localPhoto.weight && (
@@ -580,7 +579,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             background: 'var(--bg-darker)',
             borderTop: '1px solid var(--border)',
             minHeight: 0, // Critical for proper flex sizing
-            paddingBottom: '60px', // Add padding for bottom nav
+           
             // Remove overflow: 'hidden' to allow proper scrolling
           }}>
             {/* Comments header */}
@@ -675,12 +674,13 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             
             {/* Comments list - scrollable area */}
             <div style={{ 
-              height: '300px', // Fixed height - adjust this value as needed
+              flex: 1,
               overflowY: 'auto',
               overflowX: 'hidden',
               padding: '0 20px 20px',
               display: 'flex',
               flexDirection: 'column',
+              minHeight: 0, // Important!
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <div style={{ 
