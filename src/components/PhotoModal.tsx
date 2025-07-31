@@ -248,14 +248,14 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       <div className="modal-content" style={{
         width: '100%',
         maxWidth: '800px',
-        height: '90vh', // Changed from 100vh to 90vh like the working version
-        maxHeight: '90vh', // Added maxHeight constraint
+        height: 'calc(100vh - 60px)', // Changed to leave space only for bottom nav
+        maxHeight: 'calc(100vh - 60px)', // Match height
         background: 'var(--bg-dark)',
         padding: 0,
-        borderRadius: '12px', // Added border radius
+        borderRadius: 0, // Remove border radius for mobile
         display: 'flex',
         flexDirection: 'column',
-        margin: '5vh auto', // Center with margin like working version
+        margin: 0, // Remove margins for full height
         overflow: 'hidden',
       }}>
         {/* Header */}
