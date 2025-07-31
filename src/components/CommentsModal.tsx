@@ -75,8 +75,15 @@ const handleDeleteComment = async (idx: number) => {
     setComments(updatedComments);
     setShowMenu(null);
 
-    // Since comments are stored in the photo object, we need to update the photo
-    // This will trigger the DataContext's enhancedSetData which handles the database update
+    // We need to update the entire comments array for this photo
+    // Since comments are loaded from a separate table, we need a different approach
+    // The photo-interactions function needs to handle comment deletion
+    
+    // For now, let's create a deleteComment function that works with the index
+    // You'll need to update your serverless function to handle this
+    await DatabaseService.deleteCommentByIndex(dbUser.id, photo.id, idx);
+
+    // Update context
     const updatePhoto = (p: any) => 
       p.id === photo.id ? { ...p, comments: updatedComments } : p;
 
@@ -91,9 +98,6 @@ const handleDeleteComment = async (idx: number) => {
         friendsFeed: prev.friendsFeed.map(updatePhoto)
       }));
     }
-
-    // The DataContext will handle the database update automatically
-    // through the enhancedSetData function when it detects the change
   } catch (error) {
     console.error('Error deleting comment:', error);
     // Revert on error

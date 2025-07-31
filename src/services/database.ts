@@ -754,7 +754,7 @@ static async addComment(userId: string, photoId: string, text: string) {
   }
 }
 
-static async deleteComment(commentId: string, userId: string) {
+static async deleteCommentByIndex(userId: string, photoId: string, commentIndex: number) {
   try {
     const response = await fetch('/.netlify/functions/photo-interactions', {
       method: 'POST',
@@ -762,9 +762,10 @@ static async deleteComment(commentId: string, userId: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        action: 'deleteComment',
-        commentId,
-        userId
+        action: 'deleteCommentByIndex',
+        userId,
+        photoId,
+        commentIndex
       })
     });
 
