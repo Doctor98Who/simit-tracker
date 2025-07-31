@@ -1272,7 +1272,7 @@ const WorkoutModal: React.FC = () => {
   const addSet = useCallback((exIdx: number) => {
     if (!currentWorkout) return;
     const newExercises = [...currentWorkout.exercises];
-    newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '', completed: false, type: undefined }];
+    newExercises[exIdx].sets = [...newExercises[exIdx].sets, { weight: '', reps: '', rpe: '',rir: '',completed: false, type: undefined }];
     setData(prev => ({ ...prev, currentWorkout: { ...prev.currentWorkout!, exercises: newExercises } }));
   }, [currentWorkout, setData]);
 

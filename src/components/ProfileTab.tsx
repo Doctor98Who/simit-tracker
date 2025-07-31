@@ -212,21 +212,21 @@ const getSetLabel = (set: any, setIdx: number, allSets: any[]) => {
                     gap: '12px',
                     fontSize: '0.85em',
                   }}>
-                    <div style={{ fontWeight: '600', color: 'var(--text-muted)' }}>Set</div>
-                    <div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>{data.weightUnit || 'lbs'}</div>
-                    <div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>Reps</div>
-                    <div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>{ex.sets?.[0]?.rir !== undefined ? 'RIR' : 'RPE'}</div>
-                    {ex.sets?.map((s: any, sIdx: number) => (
-                      <React.Fragment key={sIdx}>
-                        <div style={{ 
-                          fontWeight: '500',
-                          color: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text)'
-                        }}>{getSetLabel(s, sIdx, ex.sets || [])}</div>
-                        <div style={{ textAlign: 'center' }}>{s.weight}</div>
-                        <div style={{ textAlign: 'center' }}>{s.reps}</div>
-                        <div style={{ textAlign: 'center' }}>{s.rir !== undefined ? s.rir : s.rpe}</div>
-                      </React.Fragment>
-                    ))}
+     <div style={{ fontWeight: '600', color: 'var(--text-muted)' }}>Set</div>
+<div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>{data.weightUnit || 'lbs'}</div>
+<div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>Reps</div>
+<div style={{ textAlign: 'center', fontWeight: '600', color: 'var(--text-muted)' }}>{data.intensityMetric.toUpperCase()}</div>
+{ex.sets?.map((s: any, sIdx: number) => (
+  <React.Fragment key={sIdx}>
+    <div style={{
+      fontWeight: '500',
+      color: s.type === 'W' ? '#FFB800' : s.type === 'D' ? '#FF6B6B' : 'var(--text)'
+    }}>{getSetLabel(s, sIdx, ex.sets || [])}</div>
+    <div style={{ textAlign: 'center' }}>{s.weight}</div>
+    <div style={{ textAlign: 'center' }}>{s.reps}</div>
+    <div style={{ textAlign: 'center' }}>{data.intensityMetric === 'rpe' ? s.rpe : s.rir}</div>
+  </React.Fragment>
+))}
                   </div>
                 </div>
               ))}
