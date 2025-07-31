@@ -22,8 +22,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
   // Get initial photo from context
   const getPhotoFromContext = () => {
     return isOwn 
-      ? data.progressPics.find(p => p.id === photo.id) || photo
-      : data.friendsFeed.find(p => p.id === photo.id) || photo;
+      ? data.progressPics.find((p: any) => p.id === photo.id) || photo
+      : data.friendsFeed.find((p: any) => p.id === photo.id) || photo;
   };
   
   // Use local state for immediate updates
@@ -54,16 +54,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Update context for persistence
       if (isOwn) {
-        setData(prev => ({
+        setData((prev: any) => ({
           ...prev,
-          progressPics: prev.progressPics.map(p =>
+          progressPics: prev.progressPics.map((p: any) =>
             p.id === localPhoto.id ? optimisticUpdate : p
           )
         }));
       } else {
-        setData(prev => ({
+        setData((prev: any) => ({
           ...prev,
-          friendsFeed: prev.friendsFeed.map(item =>
+          friendsFeed: prev.friendsFeed.map((item: any) =>
             item.id === localPhoto.id ? optimisticUpdate : item
           )
         }));
@@ -101,16 +101,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Update context for persistence
       if (isOwn) {
-        setData(prev => ({
+        setData((prev: any) => ({
           ...prev,
-          progressPics: prev.progressPics.map(p =>
+          progressPics: prev.progressPics.map((p: any) =>
             p.id === localPhoto.id ? optimisticUpdate : p
           )
         }));
       } else {
-        setData(prev => ({
+        setData((prev: any) => ({
           ...prev,
-          friendsFeed: prev.friendsFeed.map(item =>
+          friendsFeed: prev.friendsFeed.map((item: any) =>
             item.id === localPhoto.id ? optimisticUpdate : item
           )
         }));
@@ -142,16 +142,16 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       
       // Update context for persistence
       if (isOwn) {
-        setData(prev => ({
+        setData((prev: any) => ({
           ...prev,
-          progressPics: prev.progressPics.map(p =>
+          progressPics: prev.progressPics.map((p: any) =>
             p.id === localPhoto.id ? optimisticUpdate : p
           )
         }));
       } else {
-        setData(prev => ({
+        setData((prev: any) => ({
           ...prev,
-          friendsFeed: prev.friendsFeed.map(item =>
+          friendsFeed: prev.friendsFeed.map((item: any) =>
             item.id === localPhoto.id ? optimisticUpdate : item
           )
         }));
@@ -170,7 +170,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
     );
     if (index !== -1) {
       newPics[index] = { ...newPics[index], caption: editCaption };
-      setData(prev => ({ ...prev, progressPics: newPics }));
+      setData((prev: any) => ({ ...prev, progressPics: newPics }));
     }
     setIsEditingCaption(false);
   };
@@ -181,9 +181,9 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       style={{
         background: 'rgba(0, 0, 0, 0.95)',
         display: 'flex',
-        alignItems: 'flex-start', // Changed from center to flex-start
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        paddingTop: '0', // Remove any top padding
+        paddingTop: '0',
       }}
     >
       <div className="modal-content" style={{
@@ -247,7 +247,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           
           {isOwn && (
             <button
-              onClick={() => setData(prev => ({ 
+              onClick={() => setData((prev: any) => ({ 
                 ...prev, 
                 activeModal: 'photo-menu-modal',
                 tempBase64: localPhoto.base64,
@@ -277,8 +277,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
           overflow: 'hidden',
           position: 'relative',
           width: '100%',
-          // Let image determine its own height
-          flexShrink: 0, // Prevent shrinking
+          flexShrink: 0,
         }}>
           {showNavigation && onNavigate && (
             <>
@@ -341,18 +340,18 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               height: 'auto',
               maxHeight: '50vh',
               objectFit: 'contain',
-              display: 'block', // Remove any inline spacing
+              display: 'block',
             }}
           />              
         </div>
 
         {/* Details */}
         <div style={{
-          flex: 1, // Take remaining space
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           background: 'var(--bg-dark)',
-          overflow: 'hidden', // Prevent outer scroll
+          overflow: 'hidden',
         }}>
           {/* Like button and stats in one row */}
           <div style={{
@@ -502,7 +501,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             padding: '0 20px 20px',
-            minHeight: 0, // Important for flex children with overflow
+            minHeight: 0,
           }}>
             <h4 style={{ margin: '0 0 12px 0', fontSize: '1em' }}>
               Comments {(localPhoto.comments || []).length > 0 && `(${localPhoto.comments.length})`}
@@ -513,7 +512,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               flex: 1,
               overflowY: 'auto',
               marginBottom: '12px',
-              minHeight: '100px', // Ensure minimum visible height
+              minHeight: '100px',
             }}>
               {(localPhoto.comments || []).length === 0 ? (
                 <p style={{ 
@@ -526,49 +525,49 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 </p>
               ) : (
                 (localPhoto.comments || []).map((comment: any, idx: number) => (
-                <div key={idx} style={{
-                  marginBottom: '12px',
-                  padding: '8px',
-                  background: 'var(--bg-lighter)',
-                  borderRadius: '8px',
-                  position: 'relative',
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
+                  <div key={idx} style={{
+                    marginBottom: '12px',
+                    padding: '8px',
+                    background: 'var(--bg-lighter)',
+                    borderRadius: '8px',
+                    position: 'relative',
                   }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: '600', fontSize: '0.9em', marginBottom: '4px' }}>
-                        {comment.user_name}
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', fontSize: '0.9em', marginBottom: '4px' }}>
+                          {comment.user_name}
+                        </div>
+                        <div style={{ fontSize: '0.9em' }}>{comment.text}</div>
+                        <div style={{ fontSize: '0.75em', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          {new Date(comment.timestamp).toLocaleDateString()}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.9em' }}>{comment.text}</div>
-                      <div style={{ fontSize: '0.75em', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        {new Date(comment.timestamp).toLocaleDateString()}
-                      </div>
+                      {dbUser && comment.user_id === dbUser.id && (
+                        <button
+                          onClick={() => handleDeleteComment(idx)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-muted)',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            fontSize: '0.8em',
+                            opacity: 0.7,
+                            transition: 'opacity 0.2s',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
-                    {dbUser && comment.user_id === dbUser.id && (
-                      <button
-                        onClick={() => handleDeleteComment(idx)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--text-muted)',
-                          cursor: 'pointer',
-                          padding: '4px',
-                          fontSize: '0.8em',
-                          opacity: 0.7,
-                          transition: 'opacity 0.2s',
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
-                      >
-                        ✕
-                      </button>
-                    )}
                   </div>
-                </div>
-              ))
+                ))
               )}
             </div>
             
