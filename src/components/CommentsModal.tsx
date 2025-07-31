@@ -17,12 +17,28 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   const [showMenu, setShowMenu] = useState<number | null>(null);
 
   useEffect(() => {
-    // Add modal-open class to body
+    // Store current scroll position and lock body
+    const scrollY = window.scrollY;
+    
+    // Add modal-open class
     document.body.classList.add('modal-open');
     
+    // Prevent body from scrolling and store position
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
     return () => {
-      // Remove modal-open class from body
+      // Remove modal-open class
       document.body.classList.remove('modal-open');
+      
+      // Restore body scroll
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      
+      // Return to original scroll position
+      window.scrollTo(0, scrollY);
     };
   }, []);
 
@@ -132,7 +148,17 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
   };
 
   return (
-    <div className="modal active" onClick={onClose}>
+    <div 
+      className="modal active" 
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    >
       <div 
         className="modal-content"
         style={{
