@@ -48,20 +48,21 @@ useEffect(() => {
   window.scrollTo(0, 0);
   
   // Then scroll modal content to top
-  setTimeout(() => {
-    const modalContent = document.querySelector('.progress-photo-modal .modal-content');
-    if (modalContent) {
-      modalContent.scrollTop = 0;
-    }
-    
-    // Force a reflow to ensure positioning is correct
-    const modal = document.querySelector('.progress-photo-modal');
-    if (modal) {
-      (modal as HTMLElement).style.display = 'none';
-      (modal as HTMLElement).offsetHeight; // Force reflow
-      (modal as HTMLElement).style.display = 'block';
-    }
-  }, 0);
+setTimeout(() => {
+  const modalContent = document.querySelector('.progress-photo-modal .modal-content');
+  if (modalContent) {
+    modalContent.scrollTop = 0;
+  }
+  
+  // Force a reflow to ensure positioning is correct
+  const modal = document.querySelector('.progress-photo-modal');
+  if (modal) {
+    (modal as HTMLElement).style.display = 'none';
+    // Fix: Assign to a variable to satisfy ESLint
+    const _reflow = (modal as HTMLElement).offsetHeight; // Force reflow
+    (modal as HTMLElement).style.display = 'block';
+  }
+}, 0);
   
   return () => {
     // Re-enable body scroll when modal closes
