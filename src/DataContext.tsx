@@ -507,6 +507,7 @@ if (photoWithUpdatedComments && photoWithUpdatedComments.id) {
       const refreshFeed = async () => {
         try {
           const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
+          console.log('Friends feed data:', friendsFeed);
           setData(prev => ({ ...prev, friendsFeed }));
         } catch (error) {
           console.error('Error refreshing friends feed:', error);
