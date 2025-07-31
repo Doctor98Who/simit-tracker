@@ -502,7 +502,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             padding: '0 20px 20px',
-            overflow: 'hidden',
+            minHeight: 0, // Important for flex children with overflow
           }}>
             <h4 style={{ margin: '0 0 12px 0', fontSize: '1em' }}>
               Comments {(localPhoto.comments || []).length > 0 && `(${localPhoto.comments.length})`}
@@ -513,8 +513,19 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               flex: 1,
               overflowY: 'auto',
               marginBottom: '12px',
+              minHeight: '100px', // Ensure minimum visible height
             }}>
-              {(localPhoto.comments || []).map((comment: any, idx: number) => (
+              {(localPhoto.comments || []).length === 0 ? (
+                <p style={{ 
+                  color: 'var(--text-muted)', 
+                  fontSize: '0.9em',
+                  textAlign: 'center',
+                  padding: '20px',
+                }}>
+                  No comments yet. Be the first to comment!
+                </p>
+              ) : (
+                (localPhoto.comments || []).map((comment: any, idx: number) => (
                 <div key={idx} style={{
                   marginBottom: '12px',
                   padding: '8px',
@@ -557,7 +568,8 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                     )}
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
             
             {/* Comment input - fixed at bottom */}
