@@ -111,6 +111,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
       const newComment = {
         user_id: dbUser.id,
         user_name: `${data.firstName} ${data.lastName}`,
+        user_profile_pic: data.profilePic, 
         text: comment,
         timestamp: Date.now()
       };
@@ -626,17 +627,18 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                 gap: '10px',
                 alignItems: 'center',
               }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-lighter)',
-                  backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  flexShrink: 0,
-                }} />
-                <div style={{ 
+<div style={{
+  width: '32px',
+  height: '32px',
+  borderRadius: '50%',
+  background: 'var(--bg-lighter)',
+  backgroundImage: (comment as any)?.user_profile_pic ? `url(${(comment as any).user_profile_pic})` : 'none',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  flexShrink: 0,
+}} />          
+
+<div style={{ 
                   flex: 1,
                   display: 'flex',
                   gap: '8px',
@@ -682,53 +684,58 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
               </div>
             </div>
             
-            {/* Comments list - no scroll, just flows */}
-            <div style={{ 
-              padding: '0 20px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-            }}>
-              {(localPhoto.comments || []).length === 0 ? (
-                <div style={{ 
-                  textAlign: 'center',
-                  padding: '40px 20px',
-                }}>
-                  <p style={{ 
-                    color: 'var(--text-muted)', 
-                    fontSize: '0.9em',
-                    marginBottom: '8px',
-                  }}>
-                    No comments yet
-                  </p>
-                  <p style={{ 
-                    color: 'var(--text-muted)', 
-                    fontSize: '0.85em',
-                  }}>
-                    Be the first to share your thoughts!
-                  </p>
-                </div>
-              ) : (
-                (localPhoto.comments || []).map((comment: any, idx: number) => (
-                  <div key={idx} style={{
-                    marginBottom: '16px',
-                    display: 'flex',
-                    gap: '12px',
-                  }}>
-                    <div style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      background: 'var(--bg-lighter)',
-                      flexShrink: 0,
-                    }} />
-                    <div style={{ flex: 1 }}>
-                      {editingCommentIdx === idx ? (
-                        <div style={{
-                          background: 'var(--bg-lighter)',
-                          borderRadius: '12px',
-                          padding: '12px',
-                        }}>
-                          <textarea
+{/* Comments list - no scroll, just flows */}
+<div style={{
+  padding: '0 20px 20px',
+  display: 'flex',
+  flexDirection: 'column',
+}}>
+  {(localPhoto.comments || []).length === 0 ? (
+    <div style={{
+      textAlign: 'center',
+      padding: '40px 20px',
+    }}>
+      <p style={{
+        color: 'var(--text-muted)',
+        fontSize: '0.9em',
+        marginBottom: '8px',
+      }}>
+        No comments yet
+      </p>
+      <p style={{
+        color: 'var(--text-muted)',
+        fontSize: '0.85em',
+      }}>
+        Be the first to share your thoughts!
+      </p>
+    </div>
+  ) : (
+    (localPhoto.comments || []).map((comment: any, idx: number) => (
+      <div key={idx} style={{
+        marginBottom: '16px',
+        display: 'flex',
+        gap: '12px',
+      }}>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          background: 'var(--bg-lighter)',
+          backgroundImage: (comment && typeof comment === 'object' && comment.user_profile_pic) 
+            ? `url(${comment.user_profile_pic})` 
+            : 'none',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          flexShrink: 0,
+        }} />
+        <div style={{ flex: 1 }}>
+          {editingCommentIdx === idx ? (
+            <div style={{
+              background: 'var(--bg-lighter)',
+              borderRadius: '12px',
+              padding: '12px',
+            }}>                         
+             <textarea
                             value={editingCommentText}
                             onChange={(e) => setEditingCommentText(e.target.value)}
                             style={{
@@ -829,6 +836,7 @@ const PhotoModal: React.FC<PhotoModalProps> = ({
                                   fontSize: '1.2em',
                                   lineHeight: '0.5',
                                   position: 'relative',
+                                  minHeight: 'auto', // ADD THIS for better touch target
                                 }}
                               >
                                 ⋯
