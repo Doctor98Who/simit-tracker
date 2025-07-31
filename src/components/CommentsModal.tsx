@@ -151,6 +151,9 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ photo, isOwn, onClose }) 
     <div 
       className="modal active comments-modal" 
       onClick={onClose}
+      style={{
+        overflow: 'hidden', // Override the overflow-y: auto from .modal
+      }}
     >
       <div 
         className="modal-content"
