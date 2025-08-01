@@ -1192,17 +1192,21 @@ const WorkoutModal: React.FC = () => {
 
     const deltaY = currentY - startY;
 
-    // If dragged more than 100px, minimize
-    if (deltaY > 100) {
-      setData(prev => ({ ...prev, activeModal: null }));
-      setModalTransform(0);
-      return;
-    }
+// If dragged more than 100px, minimize
+if (deltaY > 100) {
+  setData(prev => ({ ...prev, activeModal: null }));
+  setModalTransform(0);
+  return;
+}
+// Reset transform
+setModalTransform(0);
+};
 
-    // Reset transform
-    setModalTransform(0);
-  };
-
+// Add this helper function here
+const isPWAStandalone = () => {
+  return (window.navigator as any).standalone === true || 
+         window.matchMedia('(display-mode: standalone)').matches;
+};
   const moveExercise = useCallback((dragIndex: number, hoverIndex: number) => {
     if (!currentWorkout) return;
     const draggedExercise = currentWorkout.exercises[dragIndex];
@@ -1398,25 +1402,26 @@ const WorkoutModal: React.FC = () => {
           WebkitTransform: `translateY(${modalTransform}px)`,
         } as React.CSSProperties}
       >
-        <div
-          className="drag-handle"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleTouchStart}
-          onMouseMove={handleTouchMove}
-          onMouseUp={handleTouchEnd}
-          onMouseLeave={handleTouchEnd}
-          style={{
-            padding: '6px',
-            cursor: 'grab',
-            background: 'var(--bg-dark)',
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            flexShrink: 0,
-          }}
-        >
+<div
+  className="drag-handle"
+  onTouchStart={handleTouchStart}
+  onTouchMove={handleTouchMove}
+  onTouchEnd={handleTouchEnd}
+  onMouseDown={handleTouchStart}
+  onMouseMove={handleTouchMove}
+  onMouseUp={handleTouchEnd}
+  onMouseLeave={handleTouchEnd}
+  style={{
+    padding: '6px',
+    paddingTop: isPWAStandalone() ? '26px' : '6px',
+    cursor: 'grab',
+    background: 'var(--bg-dark)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    flexShrink: 0,
+  }}
+     >
           <div className="drag-indicator" style={{
             width: '32px',
             height: '3px',
