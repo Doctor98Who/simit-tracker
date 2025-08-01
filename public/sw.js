@@ -9,14 +9,14 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
     
     // Clear all caches to force fresh content
-   // event.waitUntil(
-        //caches.keys().then(cacheNames => {
-           // return Promise.all(
-               // cacheNames.map(cache => caches.delete(cache))
-           // );
-      //  })
-  //  );
-});
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cache => caches.delete(cache))
+            );
+        })
+    );
+});//
 
 // Force bypass cache for version.json
 self.addEventListener('fetch', (event) => {
