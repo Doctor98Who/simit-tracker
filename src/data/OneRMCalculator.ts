@@ -49,22 +49,26 @@ export function calculateOneRM(weight: number | string, reps: number | string, r
 }
 export function getOneRMHistory(history: any[], exerciseName: string, exerciseSubtype?: string): OneRMData[] {
   const oneRMHistory: OneRMData[] = [];
-  
+ 
   console.log('Getting 1RM history for:', exerciseName, exerciseSubtype);
   console.log('Total workouts:', history.length);
-  
+ 
   history.forEach(workout => {
     workout.exercises.forEach((exercise: any) => {
       if (exercise.name === exerciseName && (!exerciseSubtype || exercise.subtype === exerciseSubtype)) {
         console.log('Found matching exercise in workout:', workout.startTime);
         
+        // Find the best set (highest 1RM) from this workout
+        let best1RM = 0;
+        let bestSet: any = null;
+        
         exercise.sets.forEach((set: any, idx: number) => {
           console.log(`Set ${idx + 1}:`, set);
-          
+         
           if (set.completed && set.weight && set.reps) {
             // Check for either RPE or RIR
             let rpeValue: number | undefined;
-            
+           
             // Handle RPE
             if (set.rpe !== undefined && set.rpe !== '') {
               rpeValue = typeof set.rpe === 'string' ? parseFloat(set.rpe) : set.rpe;
@@ -77,27 +81,24 @@ export function getOneRMHistory(history: any[], exerciseName: string, exerciseSu
                 console.log(`Converted RIR ${rirNum} to RPE ${rpeValue}`);
               }
             }
-            
+           
             if (rpeValue && !isNaN(rpeValue)) {
               const estimated1RM = calculateOneRM(
                 set.weight,
                 set.reps,
                 rpeValue
               );
-              
+             
               console.log(`Calculated 1RM: ${estimated1RM}`);
-              
-              if (estimated1RM > 0) {
-                oneRMHistory.push({
-                  exercise: exercise.name,
-                  subtype: exercise.subtype,
-                  date: workout.startTime,
-                  estimated1RM,
+             
+              // Keep track of the best 1RM for this workout
+              if (estimated1RM > best1RM) {
+                best1RM = estimated1RM;
+                bestSet = {
                   weight: parseFloat(set.weight),
                   reps: parseInt(set.reps),
-                  rpe: rpeValue,
-                  programName: workout.programName
-                });
+                  rpe: rpeValue
+                };
               }
             } else {
               console.log('Set missing or invalid intensity data:', {
@@ -116,10 +117,24 @@ export function getOneRMHistory(history: any[], exerciseName: string, exerciseSu
             });
           }
         });
+        
+        // Only add ONE data point per workout (the best 1RM)
+        if (best1RM > 0 && bestSet) {
+          oneRMHistory.push({
+            exercise: exercise.name,
+            subtype: exercise.subtype,
+            date: workout.startTime,
+            estimated1RM: best1RM,
+            weight: bestSet.weight,
+            reps: bestSet.reps,
+            rpe: bestSet.rpe,
+            programName: workout.programName
+          });
+        }
       }
     });
   });
-  
+ 
   console.log('Total 1RM entries found:', oneRMHistory.length);
   return oneRMHistory.sort((a, b) => a.date - b.date);
 }
