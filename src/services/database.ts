@@ -279,7 +279,7 @@ export class DatabaseService {  static async syncUserProfile(auth0Id: string, em
           caption: photo.caption,
           pump: photo.pump,
           likes: photo.likes || 0,
-          visibility: photo.isPublic ? 'public' : 'private',
+visibility: photo.visibility || 'private',
         })
         .select()
         .single();
