@@ -44,30 +44,27 @@ const CommunityTab = () => {
                 : "No posts yet. Share your progress or wait for friends to post!"}
             </div>
           ) : (
-            <div style={{ padding: '0', margin: '0 calc(-1 * var(--content-padding, 20px))'  }}>
-              {/* Show user's own public posts */}
-              {data.progressPics
-                .filter((pic: any) => pic.visibility === 'public')
-                .map((pic: any, index: number) => (
-                  <PhotoCard
-                    key={`own-${index}`}
-                    item={pic}
-                    isOwn={true}
-                    onOpenComments={() => openComments(pic, true)}
-                  />
-                ))}
-              
-              {/* Friends' posts */}
-              {data.friendsFeed.map((item: any, index: number) => (
-                <PhotoCard
-                  key={`friend-${index}`}
-                  item={item}
-                  isOwn={false}
-                  onOpenComments={() => openComments(item, false)}
-                />
-              ))}
-            </div>
-          )}
+<div style={{ padding: '0', margin: '0 calc(-1 * var(--content-padding, 20px))'  }}>
+  {/* Combine and sort all posts by timestamp */}
+  {[
+    // User's own public posts
+    ...data.progressPics
+      .filter((pic: any) => pic.visibility === 'public')
+      .map((pic: any) => ({ ...pic, isOwn: true })),
+    // Friends' posts
+    ...data.friendsFeed.map((item: any) => ({ ...item, isOwn: false }))
+  ]
+    .sort((a, b) => b.timestamp - a.timestamp) // Sort by newest first
+    .map((item, index) => (
+      <PhotoCard
+        key={`${item.isOwn ? 'own' : 'friend'}-${index}`}
+        item={item}
+        isOwn={item.isOwn}
+        onOpenComments={() => openComments(item, item.isOwn)}
+      />
+    ))
+  }
+</div>          )}
         </div>
       )}
       

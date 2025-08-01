@@ -244,15 +244,14 @@ const ProgressTab = () => {
           className="modal active progress-photo-modal"
           style={{
             background: 'rgba(0, 0, 0, 0.95)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: 'block',
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
             zIndex: 9999,
+            overflow: 'hidden',
           }}
         >
           <div className="modal-content" style={{
@@ -267,7 +266,7 @@ const ProgressTab = () => {
             flexDirection: 'column',
             overflow: 'hidden',
           }}>
-            {/* Header */}
+            {/* Fixed Header */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -275,7 +274,9 @@ const ProgressTab = () => {
               padding: '16px 20px',
               borderBottom: '1px solid var(--border)',
               background: 'var(--bg-dark)',
-              flexShrink: 0,
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
             }}>
               <button
                 onClick={closePhotoModal}
@@ -330,103 +331,95 @@ const ProgressTab = () => {
               </button>
             </div>
 
-            {/* Image container - NO FLEX:1 to prevent spacing */}
-            <div style={{
-              width: '100%',
-              backgroundColor: 'black',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              flexShrink: 0,
-            }}>
-              {selectedPhotoIndex > 0 && (
-                <button
-                  onClick={() => navigatePhoto('prev')}
-                  style={{
-                    position: 'absolute',
-                    left: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '44px',
-                    height: '44px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '1.2em',
-                    color: 'white',
-                    zIndex: 10,
-                  }}
-                >
-                  ‹
-                </button>
-              )}
-
-              <img
-                src={selectedPhoto.base64}
-                alt="Progress"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  display: 'block',
-                  maxHeight: '60vh',
-                  objectFit: 'contain',
-                }}
-              />
-
-              {selectedPhotoIndex < sortedProgressPics.length - 1 && (
-                <button
-                  onClick={() => navigatePhoto('next')}
-                  style={{
-                    position: 'absolute',
-                    right: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '44px',
-                    height: '44px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '1.2em',
-                    color: 'white',
-                    zIndex: 10,
-                  }}
-                >
-                  ›
-                </button>
-              )}
-            </div>
-
-            {/* Scrollable content section */}
+            {/* Single scrollable container for everything */}
             <div style={{
               flex: 1,
               overflowY: 'auto',
               overflowX: 'hidden',
               WebkitOverflowScrolling: 'touch',
             }}>
-              {/* Get synced data */}
+              {/* Image - part of the scroll */}
+              <div style={{
+                width: '100%',
+                backgroundColor: 'black',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}>
+                {selectedPhotoIndex > 0 && (
+                  <button
+                    onClick={() => navigatePhoto('prev')}
+                    style={{
+                      position: 'absolute',
+                      left: '20px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '44px',
+                      height: '44px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontSize: '1.2em',
+                      color: 'white',
+                      zIndex: 10,
+                    }}
+                  >
+                    ‹
+                  </button>
+                )}
+
+                <img
+                  src={selectedPhoto.base64}
+                  alt="Progress"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    objectFit: 'contain',
+                  }}
+                />
+
+                {selectedPhotoIndex < sortedProgressPics.length - 1 && (
+                  <button
+                    onClick={() => navigatePhoto('next')}
+                    style={{
+                      position: 'absolute',
+                      right: '20px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '44px',
+                      height: '44px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontSize: '1.2em',
+                      color: 'white',
+                      zIndex: 10,
+                    }}
+                  >
+                    ›
+                  </button>
+                )}
+              </div>
+
+              {/* All content below image */}
               {(() => {
                 const syncedPhoto = data.friendsFeed.find((item: any) =>
                   item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
                 ) || data.progressPics.find((item: any) =>
                   item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
                 ) || selectedPhoto;
-
-                const handleLike = async () => {
-                  if (!dbUser) return;
-                  // For now, just show the comments modal
-                  alert('Like functionality coming soon!');
-                };
 
                 return (
                   <>
@@ -437,6 +430,7 @@ const ProgressTab = () => {
                       justifyContent: 'space-between',
                       padding: '12px 16px',
                       borderBottom: '1px solid var(--border)',
+                      background: 'var(--bg-dark)',
                     }}>
                       <div style={{
                         display: 'flex',
@@ -445,7 +439,7 @@ const ProgressTab = () => {
                       }}>
                         {/* Like button */}
                         <button
-                          onClick={handleLike}
+                          onClick={() => alert('Like functionality coming soon!')}
                           style={{
                             background: 'none',
                             border: 'none',
@@ -529,7 +523,8 @@ const ProgressTab = () => {
                     {/* Photo details section */}
                     <div style={{
                       padding: '16px 20px',
-                      paddingBottom: isPWAStandalone() ? `calc(16px + 80px + env(safe-area-inset-bottom))` : '16px',
+                      paddingBottom: isPWAStandalone() ? `calc(100px + env(safe-area-inset-bottom))` : '80px',
+                      background: 'var(--bg-dark)',
                     }}>
                       {/* Like count */}
                       {(syncedPhoto.likes || 0) > 0 && (
@@ -556,47 +551,40 @@ const ProgressTab = () => {
                         </p>
                       )}
 
-                      {/* Comments preview */}
+                      {/* All Comments */}
                       {syncedPhoto.comments && syncedPhoto.comments.length > 0 && (
                         <div style={{ marginBottom: '12px' }}>
-                          {syncedPhoto.comments.slice(0, 2).map((comment: any, idx: number) => (
-                            <p key={idx} style={{
-                              margin: '4px 0',
-                              fontSize: '0.9em',
-                              lineHeight: '1.4',
+                          <div style={{
+                            fontSize: '0.85em',
+                            color: 'var(--text-muted)',
+                            marginBottom: '8px',
+                          }}>
+                            Comments
+                          </div>
+                          {syncedPhoto.comments && syncedPhoto.comments.map((comment: any, idx: number) => (
+                            <div key={idx} style={{
+                              marginBottom: '8px',
+                              paddingBottom: '8px',
+                              borderBottom: idx < (syncedPhoto.comments?.length || 0) - 1 ? '1px solid var(--border)' : 'none',
                             }}>
-                              <span style={{ fontWeight: '600' }}>
-                                {comment.user_name.split(' ')[0]}
-                              </span>{' '}
-                              {comment.text.length > 60
-                                ? comment.text.substring(0, 60) + '...'
-                                : comment.text
-                              }
-                            </p>
-                          ))}
-                          {syncedPhoto.comments.length > 2 && (
-                            <button
-                              onClick={() => {
-                                setData(prev => ({
-                                  ...prev,
-                                  selectedPhoto: syncedPhoto,
-                                  showComments: true,
-                                  activeModal: null
-                                }));
-                              }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'var(--text-muted)',
+                              <p style={{
+                                margin: '0',
                                 fontSize: '0.9em',
-                                cursor: 'pointer',
-                                padding: '4px 0',
-                                marginTop: '4px',
-                              }}
-                            >
-                              View all {syncedPhoto.comments.length} comments
-                            </button>
-                          )}
+                                lineHeight: '1.4',
+                              }}>
+                                <span style={{ fontWeight: '600' }}>
+                                  {comment.user_name}
+                                </span>{' '}
+                                {comment.text}
+                              </p>
+                              <span style={{
+                                fontSize: '0.75em',
+                                color: 'var(--text-muted)',
+                              }}>
+                                {new Date(comment.timestamp).toLocaleDateString()}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
 
@@ -607,7 +595,9 @@ const ProgressTab = () => {
                         fontSize: '0.85em',
                         color: 'var(--text-muted)',
                         flexWrap: 'wrap',
-                        marginTop: '12px',
+                        marginTop: '16px',
+                        paddingTop: '16px',
+                        borderTop: '1px solid var(--border)',
                       }}>
                         <span>📅 {new Date(syncedPhoto.timestamp).toLocaleDateString()}</span>
                         {syncedPhoto.weight && (
@@ -621,7 +611,8 @@ const ProgressTab = () => {
             </div>
           </div>
         </div>
-      )}    </div>
+      )}
+    </div>
   );
 };
 
