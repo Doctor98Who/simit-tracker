@@ -302,20 +302,20 @@ return (
       <div className="profile-location" id="profile-location">{data.country}{data.state ? ', ' + data.state : ''}</div>
     </div>
     
-    <div className="profile-info" style={{
-      padding: '20px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-    }}>
-      {data.bio && (
-        <p style={{
-          fontSize: '14px',
-          color: 'var(--text-muted)',
-          margin: '-10px 0 0 0',
-          lineHeight: '1.4',
-        }}>{data.bio}</p>
-      )}
+<div className="profile-info" style={{
+  padding: '20px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '20px',
+}}>
+  {data.bio && (
+    <p style={{
+      fontSize: '14px',
+      color: 'var(--text-muted)',
+      margin: '0 0 16px 0',
+      lineHeight: '1.4',
+    }}>{data.bio}</p>
+  )}
       
       {/* Modern Stats Cards */}
       <div style={{
