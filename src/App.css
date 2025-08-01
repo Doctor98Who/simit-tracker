@@ -349,10 +349,15 @@ body {
         border-radius: 0;
         padding-bottom: env(safe-area-inset-bottom);
     }
-    
+   
     /* Add padding to content to prevent overlap */
     .content {
-        padding-bottom: calc(60px + env(safe-area-inset-bottom));
+        padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    }
+    
+    /* Extra padding for community tab to ensure last post is visible */
+    .content.community-content {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
     }
 }
 
@@ -364,8 +369,7 @@ body {
         -webkit-transform: translate3d(0, 0, 0);
         will-change: transform;
     }
-}
-.nav-item {
+}.nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
