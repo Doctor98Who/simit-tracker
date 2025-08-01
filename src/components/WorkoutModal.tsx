@@ -1402,28 +1402,21 @@ const isPWAStandalone = () => {
           WebkitTransform: `translateY(${modalTransform}px)`,
         } as React.CSSProperties}
       >
-<div
-  className="drag-handle"
-  onTouchStart={handleTouchStart}
-  onTouchMove={handleTouchMove}
-  onTouchEnd={handleTouchEnd}
-  onMouseDown={handleTouchStart}
-  onMouseMove={handleTouchMove}
-  onMouseUp={handleTouchEnd}
-  onMouseLeave={handleTouchEnd}
-  style={{
-    padding: '6px',
-    paddingTop: isPWAStandalone() ? '50px' : '6px',  // Increase touch area from top in PWA
-    paddingBottom: isPWAStandalone() ? '20px' : '6px',  // Bigger touch area below
-    cursor: 'grab',
-    background: 'var(--bg-dark)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
-    flexShrink: 0,
-    marginTop: isPWAStandalone() ? '-44px' : '0',  // Pull content up to keep buttons close
-  }}
->
+<div className="workout-header" style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+  padding: '10px 14px',
+  background: 'var(--bg-dark)',
+  position: 'sticky',
+  top: isPWAStandalone() ? 'calc(env(safe-area-inset-top) + 40px)' : '40px',
+  zIndex: 5,
+  flexShrink: 0,
+  minHeight: '60px',
+  width: '100%',
+  boxSizing: 'border-box',
+}}>
   <div className="drag-indicator" style={{
     width: '40px',
     height: '5px',
