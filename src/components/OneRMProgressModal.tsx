@@ -41,22 +41,21 @@ const OneRMProgressModal: React.FC<OneRMProgressModalProps> = ({ exercise, onClo
   const paddedMax = maxOneRM + yPadding;
   const paddedMin = Math.max(0, minOneRM - yPadding);
 
-  // Handle date range for single point
-  let dateRange;
-  if (chartDataToUse.length === 1) {
-    // For single point, create a date range around that point
-    const singleDate = chartDataToUse[0].date;
-    const dayInMs = 24 * 60 * 60 * 1000;
-    dateRange = { 
-      min: singleDate - (7 * dayInMs), // 7 days before
-      max: singleDate + (7 * dayInMs)  // 7 days after
-    };
-  } else if (chartDataToUse.length > 1) {
-    dateRange = { min: chartDataToUse[0].date, max: chartDataToUse[chartDataToUse.length - 1].date };
-  } else {
-    dateRange = { min: Date.now() - (7 * 24 * 60 * 60 * 1000), max: Date.now() + (7 * 24 * 60 * 60 * 1000) };
-  }
- 
+// Handle date range for single point
+let dateRange: { min: number; max: number };
+if (chartDataToUse.length === 1) {
+  // For single point, create a date range around that point
+  const singleDate = chartDataToUse[0].date;
+  const dayInMs = 24 * 60 * 60 * 1000;
+  dateRange = { 
+    min: singleDate - (7 * dayInMs), // 7 days before
+    max: singleDate + (7 * dayInMs)  // 7 days after
+  };
+} else if (chartDataToUse.length > 1) {
+  dateRange = { min: chartDataToUse[0].date, max: chartDataToUse[chartDataToUse.length - 1].date };
+} else {
+  dateRange = { min: Date.now() - (7 * 24 * 60 * 60 * 1000), max: Date.now() + (7 * 24 * 60 * 60 * 1000) };
+} 
   const toggleProgram = (programName: string) => {
     setSelectedPrograms(prev =>
       prev.includes(programName)
