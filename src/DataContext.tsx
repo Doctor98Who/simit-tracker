@@ -204,87 +204,90 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  const syncUserData = async () => {
-    if (!user?.sub || !user?.email) return;
-   
-    setIsSyncing(true);
-    try {
-      // Handle Auth0 token with timeout to prevent hanging
-      let token = null;
-      try {
-        // Create a timeout promise that rejects after 3 seconds
-        const tokenPromise = getAccessTokenSilently();
-        const timeoutPromise = new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Token timeout')), 3000)
-        );
-        
-        // Race between getting token and timeout
-        token = await Promise.race([tokenPromise, timeoutPromise]);
-        console.log('Set Supabase session with Auth0 token');
-      } catch (error) {
-        console.warn('Could not get Auth0 token, continuing without it:', error);
-        // Continue without token - don't let this block the app
-      }
-      
-      // Always set Supabase auth, with or without token
-      await setSupabaseAuth0Id(user.sub, token || undefined);
-      console.log('Setting Auth0 ID for RLS:', user.sub);
-     
-      // Check if Supabase session exists
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Current Supabase session after setSupabaseAuth0Id:', session);      
-     
-      // Sync user profile
-      const userProfile = await DatabaseService.syncUserProfile(user.sub, user.email);
-      setDbUser(userProfile);
-      
-      // Load user data from Supabase
-      const [history, customExercises, progressPhotos, templates, friends, friendRequests] = await Promise.all([
-        DatabaseService.getWorkoutHistory(userProfile.id),
-        DatabaseService.getCustomExercises(userProfile.id),
-        DatabaseService.getProgressPhotos(userProfile.id),
-        DatabaseService.getProgramTemplates(userProfile.id),
-        DatabaseService.getFriends(userProfile.id),
-        DatabaseService.getPendingFriendRequests(userProfile.id)
-      ]);
-      
-      // Load friends feed separately
-      const friendsFeed = await DatabaseService.getFriendsFeed(userProfile.id);
+const syncUserData = async () => {
+  console.log('🔍 DEBUG: syncUserData START', { 
+    userSub: user?.sub, 
+    email: user?.email,
+    isAuthenticated,
+    dbUser
+  });
+  
+  if (!user?.sub || !user?.email) {
+    console.log('❌ DEBUG: No user sub or email, returning');
+    return;
+  }
+ 
+  setIsSyncing(true);
+  try {
+    // ... existing token code ...
+    
+    // Sync user profile
+    console.log('🔍 DEBUG: Syncing user profile...');
+    const userProfile = await DatabaseService.syncUserProfile(user.sub, user.email);
+    console.log('✅ DEBUG: User profile synced:', userProfile);
+    setDbUser(userProfile);
+    
+    // Load user data from Supabase
+    console.log('🔍 DEBUG: Loading user data...');
+    const [history, customExercises, progressPhotos, templates, friends, friendRequests] = await Promise.all([
+      DatabaseService.getWorkoutHistory(userProfile.id),
+      DatabaseService.getCustomExercises(userProfile.id),
+      DatabaseService.getProgressPhotos(userProfile.id),
+      DatabaseService.getProgramTemplates(userProfile.id),
+      DatabaseService.getFriends(userProfile.id),
+      DatabaseService.getPendingFriendRequests(userProfile.id)
+    ]);
+    
+    console.log('✅ DEBUG: Data loaded:', {
+      historyCount: history.length,
+      customExercisesCount: customExercises.length,
+      progressPhotosCount: progressPhotos.length,
+      templatesCount: templates.length,
+      friendsCount: friends.length,
+      friendRequestsCount: friendRequests.length
+    });
+    
+    // Load friends feed separately
+    const friendsFeed = await DatabaseService.getFriendsFeed(userProfile.id);
+    console.log('✅ DEBUG: Friends feed loaded:', friendsFeed.length, 'items');
 
-      // Add this to load current workout
-      const currentWorkout = userProfile.current_workout || null;
+    // Add this to load current workout
+    const currentWorkout = userProfile.current_workout || null;
 
-      setData(prev => ({
-        ...prev,
-        username: userProfile.username || prev.username,
-        firstName: userProfile.first_name || prev.firstName,
-        lastName: userProfile.last_name || prev.lastName,
-        bio: userProfile.bio || prev.bio,
-        email: userProfile.email || prev.email,
-        country: userProfile.country || prev.country,
-        state: userProfile.state || prev.state,
-        profilePic: userProfile.profile_pic || prev.profilePic,
-        coverPhoto: userProfile.cover_photo || prev.coverPhoto,
-        theme: userProfile.theme || prev.theme,
-        intensityMetric: userProfile.intensity_metric || prev.intensityMetric,
-        weightUnit: userProfile.weight_unit || prev.weightUnit,
-        distanceUnit: userProfile.distance_unit || prev.distanceUnit,
-        history,
-        customExercises,
-        progressPics: progressPhotos,
-        templates,
-        currentWorkout,
-        friends,
-        friendRequests,
-        friendsFeed,
-      }));
-    } catch (error) {
-      console.error('Error syncing user data:', error);
-    } finally {
-      setIsSyncing(false);
-      setIsDataLoading(false);
-    }
-  };
+    console.log('🔍 DEBUG: Setting data with loaded values...');
+    setData(prev => ({
+      ...prev,
+      username: userProfile.username || prev.username,
+      firstName: userProfile.first_name || prev.firstName,
+      lastName: userProfile.last_name || prev.lastName,
+      bio: userProfile.bio || prev.bio,
+      email: userProfile.email || prev.email,
+      country: userProfile.country || prev.country,
+      state: userProfile.state || prev.state,
+      profilePic: userProfile.profile_pic || prev.profilePic,
+      coverPhoto: userProfile.cover_photo || prev.coverPhoto,
+      theme: userProfile.theme || prev.theme,
+      intensityMetric: userProfile.intensity_metric || prev.intensityMetric,
+      weightUnit: userProfile.weight_unit || prev.weightUnit,
+      distanceUnit: userProfile.distance_unit || prev.distanceUnit,
+      history,
+      customExercises,
+      progressPics: progressPhotos,
+      templates,
+      currentWorkout,
+      friends,
+      friendRequests,
+      friendsFeed,
+    }));
+    
+    console.log('✅ DEBUG: Data set complete');
+  } catch (error) {
+    console.error('❌ DEBUG: Error syncing user data:', error);
+  } finally {
+    setIsSyncing(false);
+    setIsDataLoading(false);
+  }
+};
 
   // Rest of your component code (enhancedSetData, useEffects, etc.)
   // ...

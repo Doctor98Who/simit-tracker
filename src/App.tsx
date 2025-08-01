@@ -17,20 +17,29 @@ import updateChecker from './services/UpdateChecker';
 console.log('App.tsx loaded');
 const AppContent = () => {
 console.log('AppContent rendering');
-  const { data, setData, isLoading: isDataLoading } = useContext(DataContext);
-  console.log('DataContext loaded:', { data, isDataLoading });
-    const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
-  const { isLoading, isAuthenticated } = useAuth0();
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  
-  // Sync activeTab from context
-  useEffect(() => {
-    if (data.activeTab !== activeTab) {
-      setActiveTab(data.activeTab);
-    }
-  }, [data.activeTab, activeTab]);
-  
-  // Request notification permission on app load
+const { data, setData, isLoading: isDataLoading } = useContext(DataContext);
+console.log('DataContext loaded:', { data, isDataLoading });
+const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
+const { isLoading, isAuthenticated, user } = useAuth0();  // ADD 'user' here
+const [updateAvailable, setUpdateAvailable] = useState(false);
+
+// ADD THIS DEBUG CODE
+useEffect(() => {
+  console.log('🔐 AUTH DEBUG:', {
+    isAuthenticated,
+    userEmail: user?.email,
+    userSub: user?.sub,
+    userName: user?.name
+  });
+}, [isAuthenticated, user]);
+// END DEBUG CODE
+
+// Sync activeTab from context
+useEffect(() => {
+  if (data.activeTab !== activeTab) {
+    setActiveTab(data.activeTab);
+  }
+}, [data.activeTab, activeTab]);  // Request notification permission on app load
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
