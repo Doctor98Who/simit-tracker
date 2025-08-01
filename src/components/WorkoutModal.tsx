@@ -1411,30 +1411,31 @@ const isPWAStandalone = () => {
   onMouseMove={handleTouchMove}
   onMouseUp={handleTouchEnd}
   onMouseLeave={handleTouchEnd}
-style={{
-  padding: '6px',
-  paddingTop: isPWAStandalone() ? '44px' : '6px',  // Increased from 26px
-  cursor: 'grab',
-  background: 'var(--bg-dark)',
-  position: 'sticky',
-  top: 0,
-  zIndex: 10,
-  flexShrink: 0,
-}}
-     >
-      <div className="drag-indicator" style={{
-  width: '40px',  // Increased from 32px
-  height: '5px',   // Increased from 3px
-  background: data.theme === 'light' ? 
-    'rgba(0, 0, 0, 0.5)' :    // Darker for light theme
-    'rgba(255, 255, 255, 0.5)', // Brighter for dark theme
-  borderRadius: '3px',
-  margin: '0 auto',
-  marginTop: isPWAStandalone() ? '8px' : '0',  // Add extra margin in PWA
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',  // Add shadow for visibility
-}}></div>
-        </div>
-
+  style={{
+    padding: '6px',
+    paddingTop: isPWAStandalone() ? '44px' : '6px',
+    paddingBottom: isPWAStandalone() ? '24px' : '6px',
+    cursor: 'grab',
+    background: 'var(--bg-dark)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    flexShrink: 0,
+    minHeight: isPWAStandalone() ? '80px' : 'auto',
+  }}
+>
+  <div className="drag-indicator" style={{
+    width: '40px',
+    height: '5px',
+    background: data.theme === 'light' ?
+      'rgba(0, 0, 0, 0.5)' :
+      'rgba(255, 255, 255, 0.5)',
+    borderRadius: '3px',
+    margin: '0 auto',
+    marginTop: isPWAStandalone() ? '8px' : '0',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+  }}></div>
+</div>
         <div className="workout-header" style={{
           display: 'flex',
           alignItems: 'center',

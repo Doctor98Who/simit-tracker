@@ -6,6 +6,12 @@ interface BottomNavProps {
 }
 
 const BottomNav = ({ activeTab, setActiveTab }: BottomNavProps) => {
+  // Helper function to detect PWA standalone mode
+  const isPWAStandalone = () => {
+    return (window.navigator as any).standalone === true || 
+           window.matchMedia('(display-mode: standalone)').matches;
+  };
+
   const tabs = [
     { 
       id: 'profile-tab', 
@@ -65,7 +71,12 @@ const BottomNav = ({ activeTab, setActiveTab }: BottomNavProps) => {
   ];
 
   return (
-    <div className="bottom-nav">
+    <div 
+      className="bottom-nav"
+      style={{
+        paddingBottom: isPWAStandalone() ? '25px' : '5px',
+      }}
+    >
       {tabs.map((tab) => (
         <div
           key={tab.id}
