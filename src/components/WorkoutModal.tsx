@@ -1410,7 +1410,7 @@ const isPWAStandalone = () => {
   padding: '10px 14px',
   background: 'var(--bg-dark)',
   position: 'sticky',
-  top: isPWAStandalone() ? 'calc(env(safe-area-inset-top) + 40px)' : '40px',
+  top: isPWAStandalone() ? '76px' : '32px',  // Position below drag handle
   zIndex: 5,
   flexShrink: 0,
   minHeight: '60px',
