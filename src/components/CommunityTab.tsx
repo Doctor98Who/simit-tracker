@@ -38,34 +38,26 @@ const [activeSubTab, setActiveSubTab] = useState('feed');
       
 {activeSubTab === 'feed' && (
   <div id="feed-content">
-    {data.friendsFeed.length === 0 ? (          
+    {data.friendsFeed.length === 0 ? (
       <div className="feed-placeholder">
-        {data.friends.length === 0
-          ? "Add friends to see their progress!"
-          : "No posts yet. Share your progress or wait for friends to post!"}
+        No posts in feed yet
       </div>
     ) : (
-      <div style={{ padding: '0', margin: '0 calc(-1 * var(--content-padding, 20px))'  }}>
-        {/* Sort all posts by timestamp */}
+      <div style={{ padding: '0', margin: '0 calc(-1 * var(--content-padding, 20px))' }}>
         {data.friendsFeed
-          .map((item: any) => ({ 
-            ...item, 
-            isOwn: item.user.id === dbUser?.id 
-          }))
-          .sort((a, b) => b.timestamp - a.timestamp) // Sort by newest first
-          .map((item, index) => (
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .map((item: any, index: number) => (
             <PhotoCard
-              key={`${item.isOwn ? 'own' : 'friend'}-${index}`}
+              key={item.id || index}
               item={item}
-              isOwn={item.isOwn}
-              onOpenComments={() => openComments(item, item.isOwn)}
+              isOwn={item.user?.id === dbUser?.id}
+              onOpenComments={() => openComments(item, item.user?.id === dbUser?.id)}
             />
-          ))
-        }
+          ))}
       </div>
     )}
   </div>
-)}      
+)}    
       {activeSubTab === 'popular' && (
         <div id="popular-content">
           <div className="popular-placeholder">Popular Programs</div>

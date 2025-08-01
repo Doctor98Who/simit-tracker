@@ -514,7 +514,6 @@ useEffect(() => {
     }
   }
 }, []);
-
 // Refresh friends feed periodically
 useEffect(() => {
   if (dbUser && isAuthenticated) {
@@ -534,48 +533,31 @@ useEffect(() => {
   }
 }, [dbUser, isAuthenticated]);
 
-// Add real-time subscription for friends' new photos
+// Real-time subscription for ALL public photos
 useEffect(() => {
-  if (dbUser && isAuthenticated && data.friends.length > 0) {
-    // Get friend IDs
-    const friendIds = data.friends.map((f: Friend) => f.id);
+  if (dbUser && isAuthenticated) {
+    console.log('Setting up real-time feed subscription');
     
-    console.log('Setting up real-time subscription for friends:', friendIds);
-    
-    // Subscribe to new photos from friends
     const channel = supabase
-      .channel('friends-photos')
+      .channel('all-public-photos')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'progress_photos',
-          filter: `visibility=eq.public`,  // Add filter for public photos only
+          filter: `visibility=eq.public`,
         },
         async (payload: any) => {
-          console.log('New photo detected:', payload);
+          console.log('New public photo detected:', payload);
           
-          // Check if the photo is from a friend
-         // Check if the photo is from a friend OR the current user
-if (friendIds.includes(payload.new.user_id) || payload.new.user_id === dbUser.id) {
-  console.log('New photo posted!');
-            
-            // Refresh the entire feed to get the new photo with user info
-            try {
-              const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
-              setData(prev => ({ ...prev, friendsFeed }));
-              
-              // Optional: Show notification
-              if (data.activeTab !== 'community-tab' && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification('New photo from a friend!', {
-                  body: 'Check out their latest progress',
-                  icon: '/icon.png'
-                });
-              }
-            } catch (error) {
-              console.error('Error refreshing feed:', error);
-            }
+          // Refresh the feed to get the new photo with user info
+          try {
+            const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
+            setData(prev => ({ ...prev, friendsFeed }));
+            console.log('Feed refreshed with new photo');
+          } catch (error) {
+            console.error('Error refreshing feed:', error);
           }
         }
       )
@@ -585,7 +567,7 @@ if (friendIds.includes(payload.new.user_id) || payload.new.user_id === dbUser.id
       supabase.removeChannel(channel);
     };
   }
-}, [dbUser, isAuthenticated, data.friends.length, data.activeTab]); // Changed dependencies
+}, [dbUser, isAuthenticated]);
 
 return (
   <DataContext.Provider value={{
