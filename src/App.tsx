@@ -57,6 +57,7 @@ const AppContent = () => {
   
   // Handle update
   const handleUpdate = () => {
+    setUpdateAvailable(false);
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then(reg => {
         if (reg) {
