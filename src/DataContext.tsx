@@ -198,7 +198,9 @@ export const DataContext = createContext<DataContextType>({
 });
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
+   console.log('DataProvider rendering');
   const [data, setData] = useState<DataType>(initialData);
+  console.log('Initial data state created');
   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
   const [dbUser, setDbUser] = useState<any>(null);
   const [isSyncing, setIsSyncing] = useState(false);

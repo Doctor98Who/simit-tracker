@@ -1,3 +1,4 @@
+console.log('App.tsx loaded');
 import React, { useState, useContext, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import './App.css';
@@ -16,8 +17,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import updateChecker from './services/UpdateChecker';
 
 const AppContent = () => {
+console.log('AppContent rendering');
   const { data, setData, isLoading: isDataLoading } = useContext(DataContext);
-  const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
+  console.log('DataContext loaded:', { data, isDataLoading });
+    const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
   const { isLoading, isAuthenticated } = useAuth0();
   const [updateAvailable, setUpdateAvailable] = useState(false);
   
