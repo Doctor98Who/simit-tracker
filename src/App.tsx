@@ -35,26 +35,27 @@ const AppContent = () => {
     }
   }, []);
   
-  // Start update checker
-  useEffect(() => {
-    updateChecker.start(() => {
-      setUpdateAvailable(true);
-      
-      // Show notification if permission granted
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Update Available!', {
-          body: 'A new version of Pump Inc. is ready. Tap to update.',
-          icon: '/icon.png',
-          badge: '/icon.png',
-        });
-      }
-    });
-    
-    return () => {
-      updateChecker.stop();
-    };
-  }, []);
+// Start update checker
+useEffect(() => {
+  console.log('Current version:', process.env.REACT_APP_VERSION);  // Add this
   
+  updateChecker.start(() => {
+    setUpdateAvailable(true);
+    
+    // Show notification if permission granted
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Update Available!', {
+        body: 'A new version of Pump Inc. is ready. Tap to update.',
+        icon: '/icon.png',
+        badge: '/icon.png',
+      });
+    }
+  });
+  
+  return () => {
+    updateChecker.stop();
+  };
+}, []);
   // Handle update
   const handleUpdate = () => {
     setUpdateAvailable(false);

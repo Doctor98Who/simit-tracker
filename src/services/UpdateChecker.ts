@@ -1,10 +1,11 @@
 class UpdateChecker {
-  private intervalId: number | null = null;  // Changed from NodeJS.Timer to number
+  private intervalId: number | null = null;
   private currentVersion: string;
   private checkInterval = 30000; // Check every 30 seconds
   
   constructor() {
     this.currentVersion = process.env.REACT_APP_VERSION || '1.0.0';
+    console.log('UpdateChecker initialized with version:', this.currentVersion);
   }
   
   start(onUpdateAvailable: () => void) {
@@ -12,14 +13,14 @@ class UpdateChecker {
     this.checkForUpdate(onUpdateAvailable);
     
     // Then check periodically
-    this.intervalId = window.setInterval(() => {  // Use window.setInterval
+    this.intervalId = window.setInterval(() => {
       this.checkForUpdate(onUpdateAvailable);
     }, this.checkInterval);
   }
   
   stop() {
     if (this.intervalId) {
-      window.clearInterval(this.intervalId);  // Use window.clearInterval
+      window.clearInterval(this.intervalId);
       this.intervalId = null;
     }
   }
@@ -29,6 +30,12 @@ class UpdateChecker {
       // Fetch the latest version from your server
       const response = await fetch('/version.json?' + Date.now()); // Cache bust
       const data = await response.json();
+      
+      console.log('Version check:', {
+        current: this.currentVersion,
+        latest: data.version,
+        needsUpdate: data.version !== this.currentVersion
+      });
       
       if (data.version !== this.currentVersion) {
         console.log('New version available:', data.version);
