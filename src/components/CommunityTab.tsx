@@ -44,7 +44,7 @@ const CommunityTab = () => {
                 : "No posts yet. Share your progress or wait for friends to post!"}
             </div>
           ) : (
-            <div style={{ padding: '16px' }}>
+            <div style={{ padding: '0' }}>
               {/* Show user's own public posts */}
               {data.progressPics
                 .filter((pic: any) => pic.visibility === 'public')

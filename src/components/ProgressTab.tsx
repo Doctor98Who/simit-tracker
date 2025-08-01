@@ -1,5 +1,4 @@
 import React, { useContext, useMemo, useState } from 'react';
-import EXIF from 'exif-js';
 import { DataContext } from '../DataContext';
 
 interface ProgressPic {

@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { DataContext, DataType, Exercise, Template, ProgressPhoto, Set } from '../DataContext';
 import WorkoutModal from './WorkoutModal';
 import { useAuth0 } from '@auth0/auth0-react';
-import EXIF from 'exif-js';
 import { DatabaseService } from '../services/database';
 import CommentsModal from './CommentsModal';
 interface Day {
@@ -4336,27 +4335,40 @@ const goBack = () => {
       alignItems: 'center',
       justifyContent: 'space-between',
     }}>
-      <button
-        onClick={() => setData((prev: DataType) => ({ 
-          ...prev, 
-          activeModal: 'settings-modal'
-        }))}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text)',
-          fontSize: '1.2em',
-          cursor: 'pointer',
-          padding: '0',
-          minHeight: 'auto',
-        }}
-      >
-        ‹
-      </button>
-      <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600', flex: 1, textAlign: 'center' }}>
-        Friends
-      </h2>
-      <div style={{ width: '30px' }}></div>
+<button
+  onClick={() => {
+    const previousModal = data.previousModal;
+    if (previousModal === 'profile-tab') {
+      // If came from profile, just close the modal
+      setData((prev: DataType) => ({ 
+        ...prev, 
+        activeModal: null,
+        previousModal: undefined
+      }));
+    } else {
+      // Otherwise go back to settings
+      setData((prev: DataType) => ({ 
+        ...prev, 
+        activeModal: 'settings-modal',
+        previousModal: undefined
+      }));
+    }
+  }}
+  style={{
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text)',
+    fontSize: '1.2em',
+    cursor: 'pointer',
+    padding: '0',
+    minHeight: 'auto',
+  }}
+>
+  ‹
+</button>
+<h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600', flex: 1, textAlign: 'center' }}>
+  Friends
+</h2>      <div style={{ width: '30px' }}></div>
     </div>          <div style={{ padding: '20px' }}>
             {data.friendRequests.length > 0 && (
               <div style={{ marginBottom: '20px' }}>

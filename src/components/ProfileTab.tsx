@@ -339,50 +339,53 @@ return (
       </div>
     </div>
 
-    <div 
-      onClick={() => setData(prev => ({ ...prev, activeModal: 'friends-modal' }))}
-      style={{
-        textAlign: 'center',
-        padding: '16px 8px',
-        background: 'var(--bg-lighter)',
-        borderRadius: '12px',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-      }}
-    >
-      <div style={{
-        fontSize: '1.8em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }}>
-        {data.friends.length}
-      </div>
-      <div style={{
-        fontSize: '0.8em',
-        color: 'var(--text-muted)',
-        fontWeight: '500',
-        marginTop: '2px',
-      }}>
-        Friends
-      </div>
-    </div>
-
-    <div style={{
-      textAlign: 'center',
-      padding: '16px 8px',
-      background: 'var(--bg-lighter)',
-      borderRadius: '12px',
-    }}>
-      <div style={{
-        fontSize: '1.8em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }}>
-        {totalVolume.toLocaleString()}
+<div
+  onClick={() => setData(prev => ({ 
+    ...prev, 
+    activeModal: 'friends-modal',
+    previousModal: 'profile-tab'  // Add this to track where we came from
+  }))}
+  style={{
+    textAlign: 'center',
+    padding: '16px 8px',
+    background: 'var(--bg-lighter)',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  }}
+>
+  <div style={{
+    fontSize: '1.8em',
+    fontWeight: '700',
+    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+  }}>
+    {data.friends.length}
+  </div>
+  <div style={{
+    fontSize: '0.8em',
+    color: 'var(--text-muted)',
+    fontWeight: '500',
+    marginTop: '2px',
+  }}>
+    Friends
+  </div>
+</div>
+<div style={{
+  textAlign: 'center',
+  padding: '16px 8px',
+  background: 'var(--bg-lighter)',
+  borderRadius: '12px',
+}}>
+  <div style={{
+    fontSize: '1.8em',
+    fontWeight: '700',
+    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+  }}>
+            {totalVolume.toLocaleString()}
       </div>
       <div style={{
         fontSize: '0.8em',
