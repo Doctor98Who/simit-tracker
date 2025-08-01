@@ -322,8 +322,6 @@ return (
       lineHeight: '1.4',
     }}>{data.bio}</p>
   )}
-  // Replace the stats section in ProfileTab.tsx with this:
-
 {/* Modern Stats Cards */}
 <div style={{
   display: 'grid',
