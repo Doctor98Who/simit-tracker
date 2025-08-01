@@ -253,17 +253,18 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
       zIndex: 9999,
     }}
   >
-    <div className="modal-content" style={{
-      width: '100%',
-      maxWidth: '100%',
-      height: '100vh',
-      background: 'var(--bg-dark)',
-      padding: 0,
-      borderRadius: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-    }}>
+<div className="modal-content" style={{
+  width: '100%',
+  maxWidth: '100%',
+  height: '100vh',
+  background: 'var(--bg-dark)',
+  padding: 0,
+  paddingTop: isPWAStandalone() ? 'env(safe-area-inset-top)' : '0',  // ADD THIS LINE
+  borderRadius: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+}}>
       {/* Header */}
       <div style={{
         display: 'flex',
