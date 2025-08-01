@@ -245,18 +245,24 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 9999,
     }}
   >
     <div className="modal-content" style={{
       width: '100%',
       maxWidth: '100%',
-      height: '100%',
+      height: '100vh',
       background: 'var(--bg-dark)',
       padding: 0,
       borderRadius: 0,
       display: 'flex',
       flexDirection: 'column',
-      paddingBottom: isPWAStandalone() ? 'env(safe-area-inset-bottom)' : '0', // Fix for PWA bottom
+      overflow: 'hidden',
     }}>
       {/* Header */}
       <div style={{
@@ -266,7 +272,9 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
         padding: '16px 20px',
         borderBottom: '1px solid var(--border)',
         background: 'var(--bg-dark)',
-        backdropFilter: 'blur(10px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
       }}>
         <button
           onClick={closePhotoModal}
@@ -283,7 +291,7 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
           ✕
         </button>
         
-        {/* Profile pic and username instead of "Progress Photo" */}
+        {/* Profile pic and username */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -321,181 +329,175 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
         </button>
       </div>
 
-      {/* Image with navigation */}
+      {/* Scrollable content container */}
       <div style={{
         flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'black',
-        overflow: 'hidden',
-        position: 'relative',
+        flexDirection: 'column',
       }}>
-        {selectedPhotoIndex > 0 && (
-          <button
-            onClick={() => navigatePhoto('prev')}
-            style={{
-              position: 'absolute',
-              left: '20px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '1.2em',
-              color: 'white',
-              zIndex: 10,
-              transition: 'all 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
-          >
-            ‹
-          </button>
-        )}
-
-        <img
-          src={selectedPhoto.base64}
-          alt="Progress"
-          style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            objectFit: 'contain',
-            objectPosition: 'center',
-            backgroundColor: 'black',
-          }}
-        />
-        
-        {selectedPhotoIndex < sortedProgressPics.length - 1 && (
-          <button
-            onClick={() => navigatePhoto('next')}
-            style={{
-              position: 'absolute',
-              right: '20px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '44px',
-              height: '44px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '1.2em',
-              color: 'white',
-              zIndex: 10,
-              transition: 'all 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
-          >
-            ›
-          </button>
-        )}
-      </div>
-
-      {/* Photo details */}
-      <div style={{
-        padding: '20px',
-        background: 'var(--bg-dark)',
-        borderTop: '1px solid var(--border)',
-        paddingBottom: isPWAStandalone() ? `calc(20px + 80px + env(safe-area-inset-bottom))` : '20px', // Extra padding in PWA
-      }}>
-        {isEditingCaption ? (
-          <div style={{
-            display: 'flex',
-            gap: '10px',
-            marginBottom: '15px',
-            alignItems: 'flex-end',
-          }}>
-            <input
-              type="text"
-              value={editCaption}
-              onChange={(e) => setEditCaption(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '10px',
-                background: 'var(--bg-lighter)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                color: 'var(--text)',
-                fontSize: '0.95em',
-              }}
-              autoFocus
-            />
-            <button
-              onClick={saveEditedCaption}
-              style={{
-                padding: '10px 20px',
-                background: 'var(--accent-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '0.9em',
-                fontWeight: '600',
-              }}
-            >
-              Save
-            </button>
-          </div>
-        ) : (
-          selectedPhoto.caption && (
-            <p
-              style={{
-                margin: '0 0 15px 0',
-                fontSize: '0.95em',
-                color: 'var(--text)',
-                cursor: 'pointer',
-                padding: '8px',
-                background: 'var(--bg-lighter)',
-                borderRadius: '8px',
-              }}
-              onClick={() => setIsEditingCaption(true)}
-            >
-              {selectedPhoto.caption}
-            </p>
-          )
-        )}
-
+        {/* Image container - no spacing */}
         <div style={{
+          width: '100%',
+          backgroundColor: 'black',
           display: 'flex',
-          gap: '20px',
-          fontSize: '0.85em',
-          color: 'var(--text-muted)',
-          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          flexShrink: 0,
         }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            📅 {new Date(selectedPhoto.timestamp).toLocaleDateString()}
-          </span>
-          {selectedPhoto.weight && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              ⚖️ {selectedPhoto.weight} {data.weightUnit || 'lbs'}
-            </span>
+          {selectedPhotoIndex > 0 && (
+            <button
+              onClick={() => navigatePhoto('prev')}
+              style={{
+                position: 'absolute',
+                left: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1.2em',
+                color: 'white',
+                zIndex: 10,
+              }}
+            >
+              ‹
+            </button>
           )}
-          {selectedPhoto.pump && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              💪 Pump: {selectedPhoto.pump}/100
-            </span>
+
+          <img
+            src={selectedPhoto.base64}
+            alt="Progress"
+            style={{
+              width: '100%',
+              height: 'auto',
+              maxHeight: '70vh',
+              objectFit: 'contain',
+            }}
+          />
+          
+          {selectedPhotoIndex < sortedProgressPics.length - 1 && (
+            <button
+              onClick={() => navigatePhoto('next')}
+              style={{
+                position: 'absolute',
+                right: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1.2em',
+                color: 'white',
+                zIndex: 10,
+              }}
+            >
+              ›
+            </button>
           )}
+        </div>
+
+        {/* Photo details section */}
+        <div style={{
+          padding: '16px 20px',
+          background: 'var(--bg-dark)',
+          paddingBottom: isPWAStandalone() ? `calc(16px + 80px + env(safe-area-inset-bottom))` : '16px',
+        }}>
+          {/* Get synced data from feed */}
+          {(() => {
+            const syncedPhoto = data.friendsFeed.find((item: any) => 
+              item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
+            ) || data.progressPics.find((item: any) => 
+              item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
+            ) || selectedPhoto;
+
+            return (
+              <>
+                {/* Like count */}
+                {(syncedPhoto.likes || 0) > 0 && (
+                  <div style={{
+                    fontSize: '0.9em',
+                    fontWeight: '600',
+                    marginBottom: '8px',
+                  }}>
+                    {syncedPhoto.likes} {syncedPhoto.likes === 1 ? 'like' : 'likes'}
+                  </div>
+                )}
+
+                {/* Caption - NOT EDITABLE HERE */}
+                {syncedPhoto.caption && (
+                  <p style={{
+                    margin: '0 0 12px 0',
+                    fontSize: '0.95em',
+                    lineHeight: '1.4',
+                  }}>
+                    <span style={{ fontWeight: '600' }}>
+                      {data.username}
+                    </span>{' '}
+                    {syncedPhoto.caption}
+                  </p>
+                )}
+
+     {/* Comments */}
+{syncedPhoto.comments && syncedPhoto.comments.length > 0 && (
+  <div style={{ marginBottom: '12px' }}>
+    {syncedPhoto.comments.map((comment: any, idx: number) => (
+      <p key={idx} style={{ 
+        margin: '4px 0', 
+        fontSize: '0.9em',
+        lineHeight: '1.4',
+      }}>
+        <span style={{ fontWeight: '600' }}>
+          {comment.user_name.split(' ')[0]}
+        </span>{' '}
+        {comment.text}
+      </p>
+    ))}
+  </div>
+)}
+                {/* Photo metadata */}
+                <div style={{
+                  display: 'flex',
+                  gap: '20px',
+                  fontSize: '0.85em',
+                  color: 'var(--text-muted)',
+                  flexWrap: 'wrap',
+                  marginTop: '12px',
+                }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    📅 {new Date(syncedPhoto.timestamp).toLocaleDateString()}
+                  </span>
+                  {syncedPhoto.weight && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      ⚖️ {syncedPhoto.weight} {data.weightUnit || 'lbs'}
+                    </span>
+                  )}
+                  {syncedPhoto.pump && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      💪 Pump: {syncedPhoto.pump}/100
+                    </span>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>
