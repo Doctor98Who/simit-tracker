@@ -1413,15 +1413,14 @@ const isPWAStandalone = () => {
   onMouseLeave={handleTouchEnd}
   style={{
     padding: '6px',
-    paddingTop: isPWAStandalone() ? '50px' : '6px',  // Increased to ensure it's below island
-    paddingBottom: isPWAStandalone() ? '16px' : '6px',  // Reduced bottom padding
+    paddingTop: isPWAStandalone() ? '6px' : '6px',  // Keep normal padding
+    paddingBottom: isPWAStandalone() ? '6px' : '6px',
     cursor: 'grab',
     background: 'var(--bg-dark)',
     position: 'sticky',
     top: 0,
     zIndex: 10,
     flexShrink: 0,
-    minHeight: isPWAStandalone() ? '70px' : 'auto',  // Reduced from 80px
   }}
 >
   <div className="drag-indicator" style={{
@@ -1432,7 +1431,7 @@ const isPWAStandalone = () => {
       'rgba(255, 255, 255, 0.5)',
     borderRadius: '3px',
     margin: '0 auto',
-    marginTop: isPWAStandalone() ? '0' : '0',  // Remove extra margin
+    marginTop: isPWAStandalone() ? '44px' : '0',  // Push ONLY the indicator down in PWA
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   }}></div>
 </div>
