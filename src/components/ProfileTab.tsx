@@ -307,6 +307,7 @@ return (
   display: 'flex',
   flexDirection: 'column',
   gap: '20px',
+   marginTop: '20px',  // ADD THIS - pushes everything down
 }}>
   {data.bio && (
     <p style={{
@@ -322,6 +323,7 @@ return (
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '8px',
+         marginTop: '20px',
       }}>
         <div style={{
           textAlign: 'center',
