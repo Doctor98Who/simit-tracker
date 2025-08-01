@@ -1375,7 +1375,7 @@ const isPWAStandalone = () => {
     }
   };
 
-  const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
+const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-modal' }));
   const addExerciseToWorkout = () => setData(prev => ({ ...prev, isWorkoutSelect: true, activeModal: 'exercise-select-modal' }));
   if (!currentWorkout) return null;
   return (
@@ -1402,68 +1402,70 @@ const isPWAStandalone = () => {
           WebkitTransform: `translateY(${modalTransform}px)`,
         } as React.CSSProperties}
       >
-<div className="workout-header" style={{
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '8px',
-  padding: '10px 14px',
-  background: 'var(--bg-dark)',
-  position: 'sticky',
-  top: isPWAStandalone() ? '76px' : '32px',  // Position below drag handle
-  zIndex: 5,
-  flexShrink: 0,
-  minHeight: '60px',
-  width: '100%',
-  boxSizing: 'border-box',
-}}>
-  <div className="drag-indicator" style={{
-    width: '40px',
-    height: '5px',
-    background: data.theme === 'light' ?
-      'rgba(0, 0, 0, 0.5)' :
-      'rgba(255, 255, 255, 0.5)',
-    borderRadius: '3px',
-    margin: '0 auto',
-    marginTop: isPWAStandalone() ? '44px' : '0',  // Visual indicator below island
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-  }}></div>
-</div>
+        <div
+          className="drag-handle"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleTouchStart}
+          onMouseMove={handleTouchMove}
+          onMouseUp={handleTouchEnd}
+          onMouseLeave={handleTouchEnd}
+          style={{
+            padding: '6px',
+            paddingTop: isPWAStandalone() ? '30px' : '6px',
+            paddingBottom: '6px',
+            cursor: 'grab',
+            background: 'var(--bg-dark)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            flexShrink: 0,
+          }}
+        >
+          <div className="drag-indicator" style={{
+            width: '40px',
+            height: '5px',
+            background: data.theme === 'light' ?
+              'rgba(0, 0, 0, 0.5)' :
+              'rgba(255, 255, 255, 0.5)',
+            borderRadius: '3px',
+            margin: '0 auto',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+          }}></div>
+        </div>
         <div className="workout-header" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '8px',
-          padding: '10px 14px 10px 14px',
-          paddingTop: 'max(10px, env(safe-area-inset-top))',
+          padding: '10px 14px',
           background: 'var(--bg-dark)',
-          position: 'sticky',
-          top: '0',
-          zIndex: 5,
           flexShrink: 0,
           minHeight: '60px',
           width: '100%',
           boxSizing: 'border-box',
-        }}>        <div
-          className="timer-button"
-          onClick={() => setShowRestTimer(true)}
-          style={{
-            fontSize: '18px',
-            padding: '6px',
-            borderRadius: '50%',
-            background: 'var(--bg-lighter)',
-            width: '34px',
-            height: '34px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            border: 'none',
-            color: 'var(--text)',
-            minWidth: '34px',
-            flexShrink: 0,
-          }}
-        >
+        }}>
+          <div
+            className="timer-button"
+            onClick={() => setShowRestTimer(true)}
+            style={{
+              fontSize: '18px',
+              padding: '6px',
+              borderRadius: '50%',
+              background: 'var(--bg-lighter)',
+              width: '34px',
+              height: '34px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              border: 'none',
+              color: 'var(--text)',
+              minWidth: '34px',
+              flexShrink: 0,
+            }}
+          >
             ⏱
           </div>
           <input
@@ -1644,7 +1646,6 @@ const isPWAStandalone = () => {
           </div>
         )}
       </div>
-
       {/* Rest Timer Overlay */}
       {showRestTimer && (
         <>
