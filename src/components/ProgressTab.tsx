@@ -13,7 +13,7 @@ interface ProgressPic {
   id?: string;
 }
 const ProgressTab = () => {
-  const { data, setData } = useContext(DataContext);
+  const { data, setData, dbUser } = useContext(DataContext);
   const [selectedPhoto, setSelectedPhoto] = useState<ProgressPic | null>(null);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
@@ -253,18 +253,18 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
       zIndex: 9999,
     }}
   >
-<div className="modal-content" style={{
-  width: '100%',
-  maxWidth: '100%',
-  height: '100vh',
-  background: 'var(--bg-dark)',
-  padding: 0,
-  paddingTop: isPWAStandalone() ? 'env(safe-area-inset-top)' : '0',  // ADD THIS LINE
-  borderRadius: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-}}>
+    <div className="modal-content" style={{
+      width: '100%',
+      maxWidth: '100%',
+      height: '100vh',
+      background: 'var(--bg-dark)',
+      padding: 0,
+      paddingTop: isPWAStandalone() ? 'env(safe-area-inset-top)' : '0',
+      borderRadius: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+    }}>
       {/* Header */}
       <div style={{
         display: 'flex',
@@ -273,9 +273,7 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
         padding: '16px 20px',
         borderBottom: '1px solid var(--border)',
         background: 'var(--bg-dark)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
+        flexShrink: 0,
       }}>
         <button
           onClick={closePhotoModal}
@@ -330,119 +328,233 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
         </button>
       </div>
 
-      {/* Scrollable content container */}
+      {/* Image container - NO FLEX:1 to prevent spacing */}
+      <div style={{
+        width: '100%',
+        backgroundColor: 'black',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        flexShrink: 0,
+      }}>
+        {selectedPhotoIndex > 0 && (
+          <button
+            onClick={() => navigatePhoto('prev')}
+            style={{
+              position: 'absolute',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '1.2em',
+              color: 'white',
+              zIndex: 10,
+            }}
+          >
+            ‹
+          </button>
+        )}
+
+        <img
+          src={selectedPhoto.base64}
+          alt="Progress"
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+            maxHeight: '60vh',
+            objectFit: 'contain',
+          }}
+        />
+        
+        {selectedPhotoIndex < sortedProgressPics.length - 1 && (
+          <button
+            onClick={() => navigatePhoto('next')}
+            style={{
+              position: 'absolute',
+              right: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '1.2em',
+              color: 'white',
+              zIndex: 10,
+            }}
+          >
+            ›
+          </button>
+        )}
+      </div>
+
+      {/* Scrollable content section */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
         overflowX: 'hidden',
         WebkitOverflowScrolling: 'touch',
-        display: 'flex',
-        flexDirection: 'column',
       }}>
-        {/* Image container - no spacing */}
-        <div style={{
-          width: '100%',
-          backgroundColor: 'black',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          flexShrink: 0,
-        }}>
-          {selectedPhotoIndex > 0 && (
-            <button
-              onClick={() => navigatePhoto('prev')}
-              style={{
-                position: 'absolute',
-                left: '20px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
+        {/* Get synced data */}
+{(() => {
+  const syncedPhoto = data.friendsFeed.find((item: any) => 
+    item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
+  ) || data.progressPics.find((item: any) => 
+    item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
+  ) || selectedPhoto;
+
+  // Local state for likes
+  const [localLikes, setLocalLikes] = useState(syncedPhoto.likes || 0);
+  const [userHasLiked, setUserHasLiked] = useState((syncedPhoto as any).userHasLiked || false);
+
+  const handleLike = async () => {
+    if (!dbUser) return;  // Now using dbUser instead of data.dbUser
+    
+    // Optimistic update
+    setUserHasLiked(!userHasLiked);
+    setLocalLikes(userHasLiked ? Math.max(localLikes - 1, 0) : localLikes + 1);
+    
+    try {
+      // API call would go here
+      // await DatabaseService.likePhoto(dbUser.id, syncedPhoto.id);
+    } catch (error) {
+      // Revert on error
+      setUserHasLiked(userHasLiked);
+      setLocalLikes(localLikes);
+    }
+  };
+          return (
+            <>
+              {/* Actions section */}
+              <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '1.2em',
-                color: 'white',
-                zIndex: 10,
-              }}
-            >
-              ‹
-            </button>
-          )}
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: '1px solid var(--border)',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
+                  alignItems: 'center',
+                }}>
+                  {/* Like button */}
+                  <button
+                    onClick={handleLike}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      color: 'var(--text)',
+                      padding: '4px',
+                    }}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill={userHasLiked ? '#ef4444' : 'none'}
+                      stroke={userHasLiked ? '#ef4444' : 'currentColor'}
+                      strokeWidth="2"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    <span style={{ fontSize: '0.9em', fontWeight: '500' }}>
+                      {localLikes}
+                    </span>
+                  </button>
 
-          <img
-            src={selectedPhoto.base64}
-            alt="Progress"
-            style={{
-              width: '100%',
-              height: 'auto',
-              maxHeight: '70vh',
-              objectFit: 'contain',
-            }}
-          />
-          
-          {selectedPhotoIndex < sortedProgressPics.length - 1 && (
-            <button
-              onClick={() => navigatePhoto('next')}
-              style={{
-                position: 'absolute',
-                right: '20px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '1.2em',
-                color: 'white',
-                zIndex: 10,
-              }}
-            >
-              ›
-            </button>
-          )}
-        </div>
+                  {/* Comment button */}
+                  <button
+                    onClick={() => {
+                      setData(prev => ({
+                        ...prev,
+                        selectedPhoto: syncedPhoto,
+                        showComments: true,
+                        activeModal: null
+                      }));
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      color: 'var(--text)',
+                      padding: '4px',
+                    }}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span style={{ fontSize: '0.9em', fontWeight: '500' }}>
+                      {(syncedPhoto.comments || []).length}
+                    </span>
+                  </button>
+                </div>
 
-        {/* Photo details section */}
-        <div style={{
-          padding: '16px 20px',
-          background: 'var(--bg-dark)',
-          paddingBottom: isPWAStandalone() ? `calc(16px + 80px + env(safe-area-inset-bottom))` : '16px',
-        }}>
-          {/* Get synced data from feed */}
-          {(() => {
-            const syncedPhoto = data.friendsFeed.find((item: any) => 
-              item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
-            ) || data.progressPics.find((item: any) => 
-              item.base64 === selectedPhoto.base64 && item.timestamp === selectedPhoto.timestamp
-            ) || selectedPhoto;
+                {/* Pump rating */}
+                {syncedPhoto.pump && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
+                    borderRadius: '20px',
+                    fontSize: '0.85em',
+                  }}>
+                    <span style={{ fontWeight: '600' }}>💪</span>
+                    <span style={{ fontWeight: '500' }}>{syncedPhoto.pump}/100</span>
+                  </div>
+                )}
+              </div>
 
-            return (
-              <>
+              {/* Photo details section */}
+              <div style={{
+                padding: '16px 20px',
+                paddingBottom: isPWAStandalone() ? `calc(16px + 80px + env(safe-area-inset-bottom))` : '16px',
+              }}>
                 {/* Like count */}
-                {(syncedPhoto.likes || 0) > 0 && (
+                {localLikes > 0 && (
                   <div style={{
                     fontSize: '0.9em',
                     fontWeight: '600',
                     marginBottom: '8px',
                   }}>
-                    {syncedPhoto.likes} {syncedPhoto.likes === 1 ? 'like' : 'likes'}
+                    {localLikes} {localLikes === 1 ? 'like' : 'likes'}
                   </div>
                 )}
 
-                {/* Caption - NOT EDITABLE HERE */}
+                {/* Caption */}
                 {syncedPhoto.caption && (
                   <p style={{
                     margin: '0 0 12px 0',
@@ -456,23 +568,50 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
                   </p>
                 )}
 
-     {/* Comments */}
-{syncedPhoto.comments && syncedPhoto.comments.length > 0 && (
-  <div style={{ marginBottom: '12px' }}>
-    {syncedPhoto.comments.map((comment: any, idx: number) => (
-      <p key={idx} style={{ 
-        margin: '4px 0', 
-        fontSize: '0.9em',
-        lineHeight: '1.4',
-      }}>
-        <span style={{ fontWeight: '600' }}>
-          {comment.user_name.split(' ')[0]}
-        </span>{' '}
-        {comment.text}
-      </p>
-    ))}
-  </div>
-)}
+                {/* Comments preview */}
+                {syncedPhoto.comments && syncedPhoto.comments.length > 0 && (
+                  <div style={{ marginBottom: '12px' }}>
+                    {syncedPhoto.comments.slice(0, 2).map((comment: any, idx: number) => (
+                      <p key={idx} style={{ 
+                        margin: '4px 0', 
+                        fontSize: '0.9em',
+                        lineHeight: '1.4',
+                      }}>
+                        <span style={{ fontWeight: '600' }}>
+                          {comment.user_name.split(' ')[0]}
+                        </span>{' '}
+                        {comment.text.length > 60 
+                          ? comment.text.substring(0, 60) + '...' 
+                          : comment.text
+                        }
+                      </p>
+                    ))}
+                    {syncedPhoto.comments.length > 2 && (
+                      <button
+                        onClick={() => {
+                          setData(prev => ({
+                            ...prev,
+                            selectedPhoto: syncedPhoto,
+                            showComments: true,
+                            activeModal: null
+                          }));
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          fontSize: '0.9em',
+                          cursor: 'pointer',
+                          padding: '4px 0',
+                          marginTop: '4px',
+                        }}
+                      >
+                        View all {syncedPhoto.comments.length} comments
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Photo metadata */}
                 <div style={{
                   display: 'flex',
@@ -482,29 +621,19 @@ const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: Progress
                   flexWrap: 'wrap',
                   marginTop: '12px',
                 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    📅 {new Date(syncedPhoto.timestamp).toLocaleDateString()}
-                  </span>
+                  <span>📅 {new Date(syncedPhoto.timestamp).toLocaleDateString()}</span>
                   {syncedPhoto.weight && (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      ⚖️ {syncedPhoto.weight} {data.weightUnit || 'lbs'}
-                    </span>
-                  )}
-                  {syncedPhoto.pump && (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      💪 Pump: {syncedPhoto.pump}/100
-                    </span>
+                    <span>⚖️ {syncedPhoto.weight} {data.weightUnit || 'lbs'}</span>
                   )}
                 </div>
-              </>
-            );
-          })()}
-        </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   </div>
-)}
-    </div>
+)}    </div>
   );
 };
 
