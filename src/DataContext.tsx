@@ -540,6 +540,8 @@ useEffect(() => {
     // Get friend IDs
     const friendIds = data.friends.map((f: Friend) => f.id);
     
+    console.log('Setting up real-time subscription for friends:', friendIds);
+    
     // Subscribe to new photos from friends
     const channel = supabase
       .channel('friends-photos')
@@ -549,10 +551,13 @@ useEffect(() => {
           event: 'INSERT',
           schema: 'public',
           table: 'progress_photos',
+          filter: `visibility=eq.public`,  // Add filter for public photos only
         },
         async (payload: any) => {
-          // Check if the photo is from a friend and is public
-          if (friendIds.includes(payload.new.user_id) && payload.new.visibility === 'public') {
+          console.log('New photo detected:', payload);
+          
+          // Check if the photo is from a friend
+          if (friendIds.includes(payload.new.user_id)) {
             console.log('Friend posted new photo!');
             
             // Refresh the entire feed to get the new photo with user info
@@ -560,7 +565,7 @@ useEffect(() => {
               const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
               setData(prev => ({ ...prev, friendsFeed }));
               
-              // Optional: Only show notification if not on community tab
+              // Optional: Show notification
               if (data.activeTab !== 'community-tab' && 'Notification' in window && Notification.permission === 'granted') {
                 new Notification('New photo from a friend!', {
                   body: 'Check out their latest progress',
@@ -579,7 +584,42 @@ useEffect(() => {
       supabase.removeChannel(channel);
     };
   }
-}, [dbUser, isAuthenticated, data.friends, data.activeTab]);
+}, [dbUser, isAuthenticated, data.friends.length, data.activeTab]); // Changed dependencies
+
+// Add real-time subscription for user's own public photos
+useEffect(() => {
+  if (dbUser && isAuthenticated) {
+    const channel = supabase
+      .channel('own-photos')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'progress_photos',
+          filter: `user_id=eq.${dbUser.id}`,
+        },
+        async (payload: any) => {
+          if (payload.new.visibility === 'public') {
+            console.log('User posted new public photo!');
+            
+            // Refresh friends feed to include the new photo
+            try {
+              const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
+              setData(prev => ({ ...prev, friendsFeed }));
+            } catch (error) {
+              console.error('Error refreshing feed after own upload:', error);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+}, [dbUser, isAuthenticated]);
 
 return (
   <DataContext.Provider value={{
