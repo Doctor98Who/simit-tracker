@@ -3321,41 +3321,40 @@ const Modals = () => {
                   gap: '12px',
                 }}>
                   <button
-                    onClick={() => {
-                      const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-                      const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-                      const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+onClick={() => {
+  const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+  const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+  const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
 
-                      if (data.tempBase64 && data.tempTimestamp) {
-                        const newPic = {
-                          base64: data.tempBase64,
-                          timestamp: data.tempTimestamp,
-                          caption,
-                          weight,
-                          pump,
-                          likes: 0,
-                          comments: [],
-                          isPublic: data.tempIsPublic || false,
-                        };
-                        const newProgressPics = [...data.progressPics, newPic];
+  if (data.tempBase64 && data.tempTimestamp) {
+    const newPic = {
+      base64: data.tempBase64,
+      timestamp: data.tempTimestamp,
+      caption,
+      weight,
+      pump,
+      likes: 0,
+      comments: [],
+      visibility: (data.tempIsPublic ? 'public' : 'private') as 'public' | 'private',  // Type assertion
+    };
+    const newProgressPics = [...data.progressPics, newPic];
 
-                        setData((prev: DataType) => ({
-                          ...prev,
-                          progressPics: newProgressPics,
-                          tempBase64: null,
-                          tempTimestamp: null,
-                          activeModal: null
-                        }));
+    setData((prev: DataType) => ({
+      ...prev,
+      progressPics: newProgressPics,
+      tempBase64: null,
+      tempTimestamp: null,
+      activeModal: null
+    }));
 
-                        requestAnimationFrame(() => {
-                          setData((prev: DataType) => ({
-                            ...prev,
-                            activeTab: 'progress-tab'
-                          }));
-                        });
-                      }
-                    }}
-                    style={{
+    requestAnimationFrame(() => {
+      setData((prev: DataType) => ({
+        ...prev,
+        activeTab: 'progress-tab'
+      }));
+    });
+  }
+}}                    style={{
                       width: '100%',
                       padding: '14px',
                       background: 'var(--accent-gradient)',
