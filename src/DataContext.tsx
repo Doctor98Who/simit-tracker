@@ -362,35 +362,43 @@ const syncUserData = async () => {
           }
         }
 
-        // Progress photo addition
-        if (newData.progressPics.length > prev.progressPics.length) {
-          const newPhoto = newData.progressPics[newData.progressPics.length - 1];
-          DatabaseService.saveProgressPhoto(dbUser.id, newPhoto)
-            .then(savedPhoto => {
-              // Update with the saved photo data (includes ID and URL)
-              setData(current => ({
-                ...current,
-                progressPics: current.progressPics.map((p, idx) => 
-                  idx === current.progressPics.length - 1 ? 
-                  { ...p, id: savedPhoto.id, base64: savedPhoto.photo_url } : p
-                )
-              }));
-            })
-            .catch(console.error);
-        }
-        
-        // Progress photo deletion
-        if (newData.progressPics.length < prev.progressPics.length) {
-          // Find the deleted photo
-          const deletedPhoto = prev.progressPics.find(p => 
-            !newData.progressPics.some((np: ProgressPhoto) => np.id === p.id)
-          );
-          if (deletedPhoto?.id && deletedPhoto.base64) {
-            DatabaseService.deleteProgressPhoto(dbUser.id, deletedPhoto.id, deletedPhoto.base64)
-              .catch(console.error);
-          }
-        }
-        
+// Progress photo addition
+if (newData.progressPics.length > prev.progressPics.length) {
+  const newPhoto = newData.progressPics[newData.progressPics.length - 1];
+  DatabaseService.saveProgressPhoto(dbUser.id, newPhoto)
+    .then(savedPhoto => {
+      // Update with the saved photo data (includes ID and URL)
+      setData(current => ({
+        ...current,
+        progressPics: current.progressPics.map((p, idx) =>
+          idx === current.progressPics.length - 1 ?
+          { ...p, id: savedPhoto.id, base64: savedPhoto.photo_url } : p
+        )
+      }));
+      
+      // If it's a public photo, refresh the feed to include it
+      if (newPhoto.visibility === 'public') {
+        DatabaseService.getFriendsFeed(dbUser.id)
+          .then(friendsFeed => {
+            setData(current => ({ ...current, friendsFeed }));
+          })
+          .catch(console.error);
+      }
+    })
+    .catch(console.error);
+}
+
+// Progress photo deletion
+if (newData.progressPics.length < prev.progressPics.length) {
+  // Find the deleted photo
+  const deletedPhoto = prev.progressPics.find(p =>
+    !newData.progressPics.some((np: ProgressPhoto) => np.id === p.id)
+  );
+  if (deletedPhoto?.id && deletedPhoto.base64) {
+    DatabaseService.deleteProgressPhoto(dbUser.id, deletedPhoto.id, deletedPhoto.base64)
+      .catch(console.error);
+  }
+}        
         // Progress photo update (visibility change)
 // Progress photo update (comments change)
 const photoWithUpdatedComments = newData.progressPics.find((p: ProgressPhoto, idx: number) => {
