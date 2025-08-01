@@ -12,6 +12,8 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
   const { data, setData, dbUser } = useContext(DataContext);
   const [userHasLiked, setUserHasLiked] = useState(item.userHasLiked || false);
   const [likes, setLikes] = useState(item.likes || 0);
+  const [lastTap, setLastTap] = useState(0);
+  const imageRef = React.useRef<HTMLDivElement>(null);
 
   const handleLike = async () => {
     if (!dbUser) return;
@@ -50,6 +52,19 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
       setUserHasLiked(userHasLiked);
       setLikes(likes);
     }
+  };
+
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    
+    if (now - lastTap < DOUBLE_TAP_DELAY) {
+      // It's a double tap!
+      if (!userHasLiked) {
+        handleLike();
+      }
+    }
+    setLastTap(now);
   };
 
   return (
@@ -126,12 +141,17 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
       </div>
       
       {/* Image - Full width */}
-      <div style={{
-        width: '100%',
-        aspectRatio: '1',
-        background: '#000',
-        position: 'relative',
-      }}>
+      <div 
+        ref={imageRef}
+        onClick={handleDoubleTap}
+        style={{
+          width: '100%',
+          aspectRatio: '1',
+          background: '#000',
+          position: 'relative',
+          cursor: 'pointer',
+        }}
+      >
         <img
           src={item.base64}
           alt="Progress"
@@ -150,7 +170,6 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
         justifyContent: 'space-between',
         padding: '8px 8px',
       }}>
-        {/* Left side - Like and Comment buttons */}
         <div style={{
           display: 'flex',
           gap: '12px',
