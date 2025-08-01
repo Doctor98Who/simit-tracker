@@ -49,8 +49,8 @@ export const handler: Handler = async (event, context) => {
               profile_pic
             )
           `)
-.in('user_id', [...friendIds, userId])
-          .eq('visibility', 'public')
+        .in('user_id', friendIds)  // Remove userId from here
+         .eq('visibility', 'public')
           .order('timestamp', { ascending: false })
           .limit(50);
          
