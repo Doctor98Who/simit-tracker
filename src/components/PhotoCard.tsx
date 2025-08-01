@@ -14,6 +14,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
   const [likes, setLikes] = useState(item.likes || 0);
   const [lastTap, setLastTap] = useState(0);
   const imageRef = React.useRef<HTMLDivElement>(null);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
 
   const handleLike = async () => {
     if (!dbUser) return;
@@ -62,6 +63,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
       // It's a double tap!
       if (!userHasLiked) {
         handleLike();
+        // Show heart animation
+        setShowHeartAnimation(true);
+        setTimeout(() => setShowHeartAnimation(false), 1000);
       }
     }
     setLastTap(now);
@@ -161,6 +165,30 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
             objectFit: 'cover',
           }}
         />
+        
+        {/* Animated heart */}
+        {showHeartAnimation && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            animation: 'heartPop 1s ease-out',
+            pointerEvents: 'none',
+          }}>
+            <svg
+              width="80"
+              height="80"
+              viewBox="0 0 24 24"
+              fill="white"
+              style={{
+                filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.3))',
+              }}
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+        )}
       </div>
       
       {/* Actions + Pump Rating Row */}
@@ -170,6 +198,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
         justifyContent: 'space-between',
         padding: '8px 8px',
       }}>
+        {/* Left side - Like and Comment buttons */}
         <div style={{
           display: 'flex',
           gap: '12px',
@@ -198,16 +227,15 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
               fill={userHasLiked ? '#ef4444' : 'none'}
               stroke={userHasLiked ? '#ef4444' : 'currentColor'}
               strokeWidth="2"
-              style={{ transition: 'all 0.2s ease' }}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                transition: 'all 0.2s',
+                transform: userHasLiked ? 'scale(1.1)' : 'scale(1)',
+              }}
             >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
-            <span style={{
-              fontSize: '0.9em',
-              fontWeight: '500',
-            }}>
-              {likes}
-            </span>
           </button>
           
           <button
@@ -232,40 +260,53 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            <span style={{
-              fontSize: '0.9em',
-              fontWeight: '500',
-            }}>
-              {(item.comments || []).length}
-            </span>
           </button>
         </div>
-        
-        {/* Right side - Pump rating */}
+
+        {/* Right side - Pump rating if present */}
         {item.pump && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '6px 12px',
             background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
+            padding: '6px 12px',
             borderRadius: '20px',
             fontSize: '0.85em',
+            fontWeight: '600',
+            marginRight: '8px',
           }}>
-            <span style={{ fontWeight: '600' }}>💪</span>
-            <span style={{ fontWeight: '500' }}>{item.pump}/100</span>
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="var(--accent-primary)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19.5 9.5L18.5 8.5C17.5 7.5 16 7 14.5 7C13 7 11.5 7.5 10.5 8.5L9.5 9.5L8.5 8.5C7.5 7.5 6 7 4.5 7C3 7 1.5 7.5 0.5 8.5L0.5 8.5C-0.5 9.5 -0.5 11 0.5 12L7.5 19C8.5 20 10 20.5 11.5 20.5C13 20.5 14.5 20 15.5 19L22.5 12C23.5 11 23.5 9.5 22.5 8.5C21.5 7.5 20.5 7.5 19.5 8.5V9.5Z"/>
+              <path d="M15 3L17 5L15 7" />
+              <path d="M9 3L7 5L9 7" />
+            </svg>
+            <span style={{ color: 'var(--accent-primary)' }}>
+              {item.pump}%
+            </span>
           </div>
         )}
       </div>
       
-      {/* Like count text */}
+      {/* Like count */}
       {likes > 0 && (
         <div style={{
           padding: '0 16px 8px',
-          fontSize: '0.9em',
+          fontSize: '0.95em',
           fontWeight: '600',
         }}>
           {likes} {likes === 1 ? 'like' : 'likes'}
