@@ -1413,20 +1413,15 @@ const isPWAStandalone = () => {
   onMouseLeave={handleTouchEnd}
   style={{
     padding: '6px',
-    paddingTop: isPWAStandalone() ? '24px' : '6px',
-    paddingBottom: '6px',
+    paddingTop: isPWAStandalone() ? '50px' : '6px',  // Increased to ensure it's below island
+    paddingBottom: isPWAStandalone() ? '16px' : '6px',  // Reduced bottom padding
     cursor: 'grab',
     background: 'var(--bg-dark)',
     position: 'sticky',
     top: 0,
     zIndex: 10,
     flexShrink: 0,
-    // Add invisible touch extension for PWA only
-    ...(isPWAStandalone() && {
-      position: 'relative',
-      marginTop: '-20px',
-      paddingTop: '44px',
-    })
+    minHeight: isPWAStandalone() ? '70px' : 'auto',  // Reduced from 80px
   }}
 >
   <div className="drag-indicator" style={{
@@ -1437,6 +1432,7 @@ const isPWAStandalone = () => {
       'rgba(255, 255, 255, 0.5)',
     borderRadius: '3px',
     margin: '0 auto',
+    marginTop: isPWAStandalone() ? '0' : '0',  // Remove extra margin
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   }}></div>
 </div>
