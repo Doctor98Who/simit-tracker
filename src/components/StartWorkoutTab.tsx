@@ -148,7 +148,7 @@ const createProgram = () => {
   return (
     <div>
       <h2>Quick Start</h2>
-      <div className="quick-start" onClick={startEmptyWorkout}>Start an Empty Workout</div>
+<div className="quick-start" onClick={startEmptyWorkout}>Log an Empty Workout</div>
       <h3>Programs in Progress</h3>
       <div id="programs-in-progress">{renderedProgramsInProgress}</div>
       <div className="programs-header">

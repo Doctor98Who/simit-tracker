@@ -673,23 +673,22 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-          <div className="exercise-name" style={{
-            fontSize: '1.2em',
-            fontWeight: '600',
-            color: isDragging ? 'var(--accent-primary)' : 'var(--accent-blue)',
-            letterSpacing: '-0.3px',
-
-          }}>
-            {ex.name}
-            {ex.subtype && <span style={{
-              color: isDragging ? 'var(--accent-primary)' : 'var(--text-muted)',
-              fontSize: '0.85em',
-              marginLeft: '4px',
-              fontWeight: '400',
-            }}>({ex.subtype})</span>}
-          </div>
-        </div>
+<div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+  <div className="exercise-name" style={{
+    fontSize: '1.35em',
+    fontWeight: '600',
+    color: isDragging ? 'var(--accent-primary)' : 'var(--accent-blue)',
+    letterSpacing: '-0.3px',
+  }}>
+    {ex.name}
+    {ex.subtype && <span style={{
+      color: isDragging ? 'var(--accent-primary)' : 'var(--text-muted)',
+      fontSize: '0.85em',
+      marginLeft: '4px',
+      fontWeight: '400',
+    }}>({ex.subtype})</span>}
+  </div>
+</div>
         {!isCollapsed && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
@@ -1476,7 +1475,7 @@ const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-m
             style={{
               background: 'transparent',
               border: 'none',
-              fontSize: '1.5em',
+              fontSize: '1.8em',
               fontWeight: '700',
               textAlign: 'center',
               flex: 1,

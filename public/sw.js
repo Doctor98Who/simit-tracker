@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pump-inc-v0.1.24';
+const CACHE_NAME = 'pump-inc-v0.1.25';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();

@@ -6,10 +6,29 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.1.24' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.25' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+
+// Prevent background scrolling when changelog is open
+useEffect(() => {
+  if (showChangelog) {
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
+  }
+}, [showChangelog]);
 
 useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -17,30 +36,25 @@ useEffect(() => {
       navigator.serviceWorker.ready.then((registration) => {
         registration.update();
       });
-
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data.type === 'NEW_VERSION_AVAILABLE') {
           setUpdateAvailable(true);
         }
       });
-
       navigator.serviceWorker.ready.then((registration) => {
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
-
           newWorker?.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               setUpdateAvailable(true);
             }
           });
         });
-
         // Check for updates every 5 minutes
         setInterval(() => {
           registration.update();
         }, 5 * 60 * 1000);
       });
-
       // Also check when window regains focus
       window.addEventListener('focus', () => {
         navigator.serviceWorker.ready.then((registration) => {
@@ -49,14 +63,12 @@ useEffect(() => {
       });
     }
   }, []);
-
   const handleUpdate = () => {
     if (updateAvailable && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
       window.location.reload();
     }
   };
-
   return (
     <>
       <div className="header" style={{
@@ -67,10 +79,10 @@ useEffect(() => {
         justifyContent: 'flex-start',
         position: 'relative',
       }}>
-        <img 
-          src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'} 
-          alt="Pump Inc Logo" 
-          className="logo" 
+        <img
+          src={data.theme === 'light' ? '/logo-light.png' : '/logo-dark.png'}
+          alt="Pump Inc Logo"
+          className="logo"
           style={{
             height: '40px',
             width: 'auto',
@@ -83,8 +95,8 @@ useEffect(() => {
             mixBlendMode: 'normal',
           }}
         />
-        <span 
-          id="app-version" 
+        <span
+          id="app-version"
           onClick={() => setShowChangelog(true)}
           style={{
             position: 'absolute',
@@ -109,7 +121,6 @@ useEffect(() => {
           Beta {version}
         </span>
       </div>
-
       {updateAvailable && (
         <div style={{
           background: 'var(--accent-gradient)',
@@ -122,33 +133,36 @@ useEffect(() => {
           🎉 New version available! Tap here to update.
         </div>
       )}
-
-      {showChangelog && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px',
-        }} onClick={() => setShowChangelog(false)}>
-          <div style={{
-            background: 'var(--bg-dark)',
-            borderRadius: '20px',
-            padding: '0',
-            maxWidth: '400px',
-            width: '100%',
-            maxHeight: '80vh',
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-            border: '1px solid var(--border)',
-          }} onClick={(e) => e.stopPropagation()}>
-<div style={{
+{showChangelog && (
+  <div style={{
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '20px',
+    overflowY: 'auto',
+  }} 
+onClick={() => setShowChangelog(false)}>
+  <div style={{
+    background: 'var(--bg-dark)',
+    borderRadius: '20px',
+    padding: '0',
+    maxWidth: '400px',
+    width: '100%',
+    maxHeight: '75vh',
+    overflow: 'hidden',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+    border: '1px solid var(--border)',
+    display: 'flex',
+    flexDirection: 'column',
+  }} onClick={(e) => e.stopPropagation()}>
+    <div style={{
   padding: '16px 20px',
   borderBottom: '1px solid var(--border)',
   display: 'flex',
@@ -196,13 +210,15 @@ useEffect(() => {
             </div>
             
 <div style={{
-  padding: '20px',
+  flex: 1,
   overflowY: 'auto',
-  maxHeight: 'calc(80vh - 65px)',
+  overflowX: 'hidden',
+  padding: '20px',
+  paddingBottom: '32px',
   WebkitOverflowScrolling: 'touch',
   overscrollBehavior: 'contain',
-}}>
-                <div style={{ marginBottom: '24px' }}>
+}}>                
+<div style={{ marginBottom: '24px' }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -217,7 +233,7 @@ useEffect(() => {
                     fontSize: '0.75em',
                     fontWeight: '600',
                   }}>
-                    v0.1.24
+                    v0.1.25
                   </span>
                   <span style={{
                     color: 'var(--text-muted)',

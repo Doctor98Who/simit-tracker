@@ -75,7 +75,7 @@ const Modals = () => {
   const openModal = (id: string) => setData((prev: DataType) => ({ ...prev, activeModal: id }));
   const closeModal = () => setData((prev: DataType) => ({ ...prev, activeModal: null, isEditingProgram: false }));
 
-const goBack = () => {
+  const goBack = () => {
     if (activeModal === 'day-modal') {
       openModal('week-modal');
     } else if (activeModal === 'week-modal') {
@@ -1904,7 +1904,7 @@ const goBack = () => {
             maxWidth: '428px',
             margin: '0 auto',
             background: 'var(--bg-dark)',
-padding: isPWAStandalone() ? '8px 16px 60px' : '8px 16px 50px',
+            padding: isPWAStandalone() ? '8px 16px 95px' : '8px 16px 70px',
             boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'grab',
@@ -3262,301 +3262,301 @@ padding: isPWAStandalone() ? '8px 16px 60px' : '8px 16px 50px',
           </div>
         </div>
       </div>
-<div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '400px',
-    background: 'var(--bg-dark)',
-    borderRadius: '0',
-    padding: '0',
-    overflow: 'hidden',
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-  }}>
-    <div className="settings-header" style={{
-      padding: '15px 20px',
-      borderBottom: '1px solid var(--border)',
-      background: 'var(--bg-dark)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}>
-      <button
-        onClick={closeModal}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: 'var(--text)',
-          fontSize: '1.2em',
-          cursor: 'pointer',
+      <div id="settings-modal" className={`modal ${activeModal === 'settings-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          background: 'var(--bg-dark)',
+          borderRadius: '0',
           padding: '0',
-          minHeight: 'auto',
-          width: '30px',
-        }}
-      >
-        ✕
-      </button>
-      <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Settings</h2>
-      <div style={{ width: '30px' }}></div>
-    </div>
-
-    <div style={{ flex: 1, overflow: 'auto' }}>
-      {/* APPEARANCE Section */}
-      <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-        <h3 style={{
-          margin: '0 0 15px 0',
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
+          overflow: 'hidden',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          APPEARANCE
-        </h3>
-
-        <div
-          onClick={() => setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'theme-select-modal',
-            previousModal: 'settings-modal'
-          }))}
-          style={{
+          <div className="settings-header" style={{
+            padding: '15px 20px',
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--bg-dark)',
             display: 'flex',
-            justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '12px 0',
-            cursor: 'pointer',
-          }}
-        >
-          <span style={{ fontSize: '1em' }}>Theme</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-              {data.theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
-            </span>
-            <span style={{ color: 'var(--text-muted)' }}>›</span>
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={closeModal}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+                width: '30px',
+              }}
+            >
+              ✕
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.1em', flex: 1, textAlign: 'center' }}>Settings</h2>
+            <div style={{ width: '30px' }}></div>
           </div>
-        </div>
 
-        <div
-          onClick={() => setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'weight-unit-modal',
-            previousModal: 'settings-modal'
-          }))}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            cursor: 'pointer',
-          }}
-        >
-          <span style={{ fontSize: '1em' }}>Weight Unit</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-              {data.weightUnit || 'lbs'}
-            </span>
-            <span style={{ color: 'var(--text-muted)' }}>›</span>
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            {/* APPEARANCE Section */}
+            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                APPEARANCE
+              </h3>
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'theme-select-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Theme</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'weight-unit-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Weight Unit</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.weightUnit || 'lbs'}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+            </div>
+
+            {/* SOCIAL Section - SEPARATE from Appearance */}
+            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                SOCIAL
+              </h3>
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'find-friends-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '1em' }}>Find Friends</span>
+                </div>
+                <span style={{ color: 'var(--text-muted)' }}>›</span>
+              </div>
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'friends-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '1em' }}>My Friends</span>
+                  <span style={{
+                    background: 'var(--accent-primary)',
+                    color: 'white',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.75em',
+                    fontWeight: '600',
+                  }}>
+                    {data.friends.length}
+                  </span>
+                </div>
+                <span style={{ color: 'var(--text-muted)' }}>›</span>
+              </div>
+            </div>
+
+            {/* UNITS Section - Remove Weight Unit from here since it's in APPEARANCE */}
+            <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                UNITS
+              </h3>
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'distance-unit-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Distance Unit</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.distanceUnit || 'miles'}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+
+              <div
+                onClick={() => setData((prev: DataType) => ({
+                  ...prev,
+                  activeModal: 'intensity-metric-modal',
+                  previousModal: 'settings-modal'
+                }))}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 0',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ fontSize: '1em' }}>Intensity Metric</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
+                    {data.intensityMetric.toUpperCase()}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>›</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ACCOUNT Section */}
+            <div style={{ padding: '20px' }}>
+              <h3 style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.8em',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>
+                ACCOUNT
+              </h3>
+
+              <button
+                onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-lighter)',
+                  color: 'var(--text)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  marginBottom: '20px',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--accent-primary)';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--bg-lighter)';
+                  e.currentTarget.style.color = 'var(--text)';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }}
+              >
+                Log Out
+              </button>
+
+              <button
+                className="delete-account-btn"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  color: '#FF3B30',
+                  border: '1px solid #FF3B30',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  fontSize: '0.9em',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                Delete Account
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* SOCIAL Section - SEPARATE from Appearance */}
-      <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-        <h3 style={{
-          margin: '0 0 15px 0',
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          SOCIAL
-        </h3>
-
-        <div
-          onClick={() => setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'find-friends-modal',
-            previousModal: 'settings-modal'
-          }))}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            cursor: 'pointer',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '1em' }}>Find Friends</span>
-          </div>
-          <span style={{ color: 'var(--text-muted)' }}>›</span>
-        </div>
-
-        <div
-          onClick={() => setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'friends-modal',
-            previousModal: 'settings-modal'
-          }))}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            cursor: 'pointer',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '1em' }}>My Friends</span>
-            <span style={{
-              background: 'var(--accent-primary)',
-              color: 'white',
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '0.75em',
-              fontWeight: '600',
-            }}>
-              {data.friends.length}
-            </span>
-          </div>
-          <span style={{ color: 'var(--text-muted)' }}>›</span>
-        </div>
-      </div>
-
-      {/* UNITS Section - Remove Weight Unit from here since it's in APPEARANCE */}
-      <div style={{ padding: '20px 20px 10px', borderBottom: '1px solid var(--border)' }}>
-        <h3 style={{
-          margin: '0 0 15px 0',
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          UNITS
-        </h3>
-
-        <div
-          onClick={() => setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'distance-unit-modal',
-            previousModal: 'settings-modal'
-          }))}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            cursor: 'pointer',
-          }}
-        >
-          <span style={{ fontSize: '1em' }}>Distance Unit</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-              {data.distanceUnit || 'miles'}
-            </span>
-            <span style={{ color: 'var(--text-muted)' }}>›</span>
-          </div>
-        </div>
-
-        <div
-          onClick={() => setData((prev: DataType) => ({
-            ...prev,
-            activeModal: 'intensity-metric-modal',
-            previousModal: 'settings-modal'
-          }))}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 0',
-            cursor: 'pointer',
-          }}
-        >
-          <span style={{ fontSize: '1em' }}>Intensity Metric</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: 'var(--accent-primary)', fontSize: '0.9em' }}>
-              {data.intensityMetric.toUpperCase()}
-            </span>
-            <span style={{ color: 'var(--text-muted)' }}>›</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ACCOUNT Section */}
-      <div style={{ padding: '20px' }}>
-        <h3 style={{
-          margin: '0 0 15px 0',
-          fontSize: '0.8em',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          ACCOUNT
-        </h3>
-
-        <button
-          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-          style={{
-            width: '100%',
-            background: 'var(--bg-lighter)',
-            color: 'var(--text)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '12px',
-            fontSize: '0.9em',
-            fontWeight: '500',
-            cursor: 'pointer',
-            marginBottom: '20px',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--accent-primary)';
-            e.currentTarget.style.color = 'white';
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--bg-lighter)';
-            e.currentTarget.style.color = 'var(--text)';
-            e.currentTarget.style.borderColor = 'var(--border)';
-          }}
-        >
-          Log Out
-        </button>
-
-        <button
-          className="delete-account-btn"
-          onClick={() => {
-            if (window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
-              localStorage.clear();
-              sessionStorage.clear();
-              window.location.reload();
-            }
-          }}
-          style={{
-            width: '100%',
-            background: 'transparent',
-            color: '#FF3B30',
-            border: '1px solid #FF3B30',
-            borderRadius: '8px',
-            padding: '12px',
-            fontSize: '0.9em',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          Delete Account
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
       {/* Theme Selection Modal */}
       <div id="theme-select-modal" className={`modal ${activeModal === 'theme-select-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
@@ -4320,59 +4320,59 @@ padding: isPWAStandalone() ? '8px 16px 60px' : '8px 16px 50px',
           <button className="secondary" onClick={closeModal}>Later</button>
         </div>
       </div>
-{/* Friends List Modal */}
-<div id="friends-modal" className={`modal ${activeModal === 'friends-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '400px',
-    maxHeight: '80vh',
-    overflowY: 'auto',
-    background: 'var(--bg-dark)',
-    borderRadius: '20px',
-    padding: '0',
-    overflow: 'hidden',
-  }}>
-    <div style={{
-      padding: '20px',
-      borderBottom: '1px solid var(--border)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}>
-<button
-  onClick={() => {
-    const previousModal = data.previousModal;
-    if (previousModal === 'profile-tab') {
-      // If came from profile, just close the modal
-      setData((prev: DataType) => ({ 
-        ...prev, 
-        activeModal: null,
-        previousModal: undefined
-      }));
-    } else {
-      // Otherwise go back to settings
-      setData((prev: DataType) => ({ 
-        ...prev, 
-        activeModal: 'settings-modal',
-        previousModal: undefined
-      }));
-    }
-  }}
-  style={{
-    background: 'transparent',
-    border: 'none',
-    color: 'var(--text)',
-    fontSize: '1.2em',
-    cursor: 'pointer',
-    padding: '0',
-    minHeight: 'auto',
-  }}
->
-  ‹
-</button>
-<h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600', flex: 1, textAlign: 'center' }}>
-  Friends
-</h2>      <div style={{ width: '30px' }}></div>
-    </div>          <div style={{ padding: '20px' }}>
+      {/* Friends List Modal */}
+      <div id="friends-modal" className={`modal ${activeModal === 'friends-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
+          padding: '0',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <button
+              onClick={() => {
+                const previousModal = data.previousModal;
+                if (previousModal === 'profile-tab') {
+                  // If came from profile, just close the modal
+                  setData((prev: DataType) => ({
+                    ...prev,
+                    activeModal: null,
+                    previousModal: undefined
+                  }));
+                } else {
+                  // Otherwise go back to settings
+                  setData((prev: DataType) => ({
+                    ...prev,
+                    activeModal: 'settings-modal',
+                    previousModal: undefined
+                  }));
+                }
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '1.2em',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+              }}
+            >
+              ‹
+            </button>
+            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600', flex: 1, textAlign: 'center' }}>
+              Friends
+            </h2>      <div style={{ width: '30px' }}></div>
+          </div>          <div style={{ padding: '20px' }}>
             {data.friendRequests.length > 0 && (
               <div style={{ marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '1em', marginBottom: '12px', color: 'var(--text-muted)' }}>
