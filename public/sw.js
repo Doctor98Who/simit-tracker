@@ -1,5 +1,4 @@
-// sw.js - Simple service worker for PWA
-const CACHE_VERSION = 'v0.1.24';
+const CACHE_NAME = 'pump-inc-v0.1.24';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
@@ -8,21 +7,37 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     self.clients.claim();
     
-    // Clear all caches to force fresh content
+    // Only clear old caches, not the current one
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(cache => caches.delete(cache))
+                cacheNames.filter(cacheName => {
+                    return cacheName.startsWith('pump-inc-') && 
+                           cacheName !== CACHE_NAME;
+                }).map(cache => caches.delete(cache))
             );
         })
     );
-});//
+});
 
-// Force bypass cache for version.json
+// Cache CSS and JS files
 self.addEventListener('fetch', (event) => {
     if (event.request.url.includes('version.json')) {
+        event.respondWith(fetch(event.request, { cache: 'no-store' }));
+        return;
+    }
+    
+    // Cache CSS and JS files
+    if (event.request.url.includes('.css') || event.request.url.includes('.js')) {
         event.respondWith(
-            fetch(event.request, { cache: 'no-store' })
+            caches.open(CACHE_NAME).then(cache => {
+                return cache.match(event.request).then(response => {
+                    return response || fetch(event.request).then(fetchResponse => {
+                        cache.put(event.request, fetchResponse.clone());
+                        return fetchResponse;
+                    });
+                });
+            })
         );
     }
 });
