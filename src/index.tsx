@@ -9,11 +9,8 @@ import './lib/supabase';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-  <React.StrictMode>
-    <Auth0ProviderWithHistory>
-      <App />
-    </Auth0ProviderWithHistory>
-  </React.StrictMode>
+  <Auth0ProviderWithHistory>
+    <App />
+  </Auth0ProviderWithHistory>
 );
-
 serviceWorker.register();
