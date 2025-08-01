@@ -14,6 +14,27 @@ export const Auth0ProviderWithHistory: React.FC<Auth0ProviderWithHistoryProps> =
     window.location.replace(appState?.returnTo || window.location.pathname);
   };
 
+  // Check for corrupted auth state on mount
+  React.useEffect(() => {
+    // If we detect corrupted auth state, clear it
+    const auth0Storage = localStorage.getItem(`@@auth0spajs@@::${clientId}::${domain}::openid profile email`);
+    if (auth0Storage) {
+      try {
+        JSON.parse(auth0Storage);
+      } catch (e) {
+        console.error('Corrupted Auth0 state detected, clearing...');
+        // Clear all Auth0 related localStorage items
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('auth0') || key.includes('@@auth0')) {
+            localStorage.removeItem(key);
+          }
+        });
+        // Reload to start fresh
+        window.location.reload();
+      }
+    }
+  }, [clientId, domain]);
+
   return (
     <Auth0Provider
       domain={domain}
@@ -24,6 +45,8 @@ export const Auth0ProviderWithHistory: React.FC<Auth0ProviderWithHistoryProps> =
       onRedirectCallback={onRedirectCallback}
       cacheLocation="localstorage"
       useRefreshTokens={true}
+      // Prevent redirect loops on mobile
+      skipRedirectCallback={window.location.pathname !== '/'}
     >
       {children}
     </Auth0Provider>

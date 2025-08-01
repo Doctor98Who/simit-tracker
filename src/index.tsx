@@ -5,7 +5,6 @@ import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { Auth0ProviderWithHistory } from './components/Auth0ProviderWithHistory';
 import './lib/supabase';
-console.log('Index.tsx loaded');
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
@@ -13,4 +12,5 @@ root.render(
     <App />
   </Auth0ProviderWithHistory>
 );
+
 serviceWorker.register();
