@@ -17,26 +17,19 @@ export const handler: Handler = async (event, context) => {
     switch (action) {
       case 'getFriendsFeed': {
         const { userId } = params;
-       
+        
         // Get friend IDs
         const { data: friends, error: friendsError } = await supabase
           .from('friends')
           .select('friend_id')
           .eq('user_id', userId)
           .eq('status', 'accepted');
-         
+          
         if (friendsError) throw friendsError;
-       
+        
         const friendIds = friends.map(f => f.friend_id);
-       
-        if (friendIds.length === 0) {
-          return {
-            statusCode: 200,
-            body: JSON.stringify({ data: [] })
-          };
-        }
-       
-        // Get public photos from friends
+        
+        // Get public photos from friends AND current user
         const { data: photos, error: photosError } = await supabase
           .from('progress_photos')
           .select(`
@@ -49,24 +42,28 @@ export const handler: Handler = async (event, context) => {
               profile_pic
             )
           `)
-          .in('user_id', friendIds)
+          .in('user_id', [...friendIds, userId])  // Include current user
           .eq('visibility', 'public')
           .order('timestamp', { ascending: false })
           .limit(50);
-         
+          
+        console.log('Photos found:', photos?.length);
+        console.log('Friend IDs:', friendIds);
+        console.log('User ID:', userId);
+          
         if (photosError) throw photosError;
-       
+        
         // Get user's likes for these photos
         const photoIds = photos.map(p => p.id);
         let userLikedPhotos: string[] = [];
-       
+        
         if (photoIds.length > 0) {
           const { data: likes, error: likesError } = await supabase
             .from('likes')
             .select('photo_id')
             .eq('user_id', userId)
             .in('photo_id', photoIds);
-           
+            
           if (!likesError && likes) {
             userLikedPhotos = likes.map(like => like.photo_id);
           }
@@ -88,14 +85,14 @@ export const handler: Handler = async (event, context) => {
               `)
               .eq('photo_id', photo.id)
               .order('created_at', { ascending: true });
-            
+              
             return {
               ...photo,
               comments: comments || []
             };
           })
         );
-       
+        
         const feedData = photosWithComments.map(photo => ({
           id: photo.id,
           base64: photo.photo_url,
