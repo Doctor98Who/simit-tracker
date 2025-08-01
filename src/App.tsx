@@ -13,11 +13,13 @@ import { Login } from './components/Login';
 import { DataContext, DataProvider } from './DataContext';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import updateChecker from './services/UpdateChecker';
 
 const AppContent = () => {
   const { data, setData, isLoading: isDataLoading } = useContext(DataContext);
   const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
   const { isLoading, isAuthenticated } = useAuth0();
+  const [updateAvailable, setUpdateAvailable] = useState(false);
   
   // Sync activeTab from context
   useEffect(() => {
@@ -32,6 +34,43 @@ const AppContent = () => {
       Notification.requestPermission();
     }
   }, []);
+  
+  // Start update checker
+  useEffect(() => {
+    updateChecker.start(() => {
+      setUpdateAvailable(true);
+      
+      // Show notification if permission granted
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Update Available!', {
+          body: 'A new version of Pump Inc. is ready. Tap to update.',
+          icon: '/icon.png',
+          badge: '/icon.png',
+        });
+      }
+    });
+    
+    return () => {
+      updateChecker.stop();
+    };
+  }, []);
+  
+  // Handle update
+  const handleUpdate = () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg) {
+          reg.update().then(() => {
+            window.location.reload();
+          });
+        } else {
+          window.location.reload();
+        }
+      });
+    } else {
+      window.location.reload();
+    }
+  };
  
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -65,6 +104,43 @@ const AppContent = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="app-container">
+        {/* Update Banner */}
+        {updateAvailable && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            color: 'white',
+            padding: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 9999,
+            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          }}>
+            <span style={{ fontSize: '0.9em', fontWeight: '500' }}>
+              🎉 New update available!
+            </span>
+            <button
+              onClick={handleUpdate}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: 'white',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '0.85em',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Update Now
+            </button>
+          </div>
+        )}
+        
         <Header />
         <div className={`content ${activeTab === 'start-workout-tab' ? '' : 'hidden'}`}>
           <StartWorkoutTab />

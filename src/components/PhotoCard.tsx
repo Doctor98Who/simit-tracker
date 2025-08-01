@@ -15,16 +15,16 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
 
   const handleLike = async () => {
     if (!dbUser) return;
-
+    
     try {
       // Optimistic update
       setUserHasLiked(!userHasLiked);
       setLikes(userHasLiked ? Math.max(likes - 1, 0) : likes + 1);
-
+      
       // API call
       await DatabaseService.likePhoto(dbUser.id, item.id);
-
-      // Update context
+      
+      // Update context to persist the change
       if (isOwn) {
         setData((prev: any) => ({
           ...prev,
@@ -37,26 +37,27 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
       } else {
         setData((prev: any) => ({
           ...prev,
-          friendsFeed: prev.friendsFeed.map((p: any) =>
-            p.id === item.id 
-              ? { ...p, userHasLiked: !userHasLiked, likes: userHasLiked ? Math.max(likes - 1, 0) : likes + 1 }
-              : p
+          friendsFeed: prev.friendsFeed.map((feedItem: any) =>
+            feedItem.id === item.id 
+              ? { ...feedItem, userHasLiked: !userHasLiked, likes: userHasLiked ? Math.max(likes - 1, 0) : likes + 1 }
+              : feedItem
           )
         }));
       }
     } catch (error) {
+      console.error('Error liking photo:', error);
       // Revert on error
       setUserHasLiked(userHasLiked);
       setLikes(likes);
-      console.error('Error toggling like:', error);
     }
   };
 
   return (
     <div style={{
       background: 'var(--bg-dark)',
-      marginBottom: '2px',
-      overflow: 'hidden',
+      marginBottom: '8px',
+      borderTop: '1px solid var(--border)',
+      borderBottom: '1px solid var(--border)',
     }}>
       {/* Header */}
       <div style={{
@@ -70,32 +71,58 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           height: '32px',
           borderRadius: '50%',
           background: 'var(--bg-lighter)',
-          backgroundImage: (isOwn ? data.profilePic : item.user?.profile_pic) 
-            ? `url(${isOwn ? data.profilePic : item.user.profile_pic})` 
+          backgroundImage: (isOwn ? data.profilePic : item.user?.profile_pic)
+            ? `url(${isOwn ? data.profilePic : item.user.profile_pic})`
             : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           flexShrink: 0,
         }} />
         <div style={{ flex: 1 }}>
-          <div style={{ 
+          <div style={{
             fontWeight: '600',
             fontSize: '0.95em',
             lineHeight: '1.2',
           }}>
-            {isOwn 
+            {isOwn
               ? `${data.firstName} ${data.lastName}`
               : `${item.user.first_name} ${item.user.last_name}`
             }
           </div>
-          <div style={{ 
-            fontSize: '0.8em', 
+          <div style={{
+            fontSize: '0.8em',
             color: 'var(--text-muted)',
             lineHeight: '1.2',
           }}>
             {new Date(item.timestamp).toLocaleDateString()}
           </div>
         </div>
+        
+        {/* Three dots menu for own posts */}
+        {isOwn && (
+          <button
+            onClick={() => {
+              setData((prev: any) => ({
+                ...prev,
+                activeModal: 'photo-menu-modal',
+                currentProgressIdx: data.progressPics.findIndex((p: any) => 
+                  p.base64 === item.base64 && p.timestamp === item.timestamp
+                )
+              }));
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              color: 'var(--text-muted)',
+              fontSize: '1.2em',
+              lineHeight: 1,
+            }}
+          >
+            ⋮
+          </button>
+        )}
       </div>
       
       {/* Image - Full width */}
@@ -105,9 +132,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
         background: '#000',
         position: 'relative',
       }}>
-        <img 
-          src={item.base64} 
-          alt="Progress" 
+        <img
+          src={item.base64}
+          alt="Progress"
           style={{
             width: '100%',
             height: '100%',
@@ -152,12 +179,16 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
               fill={userHasLiked ? '#ef4444' : 'none'}
               stroke={userHasLiked ? '#ef4444' : 'currentColor'}
               strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
               style={{ transition: 'all 0.2s ease' }}
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
+            <span style={{
+              fontSize: '0.9em',
+              fontWeight: '500',
+            }}>
+              {likes}
+            </span>
           </button>
           
           <button
@@ -182,41 +213,41 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
+            <span style={{
+              fontSize: '0.9em',
+              fontWeight: '500',
+            }}>
+              {(item.comments || []).length}
+            </span>
           </button>
         </div>
-
-        {/* Right side - Pump Rating */}
+        
+        {/* Right side - Pump rating */}
         {item.pump && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
             padding: '6px 12px',
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
             borderRadius: '20px',
-            color: 'white',
             fontSize: '0.85em',
-            fontWeight: '600',
-            marginRight: '8px',
           }}>
-            <span style={{ fontSize: '1.1em' }}>💪</span>
-            <span>{item.pump}/100</span>
+            <span style={{ fontWeight: '600' }}>💪</span>
+            <span style={{ fontWeight: '500' }}>{item.pump}/100</span>
           </div>
         )}
       </div>
-
-      {/* Likes count */}
+      
+      {/* Like count text */}
       {likes > 0 && (
         <div style={{
-          padding: '0 16px',
-          fontSize: '0.95em',
+          padding: '0 16px 8px',
+          fontSize: '0.9em',
           fontWeight: '600',
-          marginBottom: '8px',
         }}>
           {likes} {likes === 1 ? 'like' : 'likes'}
         </div>

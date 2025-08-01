@@ -18,7 +18,9 @@ const ProgressTab = () => {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [editCaption, setEditCaption] = useState('');
-
+    const isPWAStandalone = () => {
+    return window.matchMedia('(display-mode: standalone)').matches;
+  };
   const sortedProgressPics = useMemo(() => [...data.progressPics].sort((a: ProgressPic, b: ProgressPic) => b.timestamp - a.timestamp), [data.progressPics]);
 
   const openPhotoModal = (pic: ProgressPic, index: number) => {
@@ -114,11 +116,17 @@ const uploadProgressPic = () => {
     setIsEditingCaption(false);
   };
 
-  const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: ProgressPic, index: number) => (
+const renderedProgressPics = useMemo(() => sortedProgressPics.map((pic: ProgressPic, index: number) => {
+  // Find matching photo from friendsFeed to get synced data
+  const syncedPhoto = data.friendsFeed.find((item: any) => 
+    item.base64 === pic.base64 && item.timestamp === pic.timestamp
+  ) || pic;
+  
+  return (
     <div
       key={index}
       className="progress-pic"
-      onClick={() => openPhotoModal(pic, index)}
+      onClick={() => openPhotoModal(syncedPhoto, index)}
       style={{
         position: 'relative',
         cursor: 'pointer',
@@ -137,6 +145,26 @@ const uploadProgressPic = () => {
           display: 'block',
         }}
       />
+      {/* Show likes count if any */}
+{(syncedPhoto.likes || 0) > 0 && (
+          <div style={{
+          position: 'absolute',
+          bottom: '8px',
+          right: '8px',
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '12px',
+          padding: '4px 8px',
+          fontSize: '11px',
+          color: 'white',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}>
+          ❤️ {syncedPhoto.likes}
+        </div>
+      )}
       {pic.pump && (
         <div style={{
           position: 'absolute',
@@ -152,7 +180,6 @@ const uploadProgressPic = () => {
           display: 'flex',
           alignItems: 'center',
           gap: '4px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
         }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M19.5 9.5L18.5 8.5C17.5 7.5 16 7 14.5 7C13 7 11.5 7.5 10.5 8.5L9.5 9.5L8.5 8.5C7.5 7.5 6 7 4.5 7C3 7 1.5 7.5 0.5 8.5L0.5 8.5C-0.5 9.5 -0.5 11 0.5 12L7.5 19C8.5 20 10 20.5 11.5 20.5C13 20.5 14.5 20 15.5 19L22.5 12C23.5 11 23.5 9.5 22.5 8.5C21.5 7.5 20.5 7.5 19.5 8.5V9.5Z"
@@ -169,7 +196,8 @@ const uploadProgressPic = () => {
         </div>
       )}
     </div>
-  )), [sortedProgressPics]);
+  );
+}), [sortedProgressPics, data.friendsFeed]);
 
   return (
     <div>
@@ -199,310 +227,280 @@ const uploadProgressPic = () => {
           + Add Photo
         </div>
       </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '1px',
-        background: '#000',
-        margin: '0 -20px',  // Full width to edges
-      }}>
-        {renderedProgressPics}
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: '1px',
+  background: data.theme === 'light' ? '#e0e0e0' : '#000',  // Light gray for light mode, black for dark
+  margin: '0 -20px',  // Full width to edges
+}}>
+          {renderedProgressPics}
       </div>
-            {/* Photo Detail Modal */}
-      {selectedPhoto && data.activeModal === 'progress-photo-modal' && (
-        <div
-          className="modal active progress-photo-modal"
+{/* Photo Detail Modal */}
+{selectedPhoto && data.activeModal === 'progress-photo-modal' && (
+  <div
+    className="modal active progress-photo-modal"
+    style={{
+      background: 'rgba(0, 0, 0, 0.95)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <div className="modal-content" style={{
+      width: '100%',
+      maxWidth: '100%',
+      height: '100%',
+      background: 'var(--bg-dark)',
+      padding: 0,
+      borderRadius: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      paddingBottom: isPWAStandalone() ? 'env(safe-area-inset-bottom)' : '0', // Fix for PWA bottom
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 20px',
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-dark)',
+        backdropFilter: 'blur(10px)',
+      }}>
+        <button
+          onClick={closePhotoModal}
           style={{
-            background: 'rgba(0, 0, 0, 0.95)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            background: 'none',
+            border: 'none',
+            color: 'var(--text)',
+            fontSize: '1.2em',
+            cursor: 'pointer',
+            padding: '4px',
+            minHeight: 'auto',
           }}
         >
-          <div className="modal-content" style={{
-            width: '100%',
-            maxWidth: '100%',
-            height: '100%',
-            background: 'var(--bg-dark)',
-            padding: 0,
-            borderRadius: 0,
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
-            {/* Header */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '16px 20px',
-              borderBottom: '1px solid var(--border)',
-              background: 'var(--bg-dark)',
-              backdropFilter: 'blur(10px)',
-            }}>
-              <button
-                onClick={closePhotoModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text)',
-                  fontSize: '1.2em',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  minHeight: 'auto',
-                }}
-              >
-                ✕
-              </button>
-              <span style={{ fontSize: '1.1em', fontWeight: '600' }}>Progress Photo</span>
-              <button
-                onClick={() => setData(prev => ({ ...prev, activeModal: 'photo-menu-modal' }))}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text)',
-                  fontSize: '1em',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  minHeight: 'auto',
-                }}
-              >
-                ⋯
-              </button>
-            </div>
+          ✕
+        </button>
+        
+        {/* Profile pic and username instead of "Progress Photo" */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          flex: 1,
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background: 'var(--bg-lighter)',
+            backgroundImage: data.profilePic ? `url(${data.profilePic})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }} />
+          <span style={{ fontSize: '1em', fontWeight: '600' }}>
+            {data.username}
+          </span>
+        </div>
+        
+        <button
+          onClick={() => setData(prev => ({ ...prev, activeModal: 'photo-menu-modal' }))}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--text)',
+            fontSize: '1em',
+            cursor: 'pointer',
+            padding: '4px',
+            minHeight: 'auto',
+          }}
+        >
+          ⋯
+        </button>
+      </div>
 
-            {/* Image with navigation */}
-            <div style={{
-              flex: 1,
+      {/* Image with navigation */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'black',
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
+        {selectedPhotoIndex > 0 && (
+          <button
+            onClick={() => navigatePhoto('prev')}
+            style={{
+              position: 'absolute',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'black',
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
-              {selectedPhotoIndex > 0 && (
-                <button
-                  onClick={() => navigatePhoto('prev')}
-                  style={{
-                    position: 'absolute',
-                    left: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '44px',
-                    height: '44px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '1.2em',
-                    color: 'white',
-                    zIndex: 10,
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                  }}
-                >
-                  ‹
-                </button>
-              )}
+              cursor: 'pointer',
+              fontSize: '1.2em',
+              color: 'white',
+              zIndex: 10,
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            }}
+          >
+            ‹
+          </button>
+        )}
 
-              <img
-                src={selectedPhoto.base64}
-                alt="Progress"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'contain',
-                  objectPosition: 'center',
-                  backgroundColor: 'black',
-                }}
-              />
-              {selectedPhotoIndex < sortedProgressPics.length - 1 && (
-                <button
-                  onClick={() => navigatePhoto('next')}
-                  style={{
-                    position: 'absolute',
-                    right: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '44px',
-                    height: '44px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '1.2em',
-                    color: 'white',
-                    zIndex: 10,
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                  }}
-                >
-                  ›
-                </button>
-              )}
-            </div>
+        <img
+          src={selectedPhoto.base64}
+          alt="Progress"
+          style={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            objectFit: 'contain',
+            objectPosition: 'center',
+            backgroundColor: 'black',
+          }}
+        />
+        
+        {selectedPhotoIndex < sortedProgressPics.length - 1 && (
+          <button
+            onClick={() => navigatePhoto('next')}
+            style={{
+              position: 'absolute',
+              right: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '1.2em',
+              color: 'white',
+              zIndex: 10,
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            }}
+          >
+            ›
+          </button>
+        )}
+      </div>
 
-            {/* Details */}
-            <div style={{
-              padding: '20px',
-              borderTop: '1px solid var(--border)',
-              background: 'var(--bg-dark)',
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                marginBottom: '16px',
-              }}>
-                <button
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text)',
-                    fontSize: '1.8em',
-                    cursor: 'pointer',
-                    padding: 0,
-                    minHeight: 'auto',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onClick={() => {
-                    const newPics = [...data.progressPics];
-                    const index = data.progressPics.indexOf(selectedPhoto);
-                    if (index !== -1) {
-                      newPics[index] = {
-                        ...newPics[index],
-                        likes: (newPics[index].likes || 0) + 1,
-                      };
-                      setData(prev => ({ ...prev, progressPics: newPics }));
-                      setSelectedPhoto({ ...selectedPhoto, likes: (selectedPhoto.likes || 0) + 1 });
-                    }
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  {selectedPhoto.likes ? '❤️' : '🤍'}
-                </button>
-                <span style={{ fontSize: '0.95em', fontWeight: '500' }}>
-                  {selectedPhoto.likes || 0} likes
-                </span>
-              </div>
-
-              {isEditingCaption ? (
-                <div style={{ marginBottom: '16px' }}>
-                  <textarea
-                    value={editCaption}
-                    onChange={(e) => setEditCaption(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      background: 'var(--bg-lighter)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                      color: 'var(--text)',
-                      fontSize: '16px',
-                      resize: 'vertical',
-                      minHeight: '80px',
-                    }}
-                    autoFocus
-                  />
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                    <button
-                      onClick={saveEditedCaption}
-                      style={{
-                        padding: '8px 16px',
-                        background: 'var(--accent-primary)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '0.85em',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsEditingCaption(false);
-                        setEditCaption(selectedPhoto.caption || '');
-                      }}
-                      style={{
-                        padding: '8px 16px',
-                        background: 'transparent',
-                        color: 'var(--text-muted)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        fontSize: '0.85em',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                selectedPhoto.caption && (
-                  <p style={{
-                    margin: '0 0 16px 0',
-                    fontSize: '0.95em',
-                    lineHeight: '1.5',
-                    cursor: 'pointer',
-                  }}
-                    onClick={() => setIsEditingCaption(true)}
-                  >
-                    {selectedPhoto.caption}
-                  </p>
-                )
-              )}
-
-              <div style={{
-                display: 'flex',
-                gap: '20px',
-                fontSize: '0.85em',
-                color: 'var(--text-muted)',
-                flexWrap: 'wrap',
-              }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  📅 {new Date(selectedPhoto.timestamp).toLocaleDateString()}
-                </span>
-                {selectedPhoto.weight && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    ⚖️ {selectedPhoto.weight} {data.weightUnit || 'lbs'}
-                  </span>
-                )}
-                {selectedPhoto.pump && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    💪 Pump: {selectedPhoto.pump}/100
-                  </span>
-                )}
-              </div>
-            </div>
+      {/* Photo details */}
+      <div style={{
+        padding: '20px',
+        background: 'var(--bg-dark)',
+        borderTop: '1px solid var(--border)',
+        paddingBottom: isPWAStandalone() ? `calc(20px + 80px + env(safe-area-inset-bottom))` : '20px', // Extra padding in PWA
+      }}>
+        {isEditingCaption ? (
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            marginBottom: '15px',
+            alignItems: 'flex-end',
+          }}>
+            <input
+              type="text"
+              value={editCaption}
+              onChange={(e) => setEditCaption(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '10px',
+                background: 'var(--bg-lighter)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                color: 'var(--text)',
+                fontSize: '0.95em',
+              }}
+              autoFocus
+            />
+            <button
+              onClick={saveEditedCaption}
+              style={{
+                padding: '10px 20px',
+                background: 'var(--accent-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '0.9em',
+                fontWeight: '600',
+              }}
+            >
+              Save
+            </button>
           </div>
+        ) : (
+          selectedPhoto.caption && (
+            <p
+              style={{
+                margin: '0 0 15px 0',
+                fontSize: '0.95em',
+                color: 'var(--text)',
+                cursor: 'pointer',
+                padding: '8px',
+                background: 'var(--bg-lighter)',
+                borderRadius: '8px',
+              }}
+              onClick={() => setIsEditingCaption(true)}
+            >
+              {selectedPhoto.caption}
+            </p>
+          )
+        )}
+
+        <div style={{
+          display: 'flex',
+          gap: '20px',
+          fontSize: '0.85em',
+          color: 'var(--text-muted)',
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            📅 {new Date(selectedPhoto.timestamp).toLocaleDateString()}
+          </span>
+          {selectedPhoto.weight && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              ⚖️ {selectedPhoto.weight} {data.weightUnit || 'lbs'}
+            </span>
+          )}
+          {selectedPhoto.pump && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              💪 Pump: {selectedPhoto.pump}/100
+            </span>
+          )}
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

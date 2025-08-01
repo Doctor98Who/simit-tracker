@@ -46,6 +46,9 @@ const Modals = () => {
   const [minimizedDragY, setMinimizedDragY] = useState(0);
   const [isDraggingMinimized, setIsDraggingMinimized] = useState(false);
   const minimizedStartY = useRef(0);
+  const isPWAStandalone = () => {
+    return window.matchMedia('(display-mode: standalone)').matches;
+  };
 
 
   const muscleGroups = [
@@ -1901,7 +1904,7 @@ const goBack = () => {
             maxWidth: '428px',
             margin: '0 auto',
             background: 'var(--bg-dark)',
-            padding: '8px 16px 50px',
+padding: isPWAStandalone() ? '8px 16px 60px' : '8px 16px 50px',
             boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             cursor: 'grab',
