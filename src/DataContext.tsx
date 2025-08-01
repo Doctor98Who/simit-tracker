@@ -586,41 +586,6 @@ useEffect(() => {
   }
 }, [dbUser, isAuthenticated, data.friends.length, data.activeTab]); // Changed dependencies
 
-// Add real-time subscription for user's own public photos
-useEffect(() => {
-  if (dbUser && isAuthenticated) {
-    const channel = supabase
-      .channel('own-photos')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'progress_photos',
-          filter: `user_id=eq.${dbUser.id}`,
-        },
-        async (payload: any) => {
-          if (payload.new.visibility === 'public') {
-            console.log('User posted new public photo!');
-            
-            // Refresh friends feed to include the new photo
-            try {
-              const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
-              setData(prev => ({ ...prev, friendsFeed }));
-            } catch (error) {
-              console.error('Error refreshing feed after own upload:', error);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }
-}, [dbUser, isAuthenticated]);
-
 return (
   <DataContext.Provider value={{
     data,

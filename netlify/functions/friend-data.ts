@@ -36,23 +36,23 @@ export const handler: Handler = async (event, context) => {
           };
         }
        
-        // Get public photos from friends
-        const { data: photos, error: photosError } = await supabase
-          .from('progress_photos')
-          .select(`
-            *,
-            user:user_id(
-              id,
-              username,
-              first_name,
-              last_name,
-              profile_pic
-            )
-          `)
-        .in('user_id', friendIds)  // Remove userId from here
-         .eq('visibility', 'public')
-          .order('timestamp', { ascending: false })
-          .limit(50);
+   // Get public photos from friends AND the current user
+const { data: photos, error: photosError } = await supabase
+  .from('progress_photos')
+  .select(`
+    *,
+    user:user_id(
+      id,
+      username,
+      first_name,
+      last_name,
+      profile_pic
+    )
+  `)
+  .in('user_id', [...friendIds, userId])  // Include userId to get user's own posts
+  .eq('visibility', 'public')
+  .order('timestamp', { ascending: false })
+  .limit(50);
          
         if (photosError) throw photosError;
        
