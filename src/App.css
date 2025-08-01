@@ -613,7 +613,6 @@ body {
     margin-top: -80px;
     min-height: 200px;
 }
-
 .profile-header::before {
     content: '';
     position: absolute;
@@ -625,27 +624,69 @@ body {
     pointer-events: none;
 }
 
-.profile-pic {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: var(--bg-lighter);
+/* Updated profile pic styles */
+.profile-pic-container {
+    width: 80px;
+    height: 80px;
+    margin: -40px auto 0;
+    position: relative;
+    z-index: 20;
     cursor: pointer;
-    background-size: cover;
-    background-position: center;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
+}
+
+.profile-pic-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
     border: 4px solid var(--bg-dark);
-    margin-top: 80px;
+    object-fit: cover;
 }
+
+.profile-pic-container .upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.profile-pic-container:hover .upload-overlay {
+    opacity: 1;
+}
+
+/* New profile info section */
+.profile-info {
+    padding: 0 20px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 10;
+}
+
+/* Updated profile name */
 .profile-name {
-    font-size: 1.5em;
+    font-size: 24px;
     font-weight: 700;
-    margin-top: 10px;
+    margin: 12px 0 4px 0;
+    color: var(--text);
     position: relative;
     z-index: 1;
 }
+
+/* New profile bio */
+.profile-bio {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+}
+
 .profile-username {
     color: var(--text-muted);
     font-size: 1em;
@@ -659,7 +700,7 @@ body {
     z-index: 1;
 }
 
-/* Profile stats improvements - Bug 13 */
+/* Keep old styles in case they're used elsewhere */
 .profile-stats {
     display: flex;
     justify-content: space-around;
@@ -676,8 +717,6 @@ body {
     color: var(--text-muted);
     font-size: 0.8em;
 }
-
-/* Profile actions improvements - Bug 13 */
 .profile-actions {
     display: flex;
     justify-content: space-around;
@@ -701,7 +740,6 @@ body {
     align-items: center;
     gap: 2px;
 }
-
 /* Total lbs display fix - Bug 12 */
 #total-volume-btn {
     display: flex;

@@ -2209,273 +2209,508 @@ const Modals = () => {
           }}>Cancel</button>
         </div>
       </div>
-      <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxWidth: '400px',
-          maxHeight: '90vh',
-          background: 'var(--bg-dark)',
-          borderRadius: '20px',
+<div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
+  <div className="modal-content" style={{
+    maxWidth: '400px',
+    maxHeight: '90vh',
+    background: 'var(--bg-dark)',
+    borderRadius: '24px',
+    padding: '0',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+  }}>
+    {/* Modern Header */}
+    <div style={{
+      padding: '20px',
+      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      background: 'var(--bg-darker)',
+    }}>
+      <button
+        onClick={closeModal}
+        style={{
+          background: 'rgba(255,255,255,0.1)',
+          border: 'none',
+          color: 'var(--text)',
+          fontSize: '18px',
+          cursor: 'pointer',
           padding: '0',
-          overflow: 'hidden',
+          minHeight: 'auto',
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      
+      <h2 style={{ 
+        margin: 0, 
+        fontSize: '18px', 
+        fontWeight: '600',
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)',
+      }}>
+        Edit Profile
+      </h2>
+      
+      <div style={{ width: '32px' }}></div>
+    </div>
+
+    {/* Modern Form Content */}
+    <div style={{
+      padding: '20px',
+      flex: 1,
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
+    }}>
+      {/* Cover Photo Upload */}
+      <div style={{ marginBottom: '24px' }}>
+        <label style={{
+          display: 'block',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: 'var(--text-muted)',
+          marginBottom: '8px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
         }}>
-          <div style={{
-            padding: '20px',
-            borderBottom: '1px solid var(--border)',
+          Cover Photo
+        </label>
+        <label 
+          htmlFor="cover-photo-upload"
+          style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            <h2 style={{ margin: 0, fontSize: '1.2em', fontWeight: '600' }}>Edit Profile</h2>
-            <button
-              onClick={closeModal}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                fontSize: '1.2em',
-                cursor: 'pointer',
-                padding: '0',
-                minHeight: 'auto',
-                width: '24px',
-                height: '24px',
-              }}
-            >
-              ×
-            </button>
-          </div>
+            justifyContent: 'center',
+            gap: '8px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '2px dashed rgba(255,255,255,0.1)',
+            borderRadius: '12px',
+            padding: '16px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            color: 'var(--text-muted)',
+            fontSize: '14px',
+            fontWeight: '500',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          {data.coverPhoto ? 'Change Cover Photo' : 'Upload Cover Photo'}
+        </label>
+        <input
+          type="file"
+          id="cover-photo-upload"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              if (file.size > 5 * 1024 * 1024) {
+                alert('Image is too large. Please choose an image under 5MB.');
+                e.target.value = '';
+                return;
+              }
 
-          <div style={{
-            padding: '20px',
-            flex: 1,
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
-          }}>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <input
-                type="text"
-                id="edit-first-name"
-                placeholder="First Name"
-                defaultValue={data.firstName}
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                }}
-              />
-              <input
-                type="text"
-                id="edit-last-name"
-                placeholder="Last Name"
-                defaultValue={data.lastName}
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                }}
-              />
-            </div>
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                const base64 = event.target?.result as string;
+                const img = new Image();
+                img.src = base64;
 
-            <input
-              type="text"
-              id="edit-username"
-              placeholder="Username"
-              defaultValue={data.username}
-              style={{
-                width: 'calc(100% - 24px)',
-                padding: '10px 12px',
-                marginBottom: '16px',
-                background: 'var(--bg-lighter)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                color: 'var(--text)',
-                fontSize: '16px',
-                boxSizing: 'border-box',
-              }}
-            />
-            <textarea
-              id="edit-bio"
-              placeholder="Bio (optional)"
-              defaultValue={data.bio}
-              style={{
-                width: 'calc(100% - 24px)',
-                padding: '10px 12px',
-                marginBottom: '16px',
-                background: 'var(--bg-lighter)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                color: 'var(--text)',
-                fontSize: '16px',
-                minHeight: '80px',
-                resize: 'vertical',
-                boxSizing: 'border-box',
-              }}
-            />
-            <input
-              type="email"
-              id="edit-email"
-              placeholder="Email (optional)"
-              defaultValue={data.email}
-              style={{
-                width: 'calc(100% - 24px)',
-                padding: '10px 12px',
-                marginBottom: '16px',
-                background: 'var(--bg-lighter)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                color: 'var(--text)',
-                fontSize: '16px',
-                boxSizing: 'border-box',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <select
-                id="edit-country"
-                defaultValue={data.country}
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                }}
-              >
-                <option value="United States">United States</option>
-                <option value="Canada">Canada</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-                <option value="Germany">Germany</option>
-                <option value="France">France</option>
-                <option value="Other">Other</option>
-              </select>
+                img.onload = () => {
+                  const maxSize = 800;
+                  let width = img.width;
+                  let height = img.height;
 
-              <input
-                type="text"
-                id="edit-state"
-                placeholder="State/Province"
-                defaultValue={data.state}
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  background: 'var(--bg-lighter)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text)',
-                  fontSize: '16px',
-                }}
-              />
-            </div>
-
-            <label style={{
-              display: 'block',
-              padding: '10px 12px',
-              marginBottom: '20px',
-              background: 'var(--bg-lighter)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              fontSize: '0.9em',
-              color: 'var(--text-muted)',
-            }}>
-              <input
-                type="file"
-                id="cover-photo-upload"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    if (file.size > 5 * 1024 * 1024) {
-                      alert('Image is too large. Please choose an image under 5MB.');
-                      e.target.value = ''; // Reset input
-                      return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      const base64 = event.target?.result as string;
-
-                      // Create image to resize if needed
-                      const img = new Image();
-                      img.src = base64;
-
-                      img.onload = () => {
-                        const maxSize = 800;
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > maxSize || height > maxSize) {
-                          const ratio = Math.min(maxSize / width, maxSize / height);
-                          width = Math.round(width * ratio);
-                          height = Math.round(height * ratio);
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-
-                        if (ctx) {
-                          ctx.drawImage(img, 0, 0, width, height);
-                          const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-                          // Update cover photo without changing modal
-                          setData((prev: DataType) => ({
-                            ...prev,
-                            coverPhoto: resizedBase64
-                            // Remove activeModal to prevent modal issues
-                          }));
-                        }
-                      };
-
-                      img.onerror = () => {
-                        alert('Failed to process image. Please try another photo.');
-                        e.target.value = ''; // Reset input
-                      };
-                    };
-
-                    reader.onerror = () => {
-                      alert('Failed to read image. Please try again.');
-                      e.target.value = ''; // Reset input
-                    };
-
-                    reader.readAsDataURL(file);
+                  if (width > maxSize || height > maxSize) {
+                    const ratio = Math.min(maxSize / width, maxSize / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
                   }
-                }}
-                style={{ display: 'none' }}
-              />
-              Upload Cover Photo
-            </label>
-            <button
-              onClick={saveProfile}
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: 'var(--accent-primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '0.9em',
-                fontWeight: '600',
-                cursor: 'pointer',
-              }}
-            >
-              Save Changes
-            </button>
-          </div>
+
+                  const canvas = document.createElement('canvas');
+                  canvas.width = width;
+                  canvas.height = height;
+                  const ctx = canvas.getContext('2d');
+
+                  if (ctx) {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    setData((prev: DataType) => ({
+                      ...prev,
+                      coverPhoto: resizedBase64
+                    }));
+                  }
+                };
+
+                img.onerror = () => {
+                  alert('Failed to process image. Please try another photo.');
+                  e.target.value = '';
+                };
+              };
+
+              reader.onerror = () => {
+                alert('Failed to read image. Please try again.');
+                e.target.value = '';
+              };
+
+              reader.readAsDataURL(file);
+            }
+          }}
+          style={{ display: 'none' }}
+        />
+      </div>
+
+      {/* Name Fields */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: 'var(--text-muted)',
+            marginBottom: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}>
+            First Name
+          </label>
+          <input
+            type="text"
+            id="edit-first-name"
+            placeholder="Enter first name"
+            defaultValue={data.firstName}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              color: 'var(--text)',
+              fontSize: '15px',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            }}
+          />
+        </div>
+        
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: 'var(--text-muted)',
+            marginBottom: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}>
+            Last Name
+          </label>
+          <input
+            type="text"
+            id="edit-last-name"
+            placeholder="Enter last name"
+            defaultValue={data.lastName}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              color: 'var(--text)',
+              fontSize: '15px',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            }}
+          />
         </div>
       </div>
+
+      {/* Username Field */}
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{
+          display: 'block',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: 'var(--text-muted)',
+          marginBottom: '6px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          Username
+        </label>
+        <input
+          type="text"
+          id="edit-username"
+          placeholder="Choose a username"
+          defaultValue={data.username}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            color: 'var(--text)',
+            fontSize: '15px',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+          }}
+        />
+      </div>
+
+      {/* Bio Field */}
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{
+          display: 'block',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: 'var(--text-muted)',
+          marginBottom: '6px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          Bio
+        </label>
+        <textarea
+          id="edit-bio"
+          placeholder="Tell us about yourself..."
+          defaultValue={data.bio}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            color: 'var(--text)',
+            fontSize: '15px',
+            minHeight: '80px',
+            resize: 'vertical',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            fontFamily: 'inherit',
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+          }}
+        />
+      </div>
+
+      {/* Email Field */}
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{
+          display: 'block',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: 'var(--text-muted)',
+          marginBottom: '6px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          Email
+        </label>
+        <input
+          type="email"
+          id="edit-email"
+          placeholder="your@email.com"
+          defaultValue={data.email}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            color: 'var(--text)',
+            fontSize: '15px',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = 'var(--accent-primary)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+          }}
+        />
+      </div>
+
+      {/* Location Fields */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: 'var(--text-muted)',
+            marginBottom: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}>
+            Country
+          </label>
+          <select
+            id="edit-country"
+            defaultValue={data.country || 'United States'}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              color: 'var(--text)',
+              fontSize: '15px',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            }}
+          >
+            <option value="United States">United States</option>
+            <option value="Canada">Canada</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Australia">Australia</option>
+            <option value="Germany">Germany</option>
+            <option value="France">France</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: 'var(--text-muted)',
+            marginBottom: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}>
+            State/Region
+          </label>
+          <input
+            type="text"
+            id="edit-state"
+            placeholder="Enter state"
+            defaultValue={data.state}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              color: 'var(--text)',
+              fontSize: '15px',
+              transition: 'all 0.2s ease',
+              outline: 'none',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <button 
+        onClick={saveProfile}
+        style={{
+          width: '100%',
+          padding: '14px',
+          background: 'var(--accent-gradient)',
+          border: 'none',
+          borderRadius: '12px',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          marginTop: 'auto',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-1px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
       <div id="feedback-modal" className={`modal ${activeModal === 'feedback-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>How was your workout?</h2>

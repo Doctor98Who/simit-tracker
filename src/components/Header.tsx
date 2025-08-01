@@ -6,7 +6,7 @@ interface HeaderProps {
   version?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ version = 'v0.1.25' }) => {
+const Header: React.FC<HeaderProps> = ({ version = 'v0.1.26' }) => {
   const { data } = useContext(DataContext) as DataContextType;
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
@@ -233,7 +233,7 @@ onClick={() => setShowChangelog(false)}>
                     fontSize: '0.75em',
                     fontWeight: '600',
                   }}>
-                    v0.1.25
+                    v0.1.26
                   </span>
                   <span style={{
                     color: 'var(--text-muted)',
@@ -261,6 +261,7 @@ onClick={() => setShowChangelog(false)}>
                     fontSize: '0.85em',
                     lineHeight: '1.6',
                   }}>
+                    <li>Can like photos by double tapping!</li>
                     <li>Uploading picture as 'public' will populate it in feed under community tab</li>
                     <li>Friends can see public posts and interact with it</li>
                     <li>Complete overhaul of UI in many of the tabs</li>

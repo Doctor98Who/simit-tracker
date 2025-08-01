@@ -302,155 +302,222 @@ return (
       <div className="profile-location" id="profile-location">{data.country}{data.state ? ', ' + data.state : ''}</div>
     </div>
 <div className="profile-info" style={{
-  padding: '20px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '20px',
+  padding: '0 20px',
+  marginTop: '-30px',
+  position: 'relative',
+  zIndex: 10,
 }}>
-  {/* Stats Row */}
-  <div style={{
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    gap: '12px',
-  }}>
-    <div style={{
-      textAlign: 'center',
-      padding: '16px 8px',
-      background: 'var(--bg-lighter)',
-      borderRadius: '12px',
-      transition: 'all 0.2s ease',
-    }}>
-      <div style={{
-        fontSize: '1.8em',
-        fontWeight: '700',
-        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-      }}>
-        {data.history.length}
-      </div>
-      <div style={{
-        fontSize: '0.8em',
-        color: 'var(--text-muted)',
-        fontWeight: '500',
-        marginTop: '2px',
-      }}>
-        Workouts
-      </div>
-    </div>
+  <h1 style={{
+    fontSize: '24px',
+    fontWeight: '700',
+    margin: '12px 0 4px 0',
+    color: 'var(--text)',
+  }}>{data.username || 'User'}</h1>
+  
+  {data.bio && (
+    <p style={{
+      fontSize: '14px',
+      color: 'var(--text-muted)',
+      margin: '0 0 16px 0',
+      lineHeight: '1.4',
+    }}>{data.bio}</p>
+  )}
+  // Replace the stats section in ProfileTab.tsx with this:
 
-<div
-  onClick={() => setData(prev => ({ 
-    ...prev, 
-    activeModal: 'friends-modal',
-    previousModal: 'profile-tab'  // Add this to track where we came from
-  }))}
-  style={{
+{/* Modern Stats Cards */}
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gap: '8px',
+  marginBottom: '16px',
+  marginTop: '16px',
+}}>
+  <div style={{
     textAlign: 'center',
-    padding: '16px 8px',
+    padding: '12px 8px',
     background: 'var(--bg-lighter)',
     borderRadius: '12px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  }}
->
-  <div style={{
-    fontSize: '1.8em',
-    fontWeight: '700',
-    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
+    position: 'relative',
+    overflow: 'hidden',
   }}>
-    {data.friends.length}
-  </div>
-  <div style={{
-    fontSize: '0.8em',
-    color: 'var(--text-muted)',
-    fontWeight: '500',
-    marginTop: '2px',
-  }}>
-    Friends
-  </div>
-</div>
-<div style={{
-  textAlign: 'center',
-  padding: '16px 8px',
-  background: 'var(--bg-lighter)',
-  borderRadius: '12px',
-}}>
-  <div style={{
-    fontSize: '1.8em',
-    fontWeight: '700',
-    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-hover))',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  }}>
-            {totalVolume.toLocaleString()}
-      </div>
-      <div style={{
-        fontSize: '0.8em',
-        color: 'var(--text-muted)',
-        fontWeight: '500',
-        marginTop: '2px',
-      }}>
-        Total {data.weightUnit || 'lbs'}
-      </div>
+    <div style={{
+      fontSize: '24px',
+      fontWeight: '700',
+      color: 'var(--text)',
+      lineHeight: '1',
+    }}>
+      {data.history.length}
+    </div>
+    <div style={{
+      fontSize: '11px',
+      color: 'var(--text-muted)',
+      fontWeight: '500',
+      marginTop: '4px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+    }}>
+      Workouts
     </div>
   </div>
 
-  {/* Action Buttons */}
-  <div style={{
-    display: 'flex',
-    gap: '12px',
-  }}>
-    <button
-      onClick={openEditProfileModal}
-      style={{
-        flex: 1,
-        background: 'var(--bg-lighter)',
-        color: 'var(--text)',
-        border: 'none',
-        borderRadius: '12px',
-        padding: '12px',
-        fontSize: '0.9em',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-      }}
-    >
-      Edit Profile
-    </button>
+  <div 
+    onClick={() => setData((prev: DataType) => ({ 
+      ...prev, 
+      activeModal: 'friends-modal',
+      previousModal: 'profile-tab'
+    }))}
+    style={{
+      textAlign: 'center',
+      padding: '12px 8px',
+      background: 'var(--bg-lighter)',
+      borderRadius: '12px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      position: 'relative',
+      overflow: 'hidden',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = 'scale(1.02)';
+      e.currentTarget.style.background = 'var(--bg-medium)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = 'scale(1)';
+      e.currentTarget.style.background = 'var(--bg-lighter)';
+    }}
+  >
+    <div style={{
+      fontSize: '24px',
+      fontWeight: '700',
+      color: 'var(--text)',
+      lineHeight: '1',
+    }}>
+      {data.friends.length}
+    </div>
+    <div style={{
+      fontSize: '11px',
+      color: 'var(--text-muted)',
+      fontWeight: '500',
+      marginTop: '4px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+    }}>
+      Friends
+    </div>
+  </div>
 
-    <button
-      onClick={toggleHistorySection}
-      style={{
-        flex: 1,
-        background: showHistory ? 'var(--accent-primary)' : 'var(--bg-lighter)',
-        color: showHistory ? 'white' : 'var(--text)',
-        border: 'none',
-        borderRadius: '12px',
-        padding: '12px',
-        fontSize: '0.9em',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-      }}
-    >
-      <span>{showHistory ? 'Hide' : 'View'} History</span>
+  <div style={{
+    textAlign: 'center',
+    padding: '12px 8px',
+    background: 'var(--bg-lighter)',
+    borderRadius: '12px',
+    position: 'relative',
+    overflow: 'hidden',
+  }}>
+    <div style={{
+      fontSize: '24px',
+      fontWeight: '700',
+      color: 'var(--text)',
+      lineHeight: '1',
+    }}>
+      {Math.round(totalVolume / 1000)}K
+    </div>
+    <div style={{
+      fontSize: '11px',
+      color: 'var(--text-muted)',
+      fontWeight: '500',
+      marginTop: '4px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+    }}>
+      Total {data.weightUnit || 'lbs'}
+    </div>
+  </div>
+</div>
+
+{/* Modern Action Buttons */}
+<div style={{
+  display: 'flex',
+  gap: '8px',
+  marginBottom: '20px',
+}}>
+  <button
+    onClick={openEditProfileModal}
+    style={{
+      flex: 1,
+      background: 'var(--bg-lighter)',
+      color: 'var(--text)',
+      border: 'none',
+      borderRadius: '12px',
+      padding: '10px',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '6px',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = 'var(--bg-medium)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = 'var(--bg-lighter)';
+    }}
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+    Edit Profile
+  </button>
+
+  <button
+    onClick={toggleHistorySection}
+    style={{
+      flex: 1,
+      background: showHistory ? 'var(--accent-primary)' : 'var(--bg-lighter)',
+      color: showHistory ? 'white' : 'var(--text)',
+      border: 'none',
+      borderRadius: '12px',
+      padding: '10px',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '6px',
+    }}
+    onMouseEnter={(e) => {
+      if (!showHistory) {
+        e.currentTarget.style.background = 'var(--bg-medium)';
+      }
+    }}
+    onMouseLeave={(e) => {
+      if (!showHistory) {
+        e.currentTarget.style.background = 'var(--bg-lighter)';
+      }
+    }}
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    <span>{showHistory ? 'Hide' : 'View'} History</span>
+    {data.history.length > 0 && (
       <span style={{
         background: showHistory ? 'rgba(255,255,255,0.2)' : 'var(--bg-dark)',
-        padding: '2px 8px',
-        borderRadius: '8px',
-        fontSize: '0.8em',
+        padding: '2px 6px',
+        borderRadius: '6px',
+        fontSize: '11px',
+        fontWeight: '700',
       }}>
         {data.history.length}
       </span>
-    </button>
-  </div>
+    )}
+  </button>
+</div>
 </div> 
     <div id="profile-history-section" className={showHistory ? '' : 'hidden'} style={{ padding: '0 20px' }}>
       <div id="history-list">{renderedHistory}</div>
