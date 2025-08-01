@@ -19,12 +19,13 @@ export const handler: Handler = async (event, context) => {
       case 'sendFriendRequest': {
         const { senderId, receiverUsername } = params;
         
-        // Find receiver by username
-const { data: receiver, error: receiverError } = await supabase
-  .from('users')
-  .select('id')
-  .ilike('username', receiverUsername)
-  .single();
+        // Find receiver by username (case insensitive)
+        const { data: receiver, error: receiverError } = await supabase
+          .from('users')
+          .select('id')
+          .ilike('username', receiverUsername)
+          .single();
+
         if (receiverError || !receiver) {
           return { 
             statusCode: 404, 
@@ -32,27 +33,11 @@ const { data: receiver, error: receiverError } = await supabase
           };
         }
 
-        // Check if request already exists
-        const { data: existingRequest } = await supabase
-          .from('friend_requests')
-          .select('id')
-          .eq('sender_id', senderId)
-          .eq('receiver_id', receiver.id)
-          .single();
-
-        if (existingRequest) {
-          return { 
-            statusCode: 400, 
-            body: JSON.stringify({ error: 'Friend request already sent' }) 
-          };
-        }
-
         // Check if already friends
         const { data: existingFriend } = await supabase
           .from('friends')
           .select('id')
-          .eq('user_id', senderId)
-          .eq('friend_id', receiver.id)
+          .or(`and(user_id.eq.${senderId},friend_id.eq.${receiver.id}),and(user_id.eq.${receiver.id},friend_id.eq.${senderId})`)
           .single();
 
         if (existingFriend) {
@@ -62,12 +47,35 @@ const { data: receiver, error: receiverError } = await supabase
           };
         }
 
-        // Send friend request
+        // Check for any existing request between these users
+        const { data: existingRequest } = await supabase
+          .from('friend_requests')
+          .select('id, status')
+          .or(`and(sender_id.eq.${senderId},receiver_id.eq.${receiver.id}),and(sender_id.eq.${receiver.id},receiver_id.eq.${senderId})`)
+          .single();
+
+        if (existingRequest) {
+          // If there's an old rejected or accepted request, delete it first
+          if (existingRequest.status === 'rejected' || existingRequest.status === 'accepted') {
+            await supabase
+              .from('friend_requests')
+              .delete()
+              .eq('id', existingRequest.id);
+          } else if (existingRequest.status === 'pending') {
+            return {
+              statusCode: 400,
+              body: JSON.stringify({ error: 'Friend request already sent' })
+            };
+          }
+        }
+
+        // Create new friend request
         const { data, error } = await supabase
           .from('friend_requests')
           .insert({
             sender_id: senderId,
-            receiver_id: receiver.id
+            receiver_id: receiver.id,
+            status: 'pending'
           })
           .select()
           .single();
@@ -76,7 +84,7 @@ const { data: receiver, error: receiverError } = await supabase
 
         return {
           statusCode: 200,
-          body: JSON.stringify({ success: true, data })
+          body: JSON.stringify({ data })
         };
       }
 
@@ -201,37 +209,43 @@ const { data: receiver, error: receiverError } = await supabase
       case 'removeFriend': {
         const { userId, friendId } = params;
         
+        // Delete friendship records (both directions)
         const { error } = await supabase
           .from('friends')
           .delete()
-          .or(`user_id.eq.${userId},user_id.eq.${friendId}`)
-          .or(`friend_id.eq.${userId},friend_id.eq.${friendId}`);
+          .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`);
 
         if (error) throw error;
+
+        // Also delete any friend requests between these users
+        await supabase
+          .from('friend_requests')
+          .delete()
+          .or(`and(sender_id.eq.${userId},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${userId})`);
         
         return {
           statusCode: 200,
           body: JSON.stringify({ success: true })
         };
       }
-case 'searchUsers': {
-  const { currentUserId, searchQuery } = params;
-  
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, username, first_name, last_name, profile_pic')
-    .neq('id', currentUserId)
-    .or(`username.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
-    .limit(20);
 
-  if (error) throw error;
-  
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ data })
-  };
-}
+      case 'searchUsers': {
+        const { currentUserId, searchQuery } = params;
+        
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, username, first_name, last_name, profile_pic')
+          .neq('id', currentUserId)
+          .or(`username.ilike.%${searchQuery}%,first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%`)
+          .limit(20);
 
+        if (error) throw error;
+        
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ data })
+        };
+      }
 
       default:
         return {
