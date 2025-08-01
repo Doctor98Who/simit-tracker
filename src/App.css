@@ -663,22 +663,23 @@ body {
 
 /* New profile info section */
 .profile-info {
-    padding: 0 20px;
+    padding: 20px;
+    /* Remove these problematic lines:
     margin-top: -30px;
     position: relative;
     z-index: 10;
+    */
 }
 
 /* Updated profile name */
 .profile-name {
-    font-size: 24px;
+    font-size: 1.5em;  /* Back to original size */
     font-weight: 700;
-    margin: 12px 0 4px 0;
+    margin-top: 10px;  /* Back to original margin */
     color: var(--text);
     position: relative;
     z-index: 1;
 }
-
 /* New profile bio */
 .profile-bio {
     font-size: 14px;
