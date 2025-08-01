@@ -4,7 +4,7 @@ class UpdateChecker {
   private checkInterval = 30000; // Check every 30 seconds
   
   constructor() {
-    this.currentVersion = process.env.REACT_APP_VERSION || '1.0.0';
+this.currentVersion = '0.1.22';
     console.log('UpdateChecker initialized with version:', this.currentVersion);
   }
   
