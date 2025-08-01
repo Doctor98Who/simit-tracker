@@ -339,7 +339,7 @@ const ExerciseHistoryModal: React.FC<{ exercise: Exercise, onClose: () => void }
       overflow: 'auto',
       border: '1px solid var(--border)',
     }}>
-      <div style={{
+<div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -354,16 +354,30 @@ const ExerciseHistoryModal: React.FC<{ exercise: Exercise, onClose: () => void }
             background: 'transparent',
             border: 'none',
             color: 'var(--text-muted)',
-            fontSize: '1.2em',
+            fontSize: '1em',
             cursor: 'pointer',
-            padding: '4px',
+            padding: '8px',
             minHeight: 'auto',
+            width: '32px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '8px',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
           }}
         >
-          ×
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
       </div>
-
       {exerciseHistory.length === 0 ? (
         <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
           No history for this exercise yet
@@ -409,7 +423,6 @@ const ExerciseHistoryModal: React.FC<{ exercise: Exercise, onClose: () => void }
     </div>
   );
 };
-
 const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
   ex,
   idx,
@@ -1008,32 +1021,41 @@ const WorkoutExerciseItem: React.FC<WorkoutExerciseItemProps> = ({
                 >
                   {s.completed ? '✓' : ''}
                 </div>
-                {/* Delete button for drop sets */}
+ {/* Delete button for drop sets */}
                 {dropSet && (
                   <button
                     onClick={() => deleteSet(idx, sIdx)}
                     style={{
                       position: 'absolute',
-                      right: '-20px',
+                      right: '-24px',
                       top: '50%',
                       transform: 'translateY(-50%)',
                       background: 'transparent',
                       border: 'none',
                       color: 'var(--text-muted)',
                       cursor: 'pointer',
-                      fontSize: '0.8em',
-                      padding: '2px',
+                      padding: '4px',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '6px',
                       opacity: 0.5,
-                      transition: 'opacity 0.2s ease',
+                      transition: 'all 0.2s ease',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '1';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.opacity = '0.5';
+                      e.currentTarget.style.background = 'transparent';
                     }}
                   >
-                    ×
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </button>
                 )}
               </div>
@@ -1692,8 +1714,7 @@ const finishWorkout = () => setData(prev => ({ ...prev, activeModal: 'feedback-m
         </>
       )}
       {/* 1RM Progress Modal */}
-      {
-        show1RMProgress && selected1RMExercise && (
+      {show1RMProgress && selected1RMExercise && (
           <>
             <div
               style={{
