@@ -18,7 +18,7 @@ const AppContent = () => {
   const { data, setData, isLoading: isDataLoading } = useContext(DataContext);
   const [activeTab, setActiveTab] = useState(data.activeTab || 'start-workout-tab');
   const { isLoading, isAuthenticated } = useAuth0();
-
+  
   // Sync activeTab from context
   useEffect(() => {
     if (data.activeTab !== activeTab) {
@@ -26,11 +26,18 @@ const AppContent = () => {
     }
   }, [data.activeTab, activeTab]);
   
+  // Request notification permission on app load
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+ 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setData(prev => ({ ...prev, activeTab: tab }));
   };
-
+  
   // Show loading screen
   if (isLoading || isDataLoading) {
     return (
@@ -48,12 +55,12 @@ const AppContent = () => {
       </div>
     );
   }
-
+  
   // Show login if not authenticated
   if (!isAuthenticated) {
     return <Login />;
   }
-
+  
   // Show main app if authenticated
   return (
     <DndProvider backend={HTML5Backend}>

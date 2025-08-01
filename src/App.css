@@ -322,6 +322,49 @@ body {
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
+.bottom-nav {
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+/* PWA-specific fix for bottom nav */
+@media (display-mode: standalone) {
+    .bottom-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 428px;
+        margin: 0 auto;
+        border-radius: 0;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    /* Add padding to content to prevent overlap */
+    .content {
+        padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+}
+
+/* Additional iOS PWA fix */
+@supports (-webkit-touch-callout: none) and (display-mode: standalone) {
+    .bottom-nav {
+        position: fixed !important;
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+        will-change: transform;
+    }
+}
 .nav-item {
     display: flex;
     flex-direction: column;

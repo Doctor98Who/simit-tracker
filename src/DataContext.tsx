@@ -487,53 +487,98 @@ if (photoWithUpdatedComments && photoWithUpdatedComments.id) {
     }
   }, [data.currentWorkout]);
 
-  // Restore current workout from sessionStorage on mount
-  useEffect(() => {
-    const savedWorkout = sessionStorage.getItem('currentWorkout');
-    if (savedWorkout) {
+// Restore current workout from sessionStorage on mount
+useEffect(() => {
+  const savedWorkout = sessionStorage.getItem('currentWorkout');
+  if (savedWorkout) {
+    try {
+      const workout = JSON.parse(savedWorkout);
+      setData(prev => ({ ...prev, currentWorkout: workout }));
+    } catch (error) {
+      console.error('Error restoring workout:', error);
+      sessionStorage.removeItem('currentWorkout');
+    }
+  }
+}, []);
+
+// Refresh friends feed periodically
+useEffect(() => {
+  if (dbUser && isAuthenticated) {
+    const refreshFeed = async () => {
       try {
-        const workout = JSON.parse(savedWorkout);
-        setData(prev => ({ ...prev, currentWorkout: workout }));
+        const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
+        console.log('Friends feed data:', friendsFeed);
+        setData(prev => ({ ...prev, friendsFeed }));
       } catch (error) {
-        console.error('Error restoring workout:', error);
-        sessionStorage.removeItem('currentWorkout');
+        console.error('Error refreshing friends feed:', error);
       }
-    }
-  }, []);
+    };
+    // Refresh on mount and every 30 seconds
+    refreshFeed();
+    const interval = setInterval(refreshFeed, 30000);
+    return () => clearInterval(interval);
+  }
+}, [dbUser, isAuthenticated]);
 
-  // Refresh friends feed periodically
-  useEffect(() => {
-    if (dbUser && isAuthenticated) {
-      const refreshFeed = async () => {
-        try {
-          const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
-          console.log('Friends feed data:', friendsFeed);
-          setData(prev => ({ ...prev, friendsFeed }));
-        } catch (error) {
-          console.error('Error refreshing friends feed:', error);
+// Add real-time subscription for friends' new photos
+useEffect(() => {
+  if (dbUser && isAuthenticated && data.friends.length > 0) {
+    // Get friend IDs
+    const friendIds = data.friends.map((f: Friend) => f.id);
+    
+    // Subscribe to new photos from friends
+    const channel = supabase
+      .channel('friends-photos')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'progress_photos',
+        },
+        async (payload: any) => {
+          // Check if the photo is from a friend and is public
+          if (friendIds.includes(payload.new.user_id) && payload.new.visibility === 'public') {
+            console.log('Friend posted new photo!');
+            
+            // Refresh the entire feed to get the new photo with user info
+            try {
+              const friendsFeed = await DatabaseService.getFriendsFeed(dbUser.id);
+              setData(prev => ({ ...prev, friendsFeed }));
+              
+              // Optional: Only show notification if not on community tab
+              if (data.activeTab !== 'community-tab' && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification('New photo from a friend!', {
+                  body: 'Check out their latest progress',
+                  icon: '/icon.png'
+                });
+              }
+            } catch (error) {
+              console.error('Error refreshing feed:', error);
+            }
+          }
         }
-      };
+      )
+      .subscribe();
 
-      // Refresh on mount and every 30 seconds
-      refreshFeed();
-      const interval = setInterval(refreshFeed, 30000);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+}, [dbUser, isAuthenticated, data.friends, data.activeTab]);
 
-      return () => clearInterval(interval);
-    }
-  }, [dbUser, isAuthenticated]);
-
-  return (
-    <DataContext.Provider value={{ 
-      data, 
-      setData: enhancedSetData,      
-      exerciseDatabase, 
-      simitPrograms,
-      isLoading: isLoading || isSyncing || isDataLoading,
-      dbUser
-    }}>
-      {children}
-    </DataContext.Provider>
-  );
+return (
+  <DataContext.Provider value={{
+    data,
+    setData: enhancedSetData,      
+    exerciseDatabase,
+    simitPrograms,
+    isLoading: isLoading || isSyncing || isDataLoading,
+    dbUser
+  }}>
+    {children}
+  </DataContext.Provider>
+);
 };
 
 export type { DataContextType };
