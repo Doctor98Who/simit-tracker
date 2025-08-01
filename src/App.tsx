@@ -89,7 +89,7 @@ useEffect(() => {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        background: 'var(--bg-dark)',
+        background: '#000000',
       }}>
         <div style={{ textAlign: 'center' }}>
           <img src="/logo-dark.png" alt="Loading" style={{ width: '60px', marginBottom: '20px' }} />

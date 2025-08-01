@@ -3,103 +3,69 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Pump Inc. - Track your workouts with ease"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>Pump Inc.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <!-- Critical inline styles to prevent black screen -->
     <style>
-      /* Prevent zoom on input focus */
-      @media screen and (max-width: 768px) {
-        input[type="text"],
-        input[type="number"],
-        input[type="tel"],
-        input[type="email"],
-        input[type="password"],
-        select,
-        textarea {
-          font-size: 16px !important;
-        }
-      }
-      
-      /* Prevent double-tap zoom */
-      * {
-        touch-action: manipulation;
-      }
-      
-      /* Fix for 100vh on mobile */
+      /* Inline critical styles */
       :root {
-        --app-height: 100%;
+        --bg-dark: #000000;
+        --text: #FFFFFF;
+        --text-muted: #8E8E93;
       }
       
-      html, body {
-        padding: 0;
+      body {
+        background-color: #000000;
+        color: #FFFFFF;
         margin: 0;
-        overflow: hidden;
-        width: 100%;
-        height: 100%;
-        height: var(--app-height);
-        background-color: #000000; /* Default black background */
+        min-height: 100vh;
       }
       
       #root {
+        min-height: 100vh;
+        background-color: #000000;
+      }
+      
+      /* Preload animation */
+      .app-preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: 100%;
+        background: #000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
       }
     </style>
-    <script>
-      // Fix for mobile viewport height
-      const appHeight = () => {
-        const doc = document.documentElement;
-        doc.style.setProperty('--app-height', `${window.innerHeight}px`);
-      }
-      window.addEventListener('resize', appHeight);
-      appHeight();
-      
-      // Apply saved theme immediately to prevent black screen
-      (function() {
-        try {
-          const savedTheme = localStorage.getItem('theme') || 'dark';
-          document.documentElement.setAttribute('data-theme', savedTheme);
-          document.body.style.backgroundColor = savedTheme === 'light' ? '#FFFFFF' : '#000000';
-        } catch (e) {
-          // Fallback if localStorage fails
-          document.documentElement.setAttribute('data-theme', 'dark');
-          document.body.style.backgroundColor = '#000000';
-        }
-      })();
-    </script>
+    
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="%PUBLIC_URL%/static/css/main.*.css" as="style">
+    
+    <title>Pump Inc</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    
+    <!-- Add preloader that shows immediately -->
+    <div id="app-preloader" class="app-preloader">
+      <img src="%PUBLIC_URL%/logo-dark.png" alt="Loading" style="width: 60px;" />
+    </div>
+    
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+    
+    <script>
+      // Remove preloader once app loads
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          const preloader = document.getElementById('app-preloader');
+          if (preloader) {
+            preloader.style.display = 'none';
+          }
+        }, 100);
+      });
+    </script>
   </body>
 </html>

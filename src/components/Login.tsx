@@ -11,7 +11,7 @@ export const Login: React.FC = () => {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      background: 'var(--bg-dark)',
+      background: '#000000',
       padding: '20px',
     }}>
       <h2 style={{ 
@@ -37,8 +37,7 @@ export const Login: React.FC = () => {
       <p style={{ 
         marginBottom: '40px', 
         textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '1.1em',
+color: '#8E8E93',        fontSize: '1.1em',
         letterSpacing: '-0.3px',
       }}>
         The only fitness app you will ever need
