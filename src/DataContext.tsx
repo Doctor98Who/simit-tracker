@@ -557,8 +557,9 @@ useEffect(() => {
           console.log('New photo detected:', payload);
           
           // Check if the photo is from a friend
-          if (friendIds.includes(payload.new.user_id)) {
-            console.log('Friend posted new photo!');
+         // Check if the photo is from a friend OR the current user
+if (friendIds.includes(payload.new.user_id) || payload.new.user_id === dbUser.id) {
+  console.log('New photo posted!');
             
             // Refresh the entire feed to get the new photo with user info
             try {
