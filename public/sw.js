@@ -1,5 +1,5 @@
 // sw.js - Simple service worker for PWA
-const CACHE_VERSION = 'v0.1.23';
+const CACHE_VERSION = 'v0.1.24';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();

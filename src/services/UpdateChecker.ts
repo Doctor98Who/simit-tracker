@@ -4,7 +4,7 @@ class UpdateChecker {
   private checkInterval = 30000; // Check every 30 seconds
   
   constructor() {
-this.currentVersion = '0.1.23';
+this.currentVersion = '0.1.24';
     console.log('UpdateChecker initialized with version:', this.currentVersion);
   }
   
