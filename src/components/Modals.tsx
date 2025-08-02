@@ -3075,7 +3075,7 @@ const Modals = () => {
                   }}>
                     Caption
                   </label>
-                  <textarea
+<textarea
                     id="progress-caption"
                     placeholder="Add a caption..."
                     style={{
@@ -3093,8 +3093,8 @@ const Modals = () => {
                       transition: 'all 0.15s ease',
                       fontFamily: 'inherit',
                       lineHeight: '1.4',
-                    }}
-                    onFocus={(e) => {
+                      boxSizing: 'border-box',
+                    }}                    onFocus={(e) => {
                       e.target.style.borderColor = 'rgba(59,130,246,0.3)';
                       e.target.style.background = 'rgba(59,130,246,0.02)';
                     }}
@@ -3132,13 +3132,13 @@ const Modals = () => {
                       background: 'rgba(255,255,255,0.03)',
                       border: '1px solid rgba(255,255,255,0.06)',
                       borderRadius: '8px',
-                      padding: '8px 10px',
+padding: '8px 10px',
                       transition: 'all 0.15s ease',
+                      height: '36px',
                     }}>
                       <input
                         type="number"
-                        id="progress-weight"
-                        placeholder="0"
+                        id="progress-weight"                        placeholder="0"
                         style={{
                           flex: 1,
                           background: 'transparent',
@@ -4217,17 +4217,17 @@ const Modals = () => {
 
       {/* Add this new modal after the progress-menu-modal */}
       <div id="edit-progress-photo-modal" className={`modal ${activeModal === 'edit-progress-photo-modal' ? 'active' : ''}`}>
-        <div className="modal-content" style={{
-          maxWidth: '400px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-          borderRadius: '24px',
+<div className="modal-content" style={{
+          width: '100%',
+          maxWidth: '100%',
+          height: '100vh',
+          background: 'var(--bg-dark)',
+          borderRadius: '0',
           padding: '0',
           overflow: 'hidden',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           flexDirection: 'column',
+          margin: '0',
         }}>
           {/* Header */}
           <div style={{
