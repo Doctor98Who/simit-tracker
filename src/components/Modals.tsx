@@ -2944,7 +2944,7 @@ const Modals = () => {
         </div>
       </div>
 
-<div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
+<div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`} style={{ padding: 0 }}>  
         <div className="modal-content" style={{
           maxWidth: '380px',
           background: 'var(--bg-dark)',
