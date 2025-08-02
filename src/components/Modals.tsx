@@ -3303,63 +3303,79 @@ padding: '8px 10px',
                   </select>
                 </div>
 
-                {/* Visibility Toggle */}
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    color: 'var(--text-muted)',
-                    marginBottom: '6px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.4px',
-                  }}>
-                    Visibility
-                  </label>
-                  <div style={{
-                    display: 'flex',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: '8px',
-                    padding: '2px',
-                  }}>
-                    <button
-                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
-                      style={{
-                        flex: 1,
-                        padding: '6px',
-                        background: !data.tempIsPublic ? 'rgba(255,255,255,0.08)' : 'transparent',
-                        color: !data.tempIsPublic ? 'var(--text)' : 'var(--text-muted)',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      Private
-                    </button>
-                    <button
-                      onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
-                      style={{
-                        flex: 1,
-                        padding: '6px',
-                        background: data.tempIsPublic ? 'rgba(255,255,255,0.08)' : 'transparent',
-                        color: data.tempIsPublic ? 'var(--text)' : 'var(--text-muted)',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      Public
-                    </button>
-                  </div>
-                </div>
-
+{/* Visibility Toggle */}
+<div style={{ marginBottom: '20px' }}>
+  <label style={{
+    display: 'block',
+    fontSize: '11px',
+    fontWeight: '600',
+    color: 'var(--text-muted)',
+    marginBottom: '6px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.4px',
+  }}>
+    Visibility
+  </label>
+  <div style={{
+    display: 'flex',
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    borderRadius: '8px',
+    padding: '2px',
+  }}>
+    <button
+      onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
+      style={{
+        flex: 1,
+        padding: '6px',
+        background: !data.tempIsPublic ? 'rgba(255,255,255,0.08)' : 'transparent',
+        color: !data.tempIsPublic ? 'var(--text)' : 'var(--text-muted)',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '12px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+      }}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+      Private
+    </button>
+    <button
+      onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
+      style={{
+        flex: 1,
+        padding: '6px',
+        background: data.tempIsPublic ? 'rgba(255,255,255,0.08)' : 'transparent',
+        color: data.tempIsPublic ? 'var(--text)' : 'var(--text-muted)',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '12px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+      }}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+      </svg>
+      Public
+    </button>
+  </div>
+</div>
                 {/* Action Buttons */}
                 <button
                   onClick={() => {
