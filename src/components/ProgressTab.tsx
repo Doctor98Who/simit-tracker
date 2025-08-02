@@ -233,7 +233,7 @@ const ProgressTab = () => {
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '1px',
-        background: data.theme === 'light' ? '#e0e0e0' : '#000',  // Light gray for light mode, black for dark
+  background: data.theme === 'light' ? '#FFFFFF' : '#000',  // White for light mode, black for dark
         margin: '0 -20px',  // Full width to edges
       }}>
         {renderedProgressPics}

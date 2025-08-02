@@ -144,7 +144,6 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           </button>
         )}
       </div>
-      
       {/* Image - Full width */}
       <div 
         ref={imageRef}
@@ -155,6 +154,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           background: '#000',
           position: 'relative',
           cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <img
@@ -163,7 +165,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
+            objectFit: 'contain',
+            maxWidth: '100%',
+            maxHeight: '100%',
           }}
         />
         

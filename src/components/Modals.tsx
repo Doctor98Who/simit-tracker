@@ -2944,53 +2944,84 @@ const Modals = () => {
         </div>
       </div>
 
-      <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
+<div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`}>
         <div className="modal-content" style={{
-          maxWidth: '420px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'linear-gradient(135deg, var(--bg-dark), var(--bg-light))',
-          borderRadius: '24px',
+          maxWidth: '400px',
+          background: 'var(--bg-dark)',
+          borderRadius: '20px',
           padding: '0',
           overflow: 'hidden',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           flexDirection: 'column',
+          maxHeight: '90vh',
         }}>
-          {/* Header */}
+          {/* Modern Header - Profile Tab Style */}
           <div style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            background: 'rgba(0, 0, 0, 0.2)',
-            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 20px',
+            borderBottom: '1px solid var(--border)',
           }}>
-            <h2 style={{
-              margin: 0,
-              fontSize: '1.3em',
-              fontWeight: '700',
-              background: 'linear-gradient(135deg, #fff, #e0e0e0)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '-0.5px',
-            }}>New Progress Photo</h2>
+            <button
+              onClick={closeModal}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '20px',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            
+            <h2 style={{ 
+              margin: 0, 
+              fontSize: '18px', 
+              fontWeight: '600',
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+            }}>
+              New Progress Photo
+            </h2>
+            
+            <div style={{ width: '32px' }}></div>
           </div>
 
           <div style={{
-            padding: '24px',
+            padding: '20px',
             overflowY: 'auto',
             flex: 1,
             WebkitOverflowScrolling: 'touch',
           }}>
             {data.tempBase64 ? (
               <>
-                {/* Photo Preview */}
+                {/* Photo Preview - Fixed zoom issue */}
                 <div style={{
-                  marginBottom: '24px',
-                  borderRadius: '16px',
+                  marginBottom: '20px',
+                  borderRadius: '12px',
                   overflow: 'hidden',
                   background: '#000',
                   aspectRatio: '1',
                   position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
                   <img
                     src={data.tempBase64}
@@ -2998,48 +3029,45 @@ const Modals = () => {
                     style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'cover',
+                      objectFit: 'contain',  // Changed from 'cover' to 'contain'
+                      maxWidth: '100%',
+                      maxHeight: '100%',
                     }}
                   />
                   <button
                     onClick={() => setData(prev => ({ ...prev, tempBase64: null }))}
                     style={{
                       position: 'absolute',
-                      top: '12px',
-                      right: '12px',
-                      background: 'rgba(0, 0, 0, 0.6)',
-                      backdropFilter: 'blur(10px)',
+                      top: '10px',
+                      right: '10px',
+                      background: 'rgba(0, 0, 0, 0.7)',
                       border: 'none',
                       borderRadius: '50%',
-                      width: '36px',
-                      height: '36px',
+                      width: '32px',
+                      height: '32px',
                       color: 'white',
                       cursor: 'pointer',
-                      fontSize: '1.2em',
+                      fontSize: '18px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       transition: 'all 0.2s ease',
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255, 59, 48, 0.8)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(0, 0, 0, 0.6)';
-                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.8)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.7)'}
                   >
                     ×
                   </button>
                 </div>
 
-                {/* Caption Input */}
+                {/* Caption Input - Profile Tab Style */}
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{
                     display: 'block',
-                    marginBottom: '8px',
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
+                    marginBottom: '8px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}>
@@ -3051,38 +3079,37 @@ const Modals = () => {
                     style={{
                       width: '100%',
                       minHeight: '80px',
-                      padding: '14px 16px',
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
+                      padding: '12px 14px',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '10px',
                       color: 'var(--text)',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       outline: 'none',
                       resize: 'vertical',
-                      transition: 'all 0.3s ease',
-                      backdropFilter: 'blur(10px)',
+                      transition: 'all 0.2s ease',
                       fontFamily: 'inherit',
                       lineHeight: '1.5',
                     }}
                     onFocus={(e) => {
                       e.target.style.borderColor = 'var(--accent-primary)';
-                      e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.08))';
+                      e.target.style.background = 'rgba(255,255,255,0.08)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                      e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))';
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.background = 'rgba(255,255,255,0.05)';
                     }}
                   />
                 </div>
 
-                {/* Weight Input */}
+                {/* Weight Input - Profile Tab Style */}
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{
                     display: 'block',
-                    marginBottom: '8px',
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
+                    marginBottom: '8px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}>
@@ -3091,13 +3118,11 @@ const Modals = () => {
                   <div style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '12px',
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    padding: '12px 16px',
-                    transition: 'all 0.3s ease',
-                    backdropFilter: 'blur(10px)',
+                    gap: '8px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '10px',
+                    padding: '10px 14px',
                   }}>
                     <input
                       type="number"
@@ -3117,141 +3142,98 @@ const Modals = () => {
                     />
                     <span style={{
                       color: 'var(--text-muted)',
-                      fontSize: '0.9em',
-                      fontWeight: '500',
+                      fontSize: '14px',
                     }}>
                       {data.weightUnit || 'lbs'}
                     </span>
                   </div>
                 </div>
 
-                {/* Pump Rating */}
-                <div style={{ marginBottom: '24px' }}>
+                {/* Pump Rating - Cleaner Style */}
+                <div style={{ marginBottom: '20px' }}>
                   <label style={{
                     display: 'block',
-                    marginBottom: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
+                    marginBottom: '8px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}>
                     Pump Rating
                   </label>
                   <div style={{
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    backdropFilter: 'blur(10px)',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
+                    padding: '16px',
                   }}>
-                    <div style={{ position: 'relative', marginBottom: '16px' }}>
-                      <input
-                        type="range"
-                        id="progress-pump"
-                        min="0"
-                        max="100"
-                        defaultValue="50"
-                        style={{
-                          width: '100%',
-                          height: '40px',
-                          WebkitAppearance: 'none',
-                          appearance: 'none',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          position: 'relative',
-                          zIndex: 2,
-                        }}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const label = document.getElementById('pump-value');
-                          if (label) label.textContent = value;
-
-                          const percent = (parseInt(value) / 100) * 100;
-                          const track = document.getElementById('pump-track-fill');
-                          if (track) track.style.width = `${percent}%`;
-                        }}
-                      />
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: 0,
-                        right: 0,
+                    <input
+                      type="range"
+                      id="progress-pump"
+                      min="0"
+                      max="100"
+                      defaultValue="50"
+                      style={{
+                        width: '100%',
                         height: '6px',
-                        background: 'rgba(255, 255, 255, 0.1)',
+                        WebkitAppearance: 'none',
+                        appearance: 'none',
+                        background: 'rgba(255,255,255,0.1)',
                         borderRadius: '3px',
-                        transform: 'translateY(-50%)',
-                        pointerEvents: 'none',
-                        overflow: 'hidden',
-                      }}>
-                        <div
-                          id="pump-track-fill"
-                          style={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            height: '100%',
-                            width: '50%',
-                            background: 'var(--accent-gradient)',
-                            borderRadius: '3px',
-                            transition: 'width 0.2s ease',
-                          }}
-                        />
-                      </div>
-                    </div>
+                        outline: 'none',
+                        cursor: 'pointer',
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const label = document.getElementById('pump-value');
+                        if (label) label.textContent = value;
+                      }}
+                    />
                     <div style={{
                       textAlign: 'center',
-                      fontSize: '1.5em',
-                      fontWeight: '700',
-                      background: 'var(--accent-gradient)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
                       marginTop: '12px',
+                      fontSize: '24px',
+                      fontWeight: '700',
+                      color: 'var(--accent-primary)',
                     }}>
                       <span id="pump-value">50</span>
-                      <span style={{ fontSize: '0.6em', opacity: 0.8 }}>/100</span>
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      marginTop: '10px',
-                      fontSize: '0.65em',
-                      color: 'var(--text-muted)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}>
-                      <span>No Pump</span>
-                      <span>Moderate</span>
-                      <span>Max Pump</span>
+                      <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/100</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Workout Selection */}
-                <div style={{ marginBottom: '24px' }}>
+                <div style={{ marginBottom: '20px' }}>
                   <label style={{
                     display: 'block',
-                    marginBottom: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
+                    marginBottom: '8px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}>
-                    Select Workout (Optional)
+                    Link Workout (Optional)
                   </label>
                   <select
                     id="workout-select"
                     style={{
                       width: '100%',
-                      padding: '12px 16px',
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '12px',
+                      padding: '12px 14px',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '10px',
                       color: 'var(--text)',
                       fontSize: '14px',
                       outline: 'none',
                       cursor: 'pointer',
+                      appearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 12px center',
+                      backgroundSize: '16px',
+                      paddingRight: '40px',
                     }}
                   >
                     <option value="">No workout linked</option>
@@ -3271,14 +3253,14 @@ const Modals = () => {
                   </select>
                 </div>
 
-                {/* Privacy Toggle */}
+                {/* Visibility Toggle - Cleaner Style */}
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{
                     display: 'block',
-                    marginBottom: '12px',
+                    fontSize: '12px',
+                    fontWeight: '600',
                     color: 'var(--text-muted)',
-                    fontSize: '0.85em',
-                    fontWeight: '500',
+                    marginBottom: '8px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}>
@@ -3286,69 +3268,48 @@ const Modals = () => {
                   </label>
                   <div style={{
                     display: 'flex',
-                    gap: '12px',
+                    gap: '10px',
                   }}>
                     <button
                       onClick={() => setData(prev => ({ ...prev, tempIsPublic: false }))}
                       style={{
                         flex: 1,
-                        padding: '14px',
-                        background: !data.tempIsPublic
-                          ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)'
-                          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                        padding: '12px',
+                        background: !data.tempIsPublic ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)',
                         color: !data.tempIsPublic ? 'white' : 'var(--text-muted)',
                         border: '1px solid',
-                        borderColor: !data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '12px',
-                        fontSize: '0.9em',
+                        borderColor: !data.tempIsPublic ? 'var(--accent-primary)' : 'var(--border)',
+                        borderRadius: '10px',
+                        fontSize: '14px',
                         fontWeight: '500',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
+                        transition: 'all 0.2s ease',
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0110 0v4" />
-                      </svg>
                       Private
                     </button>
                     <button
                       onClick={() => setData(prev => ({ ...prev, tempIsPublic: true }))}
                       style={{
                         flex: 1,
-                        padding: '14px',
-                        background: data.tempIsPublic
-                          ? 'linear-gradient(135deg, var(--accent-primary), #8b5cf6)'
-                          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                        padding: '12px',
+                        background: data.tempIsPublic ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)',
                         color: data.tempIsPublic ? 'white' : 'var(--text-muted)',
                         border: '1px solid',
-                        borderColor: data.tempIsPublic ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '12px',
-                        fontSize: '0.9em',
+                        borderColor: data.tempIsPublic ? 'var(--accent-primary)' : 'var(--border)',
+                        borderRadius: '10px',
+                        fontSize: '14px',
                         fontWeight: '500',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
+                        transition: 'all 0.2s ease',
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M2 12h20" />
-                        <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-                      </svg>
                       Public
                     </button>
                   </div>
                   <p style={{
                     marginTop: '8px',
-                    fontSize: '0.75em',
+                    fontSize: '12px',
                     color: 'var(--text-muted)',
                     textAlign: 'center',
                   }}>
@@ -3362,9 +3323,9 @@ const Modals = () => {
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '12px',
+                  gap: '10px',
                 }}>
-<button
+                  <button
                     onClick={() => {
                       const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
                       const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
@@ -3380,10 +3341,11 @@ const Modals = () => {
                           pump,
                           likes: 0,
                           comments: [],
-                          visibility: (data.tempIsPublic ? 'public' : 'private') as 'public' | 'private',  // Type assertion
+                          visibility: (data.tempIsPublic ? 'public' : 'private') as 'public' | 'private',
                           linkedWorkoutTime: selectedWorkoutTime ? parseInt(selectedWorkoutTime) : undefined
                         };
                         const newProgressPics = [...data.progressPics, newPic];
+
                         setData((prev: DataType) => ({
                           ...prev,
                           progressPics: newProgressPics,
@@ -3399,56 +3361,43 @@ const Modals = () => {
                           }));
                         });
                       }
-                    }} style={{
+                    }}
+                    style={{
                       width: '100%',
                       padding: '14px',
                       background: 'var(--accent-gradient)',
                       color: 'white',
                       border: 'none',
                       borderRadius: '12px',
-                      fontSize: '1em',
+                      fontSize: '16px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.3)';
+                      transition: 'all 0.2s ease',
                     }}
                   >
                     Share Progress
                   </button>
 
                   <button
-                    onClick={() => setData((prev: DataType) => ({
-                      ...prev,
-                      tempBase64: null,
-                      tempTimestamp: null,
-                      activeModal: null
-                    }))}
+                    onClick={closeModal}
                     style={{
                       width: '100%',
-                      padding: '12px',
+                      padding: '14px',
                       background: 'transparent',
                       color: 'var(--text-muted)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      border: '1px solid var(--border)',
                       borderRadius: '12px',
-                      fontSize: '0.9em',
+                      fontSize: '16px',
                       fontWeight: '500',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                      e.currentTarget.style.borderColor = 'var(--text-muted)';
                       e.currentTarget.style.color = 'var(--text)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                      e.currentTarget.style.borderColor = 'var(--border)';
                       e.currentTarget.style.color = 'var(--text-muted)';
                     }}
                   >
@@ -3457,7 +3406,7 @@ const Modals = () => {
                 </div>
               </>
             ) : (
-              // Photo picker UI when no photo selected
+              // Upload button when no photo selected
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -3466,37 +3415,6 @@ const Modals = () => {
                 minHeight: '300px',
                 textAlign: 'center',
               }}>
-                <div style={{
-                  width: '120px',
-                  height: '120px',
-                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '24px',
-                }}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                </div>
-                <h3 style={{
-                  fontSize: '1.1em',
-                  fontWeight: '600',
-                  marginBottom: '8px',
-                  color: 'var(--text)',
-                }}>
-                  Select a photo
-                </h3>
-                <p style={{
-                  fontSize: '0.9em',
-                  color: 'var(--text-muted)',
-                  marginBottom: '24px',
-                }}>
-                  Choose a photo to track your progress
-                </p>
                 <button
                   onClick={() => {
                     const input = document.createElement('input');
@@ -3522,20 +3440,26 @@ const Modals = () => {
                     input.click();
                   }}
                   style={{
-                    padding: '12px 24px',
+                    padding: '16px 32px',
                     background: 'var(--accent-gradient)',
                     color: 'white',
                     border: 'none',
                     borderRadius: '12px',
-                    fontSize: '0.95em',
+                    fontSize: '16px',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)',
-                    transition: 'all 0.3s ease',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   Choose Photo
                 </button>
+                <p style={{
+                  marginTop: '16px',
+                  color: 'var(--text-muted)',
+                  fontSize: '14px',
+                }}>
+                  Select a photo from your gallery
+                </p>
               </div>
             )}
           </div>
