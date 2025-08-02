@@ -2945,17 +2945,18 @@ const Modals = () => {
       </div>
 
 <div id="progress-upload-modal" className={`modal ${activeModal === 'progress-upload-modal' ? 'active' : ''}`} style={{ padding: 0 }}>  
-        <div className="modal-content" style={{
-          maxWidth: '380px',
-          background: 'var(--bg-dark)',
-          borderRadius: '16px',
-          padding: '0',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: '85vh',
-          margin: '20px',
-        }}>
+  <div className="modal-content" style={{
+    width: '100%',
+    maxWidth: '100%',
+    height: '100vh',
+    background: 'var(--bg-dark)',
+    borderRadius: '0',
+    padding: '0',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    margin: '0',
+  }}>
           {/* Sleek Header */}
           <div style={{
             display: 'flex',
@@ -3290,8 +3291,7 @@ padding: '8px 10px',
                   >
                     <option value="">None</option>
                     {data.history
-                      .slice(-3)
-                      .reverse()
+                      .slice(-3)                  
                       .map((workout: any, idx: number) => {
                         const date = new Date(workout.startTime);
                         return (
