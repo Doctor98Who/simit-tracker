@@ -834,4 +834,30 @@ static async getUserLikedPhotos(userId: string, photoIds: string[]) {
     throw error;
   }
 }
+
+static async getWorkoutByTimestamp(userId: string, workoutTime: number) {
+  try {
+    const response = await fetch('/.netlify/functions/get-workout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        workoutTime
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to get workout');
+    }
+    
+    return result.data;
+  } catch (error) {
+    console.error('Error getting workout:', error);
+    throw error;
+  }
+}
 }

@@ -15,6 +15,7 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
   const [lastTap, setLastTap] = useState(0);
   const imageRef = React.useRef<HTMLDivElement>(null);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [isLoadingWorkout, setIsLoadingWorkout] = useState(false);
 
   const handleLike = async () => {
     if (!dbUser) return;
@@ -271,18 +272,41 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
 {/* Right side - Pump rating if present */}
         {item.pump && (
           <button
-            onClick={() => {
-              if (item.linkedWorkoutTime) {
-                const linkedWorkout = (isOwn ? data.history : item.user?.history || [])
-                  .find((w: any) => w.startTime === item.linkedWorkoutTime);
-                
-                if (linkedWorkout) {
-                  setData((prev: any) => ({
-                    ...prev,
-                    viewingWorkout: linkedWorkout,
-                    viewingWorkoutUser: isOwn ? data : item.user,
-                    activeModal: 'view-workout-modal'
-                  }));
+onClick={async () => {
+              if (item.linkedWorkoutTime && !isLoadingWorkout) {
+                setIsLoadingWorkout(true);
+                try {
+                  let linkedWorkout;
+                  let workoutUser;
+                  
+                  if (isOwn) {
+                    // For own photos, we have the history in context
+                    linkedWorkout = data.history.find((w: any) => w.startTime === item.linkedWorkoutTime);
+                    workoutUser = data;
+                  } else {
+                    // For friend's photos, fetch their workout
+                    linkedWorkout = await DatabaseService.getWorkoutByTimestamp(
+                      item.user.id, 
+                      item.linkedWorkoutTime
+                    );
+                    workoutUser = item.user;
+                  }
+                  
+                  if (linkedWorkout) {
+                    setData((prev: any) => ({
+                      ...prev,
+                      viewingWorkout: linkedWorkout,
+                      viewingWorkoutUser: workoutUser,
+                      activeModal: 'view-workout-modal'
+                    }));
+                  } else {
+                    console.log('No workout found');
+                  }
+                } catch (error) {
+                  console.error('Error fetching workout:', error);
+                  alert('Failed to load workout details');
+                } finally {
+                  setIsLoadingWorkout(false);
                 }
               }
             }}
@@ -297,8 +321,9 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
               fontWeight: '600',
               marginRight: '8px',
               border: 'none',
-              cursor: item.linkedWorkoutTime ? 'pointer' : 'default',
-              transition: 'all 0.2s ease',
+              cursor: item.linkedWorkoutTime && !isLoadingWorkout ? 'pointer' : 'default',
+              opacity: isLoadingWorkout ? 0.6 : 1,
+                            transition: 'all 0.2s ease',
             }}
           >
             <svg 

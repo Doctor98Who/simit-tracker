@@ -102,6 +102,7 @@ export const handler: Handler = async (event, context) => {
           pump: photo.pump,
           likes: photo.likes,
           visibility: photo.visibility,
+           linkedWorkoutTime: photo.linked_workout_time,
           userHasLiked: userLikedPhotos.includes(photo.id),
           user: photo.user,
           comments: photo.comments.map(c => ({
