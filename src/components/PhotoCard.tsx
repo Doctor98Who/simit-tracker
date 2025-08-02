@@ -276,8 +276,8 @@ onClick={async () => {
               if (item.linkedWorkoutTime && !isLoadingWorkout) {
                 setIsLoadingWorkout(true);
                 try {
-                  let linkedWorkout;
-                  let workoutUser;
+                  let linkedWorkout: any;
+                  let workoutUser: any;
                   
                   if (isOwn) {
                     // For own photos, we have the history in context
