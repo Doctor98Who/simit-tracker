@@ -49,6 +49,7 @@ export interface ProgressPhoto {
   likes?: number;
   visibility?: 'private' | 'public';
   comments?: { user: string; text: string; timestamp: number }[];
+    linkedWorkoutTime?: number;
 }
 
 export interface Template {
@@ -130,6 +131,8 @@ export interface DataType {
   showFindFriendsModal: boolean;
    showComments: boolean;
   selectedPhoto: any;
+viewingWorkout?: Workout | null;
+  viewingWorkoutUser?: any;
 }
 interface DataContextType {
   data: DataType;

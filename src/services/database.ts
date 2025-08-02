@@ -280,6 +280,7 @@ export class DatabaseService {  static async syncUserProfile(auth0Id: string, em
           pump: photo.pump,
           likes: photo.likes || 0,
 visibility: photo.visibility || 'private',
+ linked_workout_time: photo.linkedWorkoutTime || null,
         })
         .select()
         .single();

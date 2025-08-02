@@ -268,19 +268,39 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
           </button>
         </div>
 
-        {/* Right side - Pump rating if present */}
+{/* Right side - Pump rating if present */}
         {item.pump && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '0.85em',
-            fontWeight: '600',
-            marginRight: '8px',
-          }}>
+          <button
+            onClick={() => {
+              if (item.linkedWorkoutTime) {
+                const linkedWorkout = (isOwn ? data.history : item.user?.history || [])
+                  .find((w: any) => w.startTime === item.linkedWorkoutTime);
+                
+                if (linkedWorkout) {
+                  setData((prev: any) => ({
+                    ...prev,
+                    viewingWorkout: linkedWorkout,
+                    viewingWorkoutUser: isOwn ? data : item.user,
+                    activeModal: 'view-workout-modal'
+                  }));
+                }
+              }
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              fontSize: '0.85em',
+              fontWeight: '600',
+              marginRight: '8px',
+              border: 'none',
+              cursor: item.linkedWorkoutTime ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+            }}
+          >
             <svg 
               width="16" 
               height="16" 
@@ -295,11 +315,11 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ item, isOwn, onOpenComments }) =>
               <path d="M15 3L17 5L15 7" />
               <path d="M9 3L7 5L9 7" />
             </svg>
-            <span style={{ color: 'var(--accent-primary)' }}>
+<span style={{ color: 'var(--accent-primary)' }}>
               {item.pump}%
             </span>
-          </div>
-        )}
+          </button>
+        )}        
       </div>
       
       {/* Like count */}

@@ -2209,508 +2209,508 @@ const Modals = () => {
           }}>Cancel</button>
         </div>
       </div>
-<div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
-  <div className="modal-content" style={{
-    maxWidth: '400px',
-    maxHeight: '90vh',
-    background: 'var(--bg-dark)',
-    borderRadius: '24px',
-    padding: '0',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-  }}>
-    {/* Modern Header */}
-    <div style={{
-      padding: '20px',
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      background: 'var(--bg-darker)',
-    }}>
-      <button
-        onClick={closeModal}
-        style={{
-          background: 'rgba(255,255,255,0.1)',
-          border: 'none',
-          color: 'var(--text)',
-          fontSize: '18px',
-          cursor: 'pointer',
+      <div id="edit-profile-modal" className={`modal ${activeModal === 'edit-profile-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{
+          maxWidth: '400px',
+          maxHeight: '90vh',
+          background: 'var(--bg-dark)',
+          borderRadius: '24px',
           padding: '0',
-          minHeight: 'auto',
-          width: '32px',
-          height: '32px',
-          borderRadius: '50%',
+          overflow: 'hidden',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-      
-      <h2 style={{ 
-        margin: 0, 
-        fontSize: '18px', 
-        fontWeight: '600',
-        position: 'absolute',
-        left: '50%',
-        transform: 'translateX(-50%)',
-      }}>
-        Edit Profile
-      </h2>
-      
-      <div style={{ width: '32px' }}></div>
-    </div>
-
-    {/* Modern Form Content */}
-    <div style={{
-      padding: '20px',
-      flex: 1,
-      overflowY: 'auto',
-      WebkitOverflowScrolling: 'touch',
-    }}>
-      {/* Cover Photo Upload */}
-      <div style={{ marginBottom: '24px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '12px',
-          fontWeight: '600',
-          color: 'var(--text-muted)',
-          marginBottom: '8px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
+          flexDirection: 'column',
         }}>
-          Cover Photo
-        </label>
-        <label 
-          htmlFor="cover-photo-upload"
-          style={{
+          {/* Modern Header */}
+          <div style={{
+            padding: '20px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '2px dashed rgba(255,255,255,0.1)',
-            borderRadius: '12px',
-            padding: '16px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            color: 'var(--text-muted)',
-            fontSize: '14px',
-            fontWeight: '500',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-          {data.coverPhoto ? 'Change Cover Photo' : 'Upload Cover Photo'}
-        </label>
-        <input
-          type="file"
-          id="cover-photo-upload"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              if (file.size > 5 * 1024 * 1024) {
-                alert('Image is too large. Please choose an image under 5MB.');
-                e.target.value = '';
-                return;
-              }
+            justifyContent: 'space-between',
+            background: 'var(--bg-darker)',
+          }}>
+            <button
+              onClick={closeModal}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '18px',
+                cursor: 'pointer',
+                padding: '0',
+                minHeight: 'auto',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
 
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                const base64 = event.target?.result as string;
-                const img = new Image();
-                img.src = base64;
+            <h2 style={{
+              margin: 0,
+              fontSize: '18px',
+              fontWeight: '600',
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+            }}>
+              Edit Profile
+            </h2>
 
-                img.onload = () => {
-                  const maxSize = 800;
-                  let width = img.width;
-                  let height = img.height;
+            <div style={{ width: '32px' }}></div>
+          </div>
 
-                  if (width > maxSize || height > maxSize) {
-                    const ratio = Math.min(maxSize / width, maxSize / height);
-                    width = Math.round(width * ratio);
-                    height = Math.round(height * ratio);
+          {/* Modern Form Content */}
+          <div style={{
+            padding: '20px',
+            flex: 1,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            {/* Cover Photo Upload */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--text-muted)',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Cover Photo
+              </label>
+              <label
+                htmlFor="cover-photo-upload"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '2px dashed rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  color: 'var(--text-muted)',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                {data.coverPhoto ? 'Change Cover Photo' : 'Upload Cover Photo'}
+              </label>
+              <input
+                type="file"
+                id="cover-photo-upload"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                      alert('Image is too large. Please choose an image under 5MB.');
+                      e.target.value = '';
+                      return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const base64 = event.target?.result as string;
+                      const img = new Image();
+                      img.src = base64;
+
+                      img.onload = () => {
+                        const maxSize = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxSize || height > maxSize) {
+                          const ratio = Math.min(maxSize / width, maxSize / height);
+                          width = Math.round(width * ratio);
+                          height = Math.round(height * ratio);
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+
+                        if (ctx) {
+                          ctx.drawImage(img, 0, 0, width, height);
+                          const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                          setData((prev: DataType) => ({
+                            ...prev,
+                            coverPhoto: resizedBase64
+                          }));
+                        }
+                      };
+
+                      img.onerror = () => {
+                        alert('Failed to process image. Please try another photo.');
+                        e.target.value = '';
+                      };
+                    };
+
+                    reader.onerror = () => {
+                      alert('Failed to read image. Please try again.');
+                      e.target.value = '';
+                    };
+
+                    reader.readAsDataURL(file);
                   }
+                }}
+                style={{ display: 'none' }}
+              />
+            </div>
 
-                  const canvas = document.createElement('canvas');
-                  canvas.width = width;
-                  canvas.height = height;
-                  const ctx = canvas.getContext('2d');
+            {/* Name Fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--text-muted)',
+                  marginBottom: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  id="edit-first-name"
+                  placeholder="Enter first name"
+                  defaultValue={data.firstName}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    color: 'var(--text)',
+                    fontSize: '15px',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  }}
+                />
+              </div>
 
-                  if (ctx) {
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                    setData((prev: DataType) => ({
-                      ...prev,
-                      coverPhoto: resizedBase64
-                    }));
-                  }
-                };
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--text-muted)',
+                  marginBottom: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  id="edit-last-name"
+                  placeholder="Enter last name"
+                  defaultValue={data.lastName}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    color: 'var(--text)',
+                    fontSize: '15px',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  }}
+                />
+              </div>
+            </div>
 
-                img.onerror = () => {
-                  alert('Failed to process image. Please try another photo.');
-                  e.target.value = '';
-                };
-              };
+            {/* Username Field */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Username
+              </label>
+              <input
+                type="text"
+                id="edit-username"
+                placeholder="Choose a username"
+                defaultValue={data.username}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '10px',
+                  color: 'var(--text)',
+                  fontSize: '15px',
+                  transition: 'all 0.2s ease',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                }}
+              />
+            </div>
 
-              reader.onerror = () => {
-                alert('Failed to read image. Please try again.');
-                e.target.value = '';
-              };
+            {/* Bio Field */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Bio
+              </label>
+              <textarea
+                id="edit-bio"
+                placeholder="Tell us about yourself..."
+                defaultValue={data.bio}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '10px',
+                  color: 'var(--text)',
+                  fontSize: '15px',
+                  minHeight: '80px',
+                  resize: 'vertical',
+                  transition: 'all 0.2s ease',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                }}
+              />
+            </div>
 
-              reader.readAsDataURL(file);
-            }
-          }}
-          style={{ display: 'none' }}
-        />
-      </div>
+            {/* Email Field */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: '600',
+                color: 'var(--text-muted)',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Email
+              </label>
+              <input
+                type="email"
+                id="edit-email"
+                placeholder="your@email.com"
+                defaultValue={data.email}
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '10px',
+                  color: 'var(--text)',
+                  fontSize: '15px',
+                  transition: 'all 0.2s ease',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                }}
+              />
+            </div>
 
-      {/* Name Fields */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: '600',
-            color: 'var(--text-muted)',
-            marginBottom: '6px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
-            First Name
-          </label>
-          <input
-            type="text"
-            id="edit-first-name"
-            placeholder="Enter first name"
-            defaultValue={data.firstName}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              color: 'var(--text)',
-              fontSize: '15px',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-            }}
-          />
+            {/* Location Fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--text-muted)',
+                  marginBottom: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  Country
+                </label>
+                <select
+                  id="edit-country"
+                  defaultValue={data.country || 'United States'}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    color: 'var(--text)',
+                    fontSize: '15px',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  }}
+                >
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Germany">Germany</option>
+                  <option value="France">France</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: 'var(--text-muted)',
+                  marginBottom: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  State/Region
+                </label>
+                <input
+                  type="text"
+                  id="edit-state"
+                  placeholder="Enter state"
+                  defaultValue={data.state}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px',
+                    color: 'var(--text)',
+                    fontSize: '15px',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <button
+              onClick={saveProfile}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'var(--accent-gradient)',
+                border: 'none',
+                borderRadius: '12px',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                marginTop: 'auto',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              Save Changes
+            </button>
+          </div>
         </div>
-        
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: '600',
-            color: 'var(--text-muted)',
-            marginBottom: '6px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
-            Last Name
-          </label>
-          <input
-            type="text"
-            id="edit-last-name"
-            placeholder="Enter last name"
-            defaultValue={data.lastName}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              color: 'var(--text)',
-              fontSize: '15px',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-            }}
-          />
-        </div>
       </div>
-
-      {/* Username Field */}
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '12px',
-          fontWeight: '600',
-          color: 'var(--text-muted)',
-          marginBottom: '6px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Username
-        </label>
-        <input
-          type="text"
-          id="edit-username"
-          placeholder="Choose a username"
-          defaultValue={data.username}
-          style={{
-            width: '100%',
-            padding: '12px 14px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px',
-            color: 'var(--text)',
-            fontSize: '15px',
-            transition: 'all 0.2s ease',
-            outline: 'none',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-          }}
-        />
-      </div>
-
-      {/* Bio Field */}
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '12px',
-          fontWeight: '600',
-          color: 'var(--text-muted)',
-          marginBottom: '6px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Bio
-        </label>
-        <textarea
-          id="edit-bio"
-          placeholder="Tell us about yourself..."
-          defaultValue={data.bio}
-          style={{
-            width: '100%',
-            padding: '12px 14px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px',
-            color: 'var(--text)',
-            fontSize: '15px',
-            minHeight: '80px',
-            resize: 'vertical',
-            transition: 'all 0.2s ease',
-            outline: 'none',
-            fontFamily: 'inherit',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-          }}
-        />
-      </div>
-
-      {/* Email Field */}
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '12px',
-          fontWeight: '600',
-          color: 'var(--text-muted)',
-          marginBottom: '6px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
-          Email
-        </label>
-        <input
-          type="email"
-          id="edit-email"
-          placeholder="your@email.com"
-          defaultValue={data.email}
-          style={{
-            width: '100%',
-            padding: '12px 14px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '10px',
-            color: 'var(--text)',
-            fontSize: '15px',
-            transition: 'all 0.2s ease',
-            outline: 'none',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-          }}
-        />
-      </div>
-
-      {/* Location Fields */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: '600',
-            color: 'var(--text-muted)',
-            marginBottom: '6px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
-            Country
-          </label>
-          <select
-            id="edit-country"
-            defaultValue={data.country || 'United States'}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              color: 'var(--text)',
-              fontSize: '15px',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-              cursor: 'pointer',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-            }}
-          >
-            <option value="United States">United States</option>
-            <option value="Canada">Canada</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="Australia">Australia</option>
-            <option value="Germany">Germany</option>
-            <option value="France">France</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        
-        <div>
-          <label style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: '600',
-            color: 'var(--text-muted)',
-            marginBottom: '6px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}>
-            State/Region
-          </label>
-          <input
-            type="text"
-            id="edit-state"
-            placeholder="Enter state"
-            defaultValue={data.state}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              color: 'var(--text)',
-              fontSize: '15px',
-              transition: 'all 0.2s ease',
-              outline: 'none',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent-primary)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <button 
-        onClick={saveProfile}
-        style={{
-          width: '100%',
-          padding: '14px',
-          background: 'var(--accent-gradient)',
-          border: 'none',
-          borderRadius: '12px',
-          color: 'white',
-          fontSize: '16px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          marginTop: 'auto',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-1px)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = 'none';
-        }}
-      >
-        Save Changes
-      </button>
-    </div>
-  </div>
-</div>
       <div id="feedback-modal" className={`modal ${activeModal === 'feedback-modal' ? 'active' : ''}`}>
         <div className="modal-content">
           <h2>How was your workout?</h2>
@@ -3227,6 +3227,50 @@ const Modals = () => {
                   </div>
                 </div>
 
+                {/* Workout Selection */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '12px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85em',
+                    fontWeight: '500',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Select Workout (Optional)
+                  </label>
+                  <select
+                    id="workout-select"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px',
+                      color: 'var(--text)',
+                      fontSize: '14px',
+                      outline: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <option value="">No workout linked</option>
+                    {data.history
+                      .slice(-3)
+                      .reverse()
+                      .map((workout: any, idx: number) => {
+                        const date = new Date(workout.startTime);
+                        const dateStr = date.toLocaleDateString();
+                        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        return (
+                          <option key={idx} value={workout.startTime}>
+                            {workout.name} - {dateStr} {timeStr}
+                          </option>
+                        );
+                      })}
+                  </select>
+                </div>
+
                 {/* Privacy Toggle */}
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{
@@ -3320,41 +3364,42 @@ const Modals = () => {
                   flexDirection: 'column',
                   gap: '12px',
                 }}>
-                  <button
-onClick={() => {
-  const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
-  const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
-  const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+<button
+                    onClick={() => {
+                      const caption = (document.getElementById('progress-caption') as HTMLTextAreaElement)?.value || '';
+                      const weight = (document.getElementById('progress-weight') as HTMLInputElement)?.value || '';
+                      const pump = parseInt((document.getElementById('progress-pump') as HTMLInputElement)?.value || '50');
+                      const selectedWorkoutTime = (document.getElementById('workout-select') as HTMLSelectElement)?.value || '';
+                      
+                      if (data.tempBase64 && data.tempTimestamp) {
+                        const newPic = {
+                          base64: data.tempBase64,
+                          timestamp: data.tempTimestamp,
+                          caption,
+                          weight,
+                          pump,
+                          likes: 0,
+                          comments: [],
+                          visibility: (data.tempIsPublic ? 'public' : 'private') as 'public' | 'private',  // Type assertion
+                          linkedWorkoutTime: selectedWorkoutTime ? parseInt(selectedWorkoutTime) : undefined
+                        };
+                        const newProgressPics = [...data.progressPics, newPic];
+                        setData((prev: DataType) => ({
+                          ...prev,
+                          progressPics: newProgressPics,
+                          tempBase64: null,
+                          tempTimestamp: null,
+                          activeModal: null
+                        }));
 
-  if (data.tempBase64 && data.tempTimestamp) {
-    const newPic = {
-      base64: data.tempBase64,
-      timestamp: data.tempTimestamp,
-      caption,
-      weight,
-      pump,
-      likes: 0,
-      comments: [],
-      visibility: (data.tempIsPublic ? 'public' : 'private') as 'public' | 'private',  // Type assertion
-    };
-    const newProgressPics = [...data.progressPics, newPic];
-
-    setData((prev: DataType) => ({
-      ...prev,
-      progressPics: newProgressPics,
-      tempBase64: null,
-      tempTimestamp: null,
-      activeModal: null
-    }));
-
-    requestAnimationFrame(() => {
-      setData((prev: DataType) => ({
-        ...prev,
-        activeTab: 'progress-tab'
-      }));
-    });
-  }
-}}                    style={{
+                        requestAnimationFrame(() => {
+                          setData((prev: DataType) => ({
+                            ...prev,
+                            activeTab: 'progress-tab'
+                          }));
+                        });
+                      }
+                    }} style={{
                       width: '100%',
                       padding: '14px',
                       background: 'var(--accent-gradient)',
@@ -4381,7 +4426,7 @@ onClick={() => {
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{
                     display: 'block',
-                    marginBottom: '10px',
+                    marginBottom: '12px',
                     color: 'var(--text-muted)',
                     fontSize: '0.85em',
                     fontWeight: '500',
@@ -4394,7 +4439,7 @@ onClick={() => {
                     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.05))',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '16px',
-                    padding: '16px',
+                    padding: '20px',
                     backdropFilter: 'blur(10px)',
                   }}>
                     <div style={{ position: 'relative', marginBottom: '12px' }}>
@@ -4872,12 +4917,63 @@ onClick={() => {
               }}>
                 Connect with friends to share workouts, track progress together, and stay motivated on your fitness journey.
               </p>
-            </div>
+</div>
           </div>
+        </div>
+      </div>
+
+      {/* View Workout Modal */}
+      <div id="view-workout-modal" className={`modal ${activeModal === 'view-workout-modal' ? 'active' : ''}`}>
+        <div className="modal-content" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+          <h2 style={{ marginBottom: '20px' }}>
+            {data.viewingWorkoutUser?.firstName}'s Workout
+          </h2>
+          {data.viewingWorkout && (
+            <div>
+              <h3 style={{ fontSize: '1.1em', marginBottom: '10px' }}>
+                {data.viewingWorkout.name}
+              </h3>
+              <p style={{ fontSize: '0.9em', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                {new Date(data.viewingWorkout.startTime).toLocaleDateString()} • 
+                Duration: {Math.floor(data.viewingWorkout.duration / 60000)} mins
+              </p>
+              
+              {data.viewingWorkout.exercises.map((ex: any, idx: number) => (
+                <div key={idx} style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontWeight: '600', marginBottom: '8px' }}>
+                    {ex.name} {ex.subtype ? `(${ex.subtype})` : ''}
+                  </h4>
+                  <div style={{ fontSize: '0.9em' }}>
+                    {ex.sets?.filter((s: any) => s.completed).map((set: any, setIdx: number) => (
+                      <div key={setIdx} style={{ marginBottom: '4px' }}>
+                        Set {setIdx + 1}: {set.weight} {data.weightUnit} × {set.reps} reps
+                        {set.rpe && ` @ RPE ${set.rpe}`}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              
+              {data.viewingWorkout.pump && (
+                <div style={{ 
+                  marginTop: '20px', 
+                  padding: '12px', 
+                  background: 'var(--subtle-gradient)',
+                  borderRadius: '8px' 
+                }}>
+                  <strong>Pump Rating:</strong> {data.viewingWorkout.pump}/100
+                </div>
+              )}
+            </div>
+          )}
+          
+          <button onClick={() => setData(prev => ({ ...prev, activeModal: null }))} 
+            className="modal-btn">
+            Close
+          </button>
         </div>
       </div>
     </>
   );
 };
-
 export default Modals;

@@ -1,6 +1,6 @@
 {
   "name": "simit-tracker",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^2.4.0",
